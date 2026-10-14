@@ -1,0 +1,18 @@
+# student-citations-mcp
+
+> APA, MLA and Chicago citations from a DOI, an ISBN or typed details. No account. Free and open source MCP server for AI apps (Claude, ChatGPT, Cursor, Copilot and others).
+
+## Setup
+- Run with npx -y student-citations-mcp
+- No key or account. Optional CROSSREF_EMAIL.
+- Styles are apa7, mla9 and chicago-ad. Italics are returned as asterisks.
+
+## Tools
+- format_citation
+- cite_from_doi
+- cite_from_isbn
+- in_text_citation
+
+## Links
+- Source and README, https://github.com/AnonymousOnyx22/student-citations-mcp
+- More free student MCP servers, https://brightspacemcp.com/more-mcps/
