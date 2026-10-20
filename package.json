@@ -1,7 +1,7 @@
 {
   "name": "student-citations-mcp",
   "version": "0.1.0",
-  "description": "APA, MLA and Chicago citations from a DOI, an ISBN or typed details. No account.",
+  "description": "Citation MCP server that builds APA, MLA and Chicago citations from a DOI, an ISBN or typed details, with matching in-text citations. No account.",
   "type": "module",
   "main": "build/src/index.js",
   "bin": {
@@ -24,6 +24,12 @@
     "prepublishOnly": "npm run build && npm test"
   },
   "keywords": [
+    "citation mcp",
+    "apa citation",
+    "mla citation",
+    "chicago citation",
+    "doi to citation",
+    "isbn citation",
     "mcp",
     "mcp-server",
     "model-context-protocol",
@@ -41,6 +47,7 @@
     "chicago",
     "references",
     "bibliography",
+    "in-text citation",
     "doi",
     "isbn",
     "crossref"
