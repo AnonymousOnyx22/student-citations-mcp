@@ -151,13 +151,13 @@ export function inText(authors: Author[], year: string | undefined, style: Style
 
 export function normalizeDoi(input: string): string {
   const d = input.trim().replace(/^https?:\/\/(dx\.)?doi\.org\//i, "").replace(/^doi:\s*/i, "");
-  if (!/^10\.\d{4,9}\/\S+$/.test(d)) throw new Error(`"${input}" does not look like a DOI. A DOI starts with 10. and has a slash, like 10.1038/nature14539.`);
+  if (!/^10\.\d{4,9}\/\S+$/.test(d)) throw new Error(`"${input}" does not look like a DOI. A DOI starts with 10. and has a slash, like 10.1038/nature14539. That is not a DOI I recognise, or use format_citation and type the details.`);
   return d;
 }
 
 export function normalizeIsbn(input: string): string {
   const d = input.replace(/[-\s]/g, "").toUpperCase();
-  if (!/^(\d{9}[\dX]|\d{13})$/.test(d)) throw new Error(`"${input}" does not look like an ISBN. It should have 10 or 13 digits.`);
+  if (!/^(\d{9}[\dX]|\d{13})$/.test(d)) throw new Error(`"${input}" does not look like an ISBN. It should have 10 or 13 digits. That is not a DOI I recognise, or use format_citation and type the details.`);
   return d;
 }
 

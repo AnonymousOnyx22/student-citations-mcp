@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { HttpClient } from "./core/http.js";
+import { ApiError } from "./core/http.js";
 import type { ToolDef } from "./core/tools.js";
 import { type Source, type Style, format, inText, normalizeDoi, normalizeIsbn, splitName } from "./format.js";
 
@@ -52,23 +53,33 @@ export const tools: ToolDef<Api>[] = [
     inputSchema: { doi: z.string().describe("A DOI like 10.1038/nature14539, or a doi.org link."), style },
     run: async (a, api) => {
       const doi = normalizeDoi(a.doi);
-      const res: any = await api.crossref.get(`/works/${encodeURI(doi)}`);
-      const m = res.message ?? res;
-      const type = String(m.type ?? "");
-      const src: Source = {
-        type: type === "book" || type === "monograph" ? "book" : "journal",
-        authors: (m.author ?? []).filter((x: any) => x.family).map((x: any) => ({ family: x.family, given: x.given })),
-        year: yearOf(m),
-        title: Array.isArray(m.title) ? m.title[0] : m.title,
-        container: Array.isArray(m["container-title"]) ? m["container-title"][0] : m["container-title"],
-        publisher: m.publisher,
-        volume: m.volume,
-        issue: m.issue,
-        pages: m.page,
-        doi: m.DOI ?? doi,
-      };
-      if (!src.title) throw new Error("Crossref found that DOI but it has no title, so there is nothing to cite.");
-      return `${format(src, a.style as Style)}\n\n(From Crossref. Check it against your style guide.)`;
+      try {
+        const res: any = await api.crossref.get(`/works/${encodeURI(doi)}`);
+        const m = res.message ?? res;
+        const type = String(m.type ?? "");
+        const src: Source = {
+          type: type === "book" || type === "monograph" ? "book" : "journal",
+          authors: (m.author ?? []).filter((x: any) => x.family).map((x: any) => ({ family: x.family, given: x.given })),
+          year: yearOf(m),
+          title: Array.isArray(m.title) ? m.title[0] : m.title,
+          container: Array.isArray(m["container-title"]) ? m["container-title"][0] : m["container-title"],
+          publisher: m.publisher,
+          volume: m.volume,
+          issue: m.issue,
+          pages: m.page,
+          doi: m.DOI ?? doi,
+        };
+        if (!src.title) throw new Error("Crossref found that DOI but it has no title, so there is nothing to cite. Use format_citation and type the details.");
+        return `${format(src, a.style as Style)}\n\n(From Crossref. Check it against your style guide.)`;
+      } catch (err) {
+        if (err instanceof ApiError) {
+          if (err.status === 404) {
+            throw new ApiError(`${err.message} That is not a DOI I recognise, or use format_citation and type the details.`, err.status, err.body);
+          }
+          throw new ApiError(`${err.message}. Use format_citation and type the details instead (offline typed details path).`, err.status, err.body);
+        }
+        throw err;
+      }
     },
   },
   {
@@ -78,19 +89,29 @@ export const tools: ToolDef<Api>[] = [
     inputSchema: { isbn: z.string().describe("A 10 or 13 digit ISBN. Dashes are fine."), style },
     run: async (a, api) => {
       const isbn = normalizeIsbn(a.isbn);
-      const res: any = await api.openLibrary.get("/api/books", { bibkeys: `ISBN:${isbn}`, format: "json", jscmd: "data" });
-      const b = res[`ISBN:${isbn}`];
-      if (!b) throw new Error(`Open Library has no book for ISBN ${isbn}. Check the number, or use format_citation and type the details.`);
-      const year = String(b.publish_date ?? "").match(/\d{4}/)?.[0];
-      const src: Source = {
-        type: "book",
-        authors: (b.authors ?? []).map((x: any) => splitName(String(x.name))),
-        year,
-        title: b.subtitle ? `${b.title}: ${b.subtitle}` : b.title,
-        publisher: b.publishers?.[0]?.name,
-        city: b.publish_places?.[0]?.name,
-      };
-      return `${format(src, a.style as Style)}\n\n(From Open Library. Check it against your style guide.)`;
+      try {
+        const res: any = await api.openLibrary.get("/api/books", { bibkeys: `ISBN:${isbn}`, format: "json", jscmd: "data" });
+        const b = res[`ISBN:${isbn}`];
+        if (!b) throw new Error(`Open Library has no book for ISBN ${isbn}. Check the number, or use format_citation and type the details. That is not a DOI I recognise, or use format_citation and type the details.`);
+        const year = String(b.publish_date ?? "").match(/\d{4}/)?.[0];
+        const src: Source = {
+          type: "book",
+          authors: (b.authors ?? []).map((x: any) => splitName(String(x.name))),
+          year,
+          title: b.subtitle ? `${b.title}: ${b.subtitle}` : b.title,
+          publisher: b.publishers?.[0]?.name,
+          city: b.publish_places?.[0]?.name,
+        };
+        return `${format(src, a.style as Style)}\n\n(From Open Library. Check it against your style guide.)`;
+      } catch (err) {
+        if (err instanceof ApiError) {
+          if (err.status === 404) {
+            throw new ApiError(`${err.message} That is not a DOI I recognise, or use format_citation and type the details.`, err.status, err.body);
+          }
+          throw new ApiError(`${err.message}. Use format_citation and type the details instead (offline typed details path).`, err.status, err.body);
+        }
+        throw err;
+      }
     },
   },
   {
