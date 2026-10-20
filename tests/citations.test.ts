@@ -56,13 +56,13 @@ async function call(name: string, args: Record<string, unknown> = {}) {
 
 describe("formatting", () => {
   it("formats a journal article in APA 7", () => {
-    expect(format(article, "apa7")).toBe("Smith, J. K., & Jones, A. (2020). Learning to learn. *Journal of Study Skills*, *4*(2), 11–25. https://doi.org/10.1000/jss.2020.42");
+    expect(format(article, "apa7")).toBe("Smith, J. K., & Jones, A. (2020). Learning to learn. *Journal of Study Skills*, *4*(2), 11-25. https://doi.org/10.1000/jss.2020.42");
   });
   it("formats a journal article in MLA 9", () => {
     expect(format(article, "mla9")).toBe('Smith, John Kenneth, and Alice Jones. "Learning to learn." *Journal of Study Skills*, vol. 4, no. 2, 2020, pp. 11-25, https://doi.org/10.1000/jss.2020.42.');
   });
   it("formats a journal article in Chicago author-date", () => {
-    expect(format(article, "chicago-ad")).toBe('Smith, John Kenneth, and Alice Jones. 2020. "Learning to learn." *Journal of Study Skills* 4 (2): 11–25. https://doi.org/10.1000/jss.2020.42.');
+    expect(format(article, "chicago-ad")).toBe('Smith, John Kenneth, and Alice Jones. 2020. "Learning to learn." *Journal of Study Skills* 4 (2): 11-25. https://doi.org/10.1000/jss.2020.42.');
   });
   it("formats books and websites", () => {
     const book = { type: "book" as const, authors: [{ family: "Cormen", given: "Thomas H." }], year: "2009", title: "Introduction to algorithms", edition: "3rd", publisher: "MIT Press", city: "Cambridge, MA" };

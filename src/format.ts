@@ -59,7 +59,7 @@ function mlaAuthors(a: Author[]): string {
   return `${inverted(a[0])}, et al`;
 }
 
-const dash = (p?: string) => (p ? p.replace(/\s*-\s*/g, "–") : p);
+const dash = (p?: string) => (p ? p.replace(/\s*-\s*/g, "-") : p);
 const end = (s: string) => (/[.?!]$/.test(s) ? s : s + ".");
 const link = (s: Source) => (s.doi ? `https://doi.org/${s.doi}` : s.url ?? "");
 
@@ -112,7 +112,7 @@ export function format(s: Source, style: Style): string {
     }
     return parts.join(" ").replace(/\s+/g, " ").trim();
   }
-  // Chicago author-date
+  // Chicago author date
   const who = mlaAuthors(s.authors).replace(/, et al$/, ", et al.");
   const year = s.year ?? "n.d.";
   if (s.type === "journal") {

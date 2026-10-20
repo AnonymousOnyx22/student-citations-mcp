@@ -9,7 +9,7 @@ export interface Api {
   openLibrary: HttpClient;
 }
 
-const style = z.enum(["apa7", "mla9", "chicago-ad"]).default("apa7").describe("Citation style. apa7, mla9 or chicago-ad (Chicago author-date).");
+const style = z.enum(["apa7", "mla9", "chicago-ad"]).default("apa7").describe("Citation style. apa7, mla9 or chicago-ad (Chicago author date).");
 const author = z.object({ family: z.string().describe("Last name"), given: z.string().optional().describe("First and middle names") });
 
 const sourceShape = {
@@ -39,7 +39,7 @@ export const tools: ToolDef<Api>[] = [
   {
     name: "format_citation",
     title: "Format a citation",
-    description: "Format a journal article, book or website as a citation in APA 7, MLA 9 or Chicago author-date, from details you provide. Inputs: type (journal, book or website), title, and optional authors (family plus given names), year, container, publisher, city, edition, volume, issue, pages, doi, url, date_text, accessed and style (apa7, mla9 or chicago-ad). Example prompt: \"Cite this journal article in APA 7: Learning to learn by John Kenneth Smith and Alice Jones, 2020, Journal of Study Skills, volume 4, issue 2, pages 11-25.\"",
+    description: "Format a journal article, book or website as a citation in APA 7, MLA 9 or Chicago author date, from details you provide. Inputs: type (journal, book or website), title, and optional authors (family plus given names), year, container, publisher, city, edition, volume, issue, pages, doi, url, date_text, accessed and style (apa7, mla9 or chicago-ad). Example prompt: \"Cite this journal article in APA 7: Learning to learn by John Kenneth Smith and Alice Jones, 2020, Journal of Study Skills, volume 4, issue 2, pages 11-25.\"",
     inputSchema: { ...sourceShape, style },
     run: async (a) => {
       const { style: st, ...src } = a;
@@ -116,8 +116,8 @@ export const tools: ToolDef<Api>[] = [
   },
   {
     name: "in_text_citation",
-    title: "In-text citation",
-    description: "The in-text citation that goes with a source, with an optional page number. Inputs: authors (family name plus optional given names), year, page and style (apa7, mla9 or chicago-ad). Example prompt: \"Give the APA in-text citation for Smith and Jones 2020 on page 14.\"",
+    title: "In text citation",
+    description: "The in text citation that goes with a source, with an optional page number. Inputs: authors (family name plus optional given names), year, page and style (apa7, mla9 or chicago-ad). Example prompt: \"Give the APA in text citation for Smith and Jones 2020 on page 14.\"",
     inputSchema: { authors: z.array(author).default([]), year: z.string().optional(), page: z.string().optional(), style },
     run: async (a) => inText(a.authors, a.year, a.style as Style, a.page),
   },

@@ -4,7 +4,7 @@
     "AnonymousOnyx22"
   ],
   "name": "io.github.AnonymousOnyx22/student-citations-mcp",
-  "description": "Citation MCP server. APA 7, MLA 9 and Chicago author-date citations from a DOI, an ISBN or typed details. No account.",
+  "description": "Citation MCP server. APA 7, MLA 9 and Chicago author date citations from a DOI, an ISBN or typed details. No account.",
   "version": "0.1.0",
   "repository": {
     "url": "https://github.com/AnonymousOnyx22/student-citations-mcp",
@@ -13,7 +13,7 @@
   "tools": [
     {
       "name": "format_citation",
-      "description": "Format a journal article, book or website as a citation in APA 7, MLA 9 or Chicago author-date, from details you provide. Inputs: type (journal, book or website), title, and optional authors (family plus given names), year, container, publisher, city, edition, volume, issue, pages, doi, url, date_text, accessed and style (apa7, mla9 or chicago-ad). Example prompt: \"Cite this journal article in APA 7: Learning to learn by John Kenneth Smith and Alice Jones, 2020, Journal of Study Skills, volume 4, issue 2, pages 11-25.\"",
+      "description": "Format a journal article, book or website as a citation in APA 7, MLA 9 or Chicago author date, from details you provide. Inputs: type (journal, book or website), title, and optional authors (family plus given names), year, container, publisher, city, edition, volume, issue, pages, doi, url, date_text, accessed and style (apa7, mla9 or chicago-ad). Example prompt: \"Cite this journal article in APA 7: Learning to learn by John Kenneth Smith and Alice Jones, 2020, Journal of Study Skills, volume 4, issue 2, pages 11-25.\"",
       "inputSchema": {
         "type": "object",
         "required": ["type", "title"],
@@ -53,7 +53,7 @@
             "type": "string",
             "enum": ["apa7", "mla9", "chicago-ad"],
             "default": "apa7",
-            "description": "Citation style. apa7, mla9 or chicago-ad (Chicago author-date)."
+            "description": "Citation style. apa7, mla9 or chicago-ad (Chicago author date)."
           }
         }
       },
@@ -73,7 +73,7 @@
             "pages": "11-25",
             "style": "apa7"
           },
-          "output": "Smith, J. K., & Jones, A. (2020). Learning to learn. *Journal of Study Skills*, *4*(2), 11–25."
+          "output": "Smith, J. K., & Jones, A. (2020). Learning to learn. *Journal of Study Skills*, *4*(2), 11-25."
         }
       ]
     },
@@ -89,7 +89,7 @@
             "type": "string",
             "enum": ["apa7", "mla9", "chicago-ad"],
             "default": "apa7",
-            "description": "Citation style. apa7, mla9 or chicago-ad (Chicago author-date)."
+            "description": "Citation style. apa7, mla9 or chicago-ad (Chicago author date)."
           }
         }
       },
@@ -115,7 +115,7 @@
             "type": "string",
             "enum": ["apa7", "mla9", "chicago-ad"],
             "default": "apa7",
-            "description": "Citation style. apa7, mla9 or chicago-ad (Chicago author-date)."
+            "description": "Citation style. apa7, mla9 or chicago-ad (Chicago author date)."
           }
         }
       },
@@ -131,7 +131,7 @@
     },
     {
       "name": "in_text_citation",
-      "description": "The in-text citation that goes with a source, with an optional page number. Inputs: authors (family name plus optional given names), year, page and style (apa7, mla9 or chicago-ad). Example prompt: \"Give the APA in-text citation for Smith and Jones 2020 on page 14.\"",
+      "description": "The in text citation that goes with a source, with an optional page number. Inputs: authors (family name plus optional given names), year, page and style (apa7, mla9 or chicago-ad). Example prompt: \"Give the APA in text citation for Smith and Jones 2020 on page 14.\"",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -154,7 +154,7 @@
             "type": "string",
             "enum": ["apa7", "mla9", "chicago-ad"],
             "default": "apa7",
-            "description": "Citation style. apa7, mla9 or chicago-ad (Chicago author-date)."
+            "description": "Citation style. apa7, mla9 or chicago-ad (Chicago author date)."
           }
         }
       },
