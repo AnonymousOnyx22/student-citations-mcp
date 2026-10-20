@@ -4,15 +4,51 @@
 [![downloads](https://img.shields.io/npm/dm/student-citations-mcp.svg)](https://www.npmjs.com/package/student-citations-mcp)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Citation MCP server for AI apps. Paste a DOI or an ISBN and get a formatted citation back in APA 7, MLA 9 or Chicago author date. You can also type the details yourself, and get the matching in text citation. Formatting is done by tested code, so the punctuation is the same every time.
+Paste a DOI or an ISBN into your AI app and get a formatted citation back in APA 7, MLA 9 or Chicago author date. You can also type the details yourself and get the matching in text citation. The wording and punctuation come from tested code, so they are the same every time. Free and open source, no account, no key and nothing stored. It works with Claude, ChatGPT, Cursor, VS Code Copilot and any other app that supports MCP.
 
-This is a free, open source [MCP](https://modelcontextprotocol.io) server. It works with Claude, ChatGPT, Cursor, VS Code Copilot and any other app that supports MCP. Lookups go to the free public Crossref and Open Library services and nothing else. There is no account or key, and nothing is stored.
+## Install
 
-Free forever. No account and no subscription.
+```bash
+npx -y student-citations-mcp
+```
 
-## Quick start
+Nothing else to install. You need Node.js 20 or newer. The config block for your app is further down this page.
 
-Add this to your AI app's MCP config. For Claude Desktop that is `claude_desktop_config.json`.
+## Tools
+
+| Tool | What it does |
+| --- | --- |
+| `format_citation` | Format a journal article, book or website from details you type, in APA 7, MLA 9 or Chicago author date |
+| `cite_from_doi` | Look up a DOI on Crossref and format the citation |
+| `cite_from_isbn` | Look up an ISBN on Open Library and format the citation |
+| `in_text_citation` | The in text citation that matches a source, with an optional page number |
+
+All four tools are read only.
+
+## What you can ask
+
+- "Cite 10.1038/nature14539 in APA."
+- "Make an MLA citation for ISBN 9780262033848."
+- "Format this as Chicago: Smith and Jones, 2020, Learning to Learn, Journal of Study Skills, volume 4, issue 2, pages 11 to 25."
+- "What's the in text citation for a quote on page 14 of that paper?"
+
+## Example
+
+Ask for "Cite 10.1038/nature14539 in APA." and the server gives back:
+
+```text
+LeCun, Y., Bengio, Y., & Hinton, G. (2015). Deep learning. *Nature*, *521*(7553), 436-444. https://doi.org/10.1038/nature14539
+
+(From Crossref. Check it against your style guide.)
+```
+
+Italics come back as asterisks so your app can style them.
+
+If this saved you a formatting headache, please [give the repo a star](https://github.com/AnonymousOnyx22/student-citations-mcp). It sits at 0 stars, and one star helps the next student find it.
+
+## Add it to your app
+
+Add this to your MCP client config. For Claude Desktop that is `claude_desktop_config.json`.
 
 ```json
 {
@@ -25,32 +61,13 @@ Add this to your AI app's MCP config. For Claude Desktop that is `claude_desktop
 }
 ```
 
-Restart your AI app, then try one of the questions below. You need Node.js 20 or newer.
-
-For Claude Code, run `claude mcp add citations -- npx -y student-citations-mcp`.
-
-## What you can ask
-
-- "Cite 10.1038/nature14539 in APA."
-- "Make an MLA citation for ISBN 9780262033848."
-- "Format this as Chicago: Smith and Jones, 2020, Learning to Learn, Journal of Study Skills, volume 4, issue 2, pages 11 to 25."
-- "What's the in text citation for a quote on page 14 of that paper?"
-
-## Tools
-
-| Tool | What it does |
-| --- | --- |
-| `format_citation` | Format a journal article, book or website from details you provide, in APA 7, MLA 9 or Chicago author date |
-| `cite_from_doi` | Look up a DOI on Crossref and format the citation |
-| `cite_from_isbn` | Look up an ISBN on Open Library and format the citation |
-| `in_text_citation` | The in text citation that matches a source, with an optional page number |
+Restart your AI app, then try one of the questions above. For Claude Code, run `claude mcp add citations -- npx -y student-citations-mcp`.
 
 ## Good to know
 
 - Always check the result against your course's style guide or your instructor's rules. Styles have many special cases this tool does not cover, such as editors, translators and edition rules.
 - Titles are used as the source gives them. APA wants sentence case for article titles, so fix capitals if your style needs it.
 - Optional environment variables, `CROSSREF_EMAIL` puts your address in lookups so Crossref can reach you about heavy use, and `CROSSREF_BASE_URL` and `OPENLIBRARY_BASE_URL` point to other servers for testing.
-
 
 ## Development
 
