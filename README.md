@@ -7,6 +7,45 @@
 
 Paste a DOI or an ISBN into your AI app and get a formatted citation back in APA 7, MLA 9 or Chicago author date. You can also type the details yourself and get the matching in text citation. The wording and punctuation come from tested code, so they are the same every time. Free and open source, no account, no key and nothing stored. It works with Claude, ChatGPT, Cursor, VS Code Copilot and any other app that supports MCP.
 
+## Citations MCP compared with BibGuru and Citation Machine
+
+BibGuru and Citation Machine are web pages you fill in and copy from. Citations MCP sits inside the AI app you are already writing in, and it takes a DOI or an ISBN as well as typed details. Here is the side by side.
+
+| | Citations MCP | [BibGuru](https://www.bibguru.com/) | [Citation Machine](https://www.citationmachine.net/) |
+| --- | --- | --- | --- |
+| Where you use it | In the AI app you already have open | In a web page in your browser | In a web page in your browser |
+| What you type in | A DOI, an ISBN, or the details of the source | A URL, a title or an author to search for, or the details you type | The details you type, or a citation you paste in |
+| Styles you get back | APA 7, MLA 9, Chicago author date | APA, MLA, Harvard and over 8,000 more styles | APA, MLA, Chicago, Harvard and thousands more styles |
+| In text citation | Yes, with an optional page number | Yes | Yes |
+| Keeping your sources | Nothing is stored | BibGuru Plus saves sources in projects and folders | The paid tier saves your citations |
+| Cost | Free, MIT license, open source | Free, BibGuru Plus is $4.99 a month | Free, with a paid tier |
+| Signing in | Never | Only to save your sources | Only to save your citations |
+
+Both other tools cover many more styles than this one does. What you get here is a citation in the chat you are writing in, from a DOI or an ISBN, with nothing to sign up for.
+
+## Paste ready output
+
+Here is the same paper in all three styles, with the in text citation for each one. Copy the lines you need.
+
+```text
+Deep learning
+LeCun, Yann, Yoshua Bengio and Geoffrey Hinton
+Nature, 2015, volume 521, issue 7553, pages 436 to 444
+DOI 10.1038/nature14539
+
+APA 7
+LeCun, Y., Bengio, Y., & Hinton, G. (2015). Deep learning. *Nature*, *521*(7553), 436-444. https://doi.org/10.1038/nature14539
+In text: (LeCun et al., 2015, p. 436)
+
+MLA 9
+LeCun, Yann, et al. "Deep learning." *Nature*, vol. 521, no. 7553, 2015, pp. 436-444, https://doi.org/10.1038/nature14539.
+In text: (LeCun et al. 436)
+
+Chicago author date
+LeCun, Yann, et al. 2015. "Deep learning." *Nature* 521 (7553): 436-444. https://doi.org/10.1038/nature14539.
+In text: (LeCun et al. 2015, 436)
+```
+
 ## Install
 
 ```bash

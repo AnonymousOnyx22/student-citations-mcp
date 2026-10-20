@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
-import { format } from "../src/format.js";
+import { format, inText } from "../src/format.js";
 
 const readme = readFileSync(new URL("../README.md", import.meta.url), "utf8");
 
@@ -37,5 +37,29 @@ describe("README", () => {
     }
     expect(readme.indexOf("npx -y student-citations-mcp")).toBeLessThan(readme.indexOf("## Tools"));
     expect(readme.indexOf("## Tools")).toBeLessThan(readme.indexOf('"mcpServers"'));
+  });
+
+  it("shows the paste ready block exactly as the formatter returns it", () => {
+    expect(readme).toContain(format(natureDeepLearning, "apa7"));
+    expect(readme).toContain(format(natureDeepLearning, "mla9"));
+    expect(readme).toContain(format(natureDeepLearning, "chicago-ad"));
+    for (const style of ["apa7", "mla9", "chicago-ad"] as const) {
+      expect(readme).toContain(inText(natureDeepLearning.authors, "2015", style, "436"));
+    }
+  });
+
+  it("compares the server with BibGuru and Citation Machine", () => {
+    expect(readme).toContain("## Citations MCP compared with BibGuru and Citation Machine");
+    expect(readme).toContain("## Paste ready output");
+    expect(readme).toContain("https://www.bibguru.com/");
+    expect(readme).toContain("https://www.citationmachine.net/");
+  });
+
+  it("claims only the styles the server formats", () => {
+    const row = readme.split("\n").find((line) => line.startsWith("| Styles you get back |"));
+    expect(row).toBeTruthy();
+    const cells = row!.split("|").map((cell) => cell.trim());
+    expect(cells[1]).toBe("Styles you get back");
+    expect(cells[2]).toBe("APA 7, MLA 9, Chicago author date");
   });
 });
