@@ -4,7 +4,7 @@ import { registerTools } from "./core/tools.js";
 import { baseUrls } from "./config.js";
 import { type Api, tools } from "./tools.js";
 
-export const VERSION = "0.1.0";
+export const VERSION = "0.1.1";
 
 export function makeApi(urls = baseUrls(), fetchImpl?: typeof fetch): Api {
   const ua = `student-citations-mcp/${VERSION}${urls.email ? ` (mailto:${urls.email})` : ""}`;

@@ -1,6 +1,6 @@
 # student-citations-mcp
 
-> Citation MCP server for APA, MLA and Chicago citations. Version 0.1.0. No account. Free and open source MCP server for AI apps (Claude, ChatGPT, Cursor, Copilot and others).
+> Citation MCP server for APA, MLA and Chicago citations. Version 0.1.1. No account. Free and open source MCP server for AI apps (Claude, ChatGPT, Cursor, Copilot and others).
 
 ## Setup
 - Run with npx -y student-citations-mcp
