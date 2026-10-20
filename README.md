@@ -15,10 +15,10 @@ BibGuru and Citation Machine are web pages you fill in and copy from. Citations 
 | --- | --- | --- | --- |
 | Where you use it | In the AI app you already have open | In a web page in your browser | In a web page in your browser |
 | What you type in | A DOI, an ISBN, or the details of the source | A URL, a title or an author to search for, or the details you type | The details you type, or a citation you paste in |
-| Styles you get back | APA 7, MLA 9, Chicago author date | APA, MLA, Harvard and over 8,000 more styles | APA, MLA, Chicago, Harvard and thousands more styles |
+| Styles you get back | APA 7, MLA 9, Chicago author date | APA, MLA, Harvard and many more styles | APA, MLA, Chicago, Harvard and thousands more styles |
 | In text citation | Yes, with an optional page number | Yes | Yes |
 | Keeping your sources | Nothing is stored | BibGuru Plus saves sources in projects and folders | The paid tier saves your citations |
-| Cost | Free, MIT license, open source | Free, BibGuru Plus is $4.99 a month | Free, with a paid tier |
+| Cost | Free, MIT license, open source | Free, with a paid plan | Free, with a paid tier |
 | Signing in | Never | Only to save your sources | Only to save your citations |
 
 Both other tools cover many more styles than this one does. What you get here is a citation in the chat you are writing in, from a DOI or an ISBN, with nothing to sign up for.
