@@ -5,7 +5,7 @@ import { createServer, VERSION } from "./server.js";
 function usage(): void {
   console.log(`student-citations-mcp ${VERSION}
 
-APA 7, MLA 9 and Chicago citations from a DOI, an ISBN or typed details (MCP).
+Citation MCP server for APA, MLA and Chicago citations from a DOI, an ISBN or typed details.
 
 Add it to your AI app's MCP config with command "npx" and args ["-y", "student-citations-mcp"].
 

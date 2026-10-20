@@ -4,7 +4,7 @@
 [![downloads](https://img.shields.io/npm/dm/student-citations-mcp.svg)](https://www.npmjs.com/package/student-citations-mcp)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Paste a DOI or an ISBN and get a formatted citation back in APA 7, MLA 9 or Chicago author-date. You can also type the details yourself, and get the matching in-text citation. Formatting is done by tested code, so the punctuation is the same every time.
+Citation MCP server for AI apps. Paste a DOI or an ISBN and get a formatted citation back in APA 7, MLA 9 or Chicago author-date. You can also type the details yourself, and get the matching in-text citation. Formatting is done by tested code, so the punctuation is the same every time.
 
 This is a free, open source [MCP](https://modelcontextprotocol.io) server. It works with Claude, ChatGPT, Cursor, VS Code Copilot and any other app that supports MCP. Lookups go to the free public Crossref and Open Library services and nothing else. There is no account or key, and nothing is stored.
 
