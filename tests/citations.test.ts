@@ -94,6 +94,15 @@ describe("MCP tools", () => {
     expect(tools.map((t) => t.name).sort()).toEqual(["cite_from_doi", "cite_from_isbn", "format_citation", "in_text_citation"]);
     for (const t of tools) expect(t.annotations?.readOnlyHint).toBe(true);
   });
+  it("gives every tool concrete inputs and an example prompt", async () => {
+    const tools = (await client.listTools()).tools;
+    for (const t of tools) {
+      expect(t.description).toContain("Inputs:");
+      expect(t.description).toContain("Example prompt:");
+    }
+    const doi = tools.find((t) => t.name === "cite_from_doi")!;
+    expect(doi.description).toContain("10.1038/nature14539");
+  });
   it("cites from a DOI through Crossref", async () => {
     const r = await call("cite_from_doi", { doi: "https://doi.org/10.1000/jss.2020.42", style: "apa7" });
     expect(r.text).toContain("Smith, J. K., & Jones, A. (2020). Learning to learn.");
