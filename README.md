@@ -3,6 +3,7 @@
 [![npm](https://img.shields.io/npm/v/student-citations-mcp.svg)](https://www.npmjs.com/package/student-citations-mcp)
 [![downloads](https://img.shields.io/npm/dm/student-citations-mcp.svg)](https://www.npmjs.com/package/student-citations-mcp)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![ci](https://github.com/AnonymousOnyx22/student-citations-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/AnonymousOnyx22/student-citations-mcp/actions/workflows/ci.yml)
 
 Paste a DOI or an ISBN into your AI app and get a formatted citation back in APA 7, MLA 9 or Chicago author date. You can also type the details yourself and get the matching in text citation. The wording and punctuation come from tested code, so they are the same every time. Free and open source, no account, no key and nothing stored. It works with Claude, ChatGPT, Cursor, VS Code Copilot and any other app that supports MCP.
 
@@ -78,6 +79,8 @@ npm test
 ```
 
 Tests run against fake Crossref and Open Library servers, so they need no network.
+
+The CI workflow installs the dependencies, builds the server and runs the tests on every push to main and on every pull request. One of those tests checks that the version is the same in package.json, server.json, llms.txt and glama.json, so the npm release and the registry entry stay in step.
 
 ## More free student MCP servers
 
