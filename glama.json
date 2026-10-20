@@ -2,5 +2,176 @@
   "$schema": "https://glama.ai/mcp/schemas/server.json",
   "maintainers": [
     "AnonymousOnyx22"
+  ],
+  "name": "io.github.AnonymousOnyx22/student-citations-mcp",
+  "description": "APA 7, MLA 9 and Chicago author-date citations from a DOI, an ISBN or typed details. No account.",
+  "version": "0.1.0",
+  "repository": {
+    "url": "https://github.com/AnonymousOnyx22/student-citations-mcp",
+    "source": "github"
+  },
+  "tools": [
+    {
+      "name": "format_citation",
+      "description": "Format a journal article, book or website as a citation in APA 7, MLA 9 or Chicago author-date, from details you provide.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["type", "title"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["journal", "book", "website"],
+            "description": "Source type."
+          },
+          "authors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["family"],
+              "properties": {
+                "family": { "type": "string", "description": "Last name" },
+                "given": { "type": "string", "description": "First and middle names" }
+              }
+            },
+            "default": [],
+            "description": "List of authors with family and optional given names."
+          },
+          "year": { "type": "string", "description": "Publication year as text, like \"2020\"." },
+          "title": { "type": "string", "description": "The title of the source." },
+          "container": { "type": "string", "description": "Journal name or website name." },
+          "publisher": { "type": "string", "description": "Publisher name." },
+          "city": { "type": "string", "description": "Publisher city, used by Chicago for books." },
+          "edition": { "type": "string", "description": "For example \"2nd\"." },
+          "volume": { "type": "string", "description": "Volume number as text." },
+          "issue": { "type": "string", "description": "Issue number as text." },
+          "pages": { "type": "string", "description": "For example \"11-25\"." },
+          "doi": { "type": "string", "description": "A DOI for the source." },
+          "url": { "type": "string", "description": "A URL for the source." },
+          "date_text": { "type": "string", "description": "Website date as you want it shown, like \"2026, October 14\" for APA or \"14 Oct. 2026\" for MLA." },
+          "accessed": { "type": "string", "description": "MLA access date, like \"14 Oct. 2026\"." },
+          "style": {
+            "type": "string",
+            "enum": ["apa7", "mla9", "chicago-ad"],
+            "default": "apa7",
+            "description": "Citation style. apa7, mla9 or chicago-ad (Chicago author-date)."
+          }
+        }
+      },
+      "examples": [
+        {
+          "input": {
+            "type": "journal",
+            "title": "Learning to learn",
+            "authors": [
+              { "family": "Smith", "given": "John Kenneth" },
+              { "family": "Jones", "given": "Alice" }
+            ],
+            "year": "2020",
+            "container": "Journal of Study Skills",
+            "volume": "4",
+            "issue": "2",
+            "pages": "11-25",
+            "style": "apa7"
+          },
+          "output": "Smith, J. K., & Jones, A. (2020). Learning to learn. *Journal of Study Skills*, *4*(2), 11–25."
+        }
+      ]
+    },
+    {
+      "name": "cite_from_doi",
+      "description": "Look up a DOI on Crossref and format the citation. Works for journal articles, many books and conference papers.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["doi"],
+        "properties": {
+          "doi": { "type": "string", "description": "A DOI like 10.1038/nature14539, or a doi.org link." },
+          "style": {
+            "type": "string",
+            "enum": ["apa7", "mla9", "chicago-ad"],
+            "default": "apa7",
+            "description": "Citation style. apa7, mla9 or chicago-ad (Chicago author-date)."
+          }
+        }
+      },
+      "examples": [
+        {
+          "input": {
+            "doi": "10.1038/nature14539",
+            "style": "mla9"
+          },
+          "output": "(Example) Formatted MLA 9 citation from Crossref, followed by a blank line and (From Crossref. Check it against your style guide.)"
+        }
+      ]
+    },
+    {
+      "name": "cite_from_isbn",
+      "description": "Look up an ISBN on Open Library and format the book citation.",
+      "inputSchema": {
+        "type": "object",
+        "required": ["isbn"],
+        "properties": {
+          "isbn": { "type": "string", "description": "A 10 or 13 digit ISBN. Dashes are fine." },
+          "style": {
+            "type": "string",
+            "enum": ["apa7", "mla9", "chicago-ad"],
+            "default": "apa7",
+            "description": "Citation style. apa7, mla9 or chicago-ad (Chicago author-date)."
+          }
+        }
+      },
+      "examples": [
+        {
+          "input": {
+            "isbn": "978-0-262-03384-8",
+            "style": "mla9"
+          },
+          "output": "Cormen, Thomas H., and Charles E. Leiserson. *Introduction to Algorithms*. MIT Press, 2009.\n\n(From Open Library. Check it against your style guide.)"
+        }
+      ]
+    },
+    {
+      "name": "in_text_citation",
+      "description": "The in-text citation that goes with a source, with an optional page number.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "authors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["family"],
+              "properties": {
+                "family": { "type": "string", "description": "Last name" },
+                "given": { "type": "string", "description": "First and middle names" }
+              }
+            },
+            "default": [],
+            "description": "List of authors with family and optional given names."
+          },
+          "year": { "type": "string", "description": "Publication year as text, like \"2020\"." },
+          "page": { "type": "string", "description": "Page number as text, like \"14\"." },
+          "style": {
+            "type": "string",
+            "enum": ["apa7", "mla9", "chicago-ad"],
+            "default": "apa7",
+            "description": "Citation style. apa7, mla9 or chicago-ad (Chicago author-date)."
+          }
+        }
+      },
+      "examples": [
+        {
+          "input": {
+            "authors": [
+              { "family": "Smith", "given": "John Kenneth" },
+              { "family": "Jones", "given": "Alice" }
+            ],
+            "year": "2020",
+            "page": "14",
+            "style": "apa7"
+          },
+          "output": "(Smith & Jones, 2020, p. 14)"
+        }
+      ]
+    }
   ]
 }

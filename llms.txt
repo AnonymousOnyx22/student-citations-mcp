@@ -1,17 +1,66 @@
 # student-citations-mcp
 
-> APA, MLA and Chicago citations from a DOI, an ISBN or typed details. No account. Free and open source MCP server for AI apps (Claude, ChatGPT, Cursor, Copilot and others).
+> APA 7, MLA 9 and Chicago author-date citations from a DOI, an ISBN or typed details. Version 0.1.0. No account. Free and open source MCP server for AI apps (Claude, ChatGPT, Cursor, Copilot and others).
 
 ## Setup
 - Run with npx -y student-citations-mcp
 - No key or account. Optional CROSSREF_EMAIL.
 - Styles are apa7, mla9 and chicago-ad. Italics are returned as asterisks.
+- All four tools are read only. Nothing is stored.
 
 ## Tools
-- format_citation
-- cite_from_doi
-- cite_from_isbn
-- in_text_citation
+
+### format_citation
+Format a journal article, book or website as a citation in APA 7, MLA 9 or Chicago author-date, from details you provide.
+
+Parameters:
+- type (required): journal, book or website
+- title (required): the title of the source
+- authors (optional, default []): list of objects with family (last name) and given (first and middle names, optional), like [{"family": "Smith", "given": "John Kenneth"}]
+- year (optional): publication year as text, like "2020"
+- container (optional): Journal name or website name.
+- publisher (optional): publisher name
+- city (optional): Publisher city, used by Chicago for books.
+- edition (optional): For example "2nd".
+- volume (optional): volume number as text, like "4"
+- issue (optional): issue number as text, like "2"
+- pages (optional): For example "11-25".
+- doi (optional): a DOI for the source, printed as a doi.org link
+- url (optional): a URL for the source
+- date_text (optional): Website date as you want it shown, like "2026, October 14" for APA or "14 Oct. 2026" for MLA.
+- accessed (optional): MLA access date, like "14 Oct. 2026".
+- style (optional, default apa7): Citation style. apa7, mla9 or chicago-ad (Chicago author-date).
+
+Example: with type "journal", title "Learning to learn", authors [{"family": "Smith", "given": "John Kenneth"}, {"family": "Jones", "given": "Alice"}], year "2020", container "Journal of Study Skills", volume "4", issue "2", pages "11-25" and style "apa7", returns "Smith, J. K., & Jones, A. (2020). Learning to learn. *Journal of Study Skills*, *4*(2), 11–25."
+
+### cite_from_doi
+Look up a DOI on Crossref and format the citation. Works for journal articles, many books and conference papers.
+
+Parameters:
+- doi (required): A DOI like 10.1038/nature14539, or a doi.org link.
+- style (optional, default apa7): Citation style. apa7, mla9 or chicago-ad (Chicago author-date).
+
+Example: with doi "10.1038/nature14539" and style "mla9", returns that DOI's Crossref record formatted in MLA 9, then a blank line and "(From Crossref. Check it against your style guide.)". If Crossref does not know the DOI, the tool returns an error message instead.
+
+### cite_from_isbn
+Look up an ISBN on Open Library and format the book citation.
+
+Parameters:
+- isbn (required): A 10 or 13 digit ISBN. Dashes are fine.
+- style (optional, default apa7): Citation style. apa7, mla9 or chicago-ad (Chicago author-date).
+
+Example: with isbn "978-0-262-03384-8" and style "mla9", returns that book's Open Library record formatted in MLA 9, then a blank line and "(From Open Library. Check it against your style guide.)". If Open Library has no book for the ISBN, the tool returns an error message instead.
+
+### in_text_citation
+The in-text citation that goes with a source, with an optional page number.
+
+Parameters:
+- authors (optional, default []): list of objects with family (last name) and given (first and middle names, optional), like [{"family": "Smith", "given": "John Kenneth"}]
+- year (optional): publication year as text, like "2020"
+- page (optional): page number as text, like "14"
+- style (optional, default apa7): Citation style. apa7, mla9 or chicago-ad (Chicago author-date).
+
+Example: with authors [{"family": "Smith", "given": "John Kenneth"}, {"family": "Jones", "given": "Alice"}], year "2020" and page "14", style "apa7" returns "(Smith & Jones, 2020, p. 14)", style "mla9" returns "(Smith and Jones 14)" and style "chicago-ad" returns "(Smith and Jones 2020, 14)".
 
 ## Links
 - Source and README, https://github.com/AnonymousOnyx22/student-citations-mcp
