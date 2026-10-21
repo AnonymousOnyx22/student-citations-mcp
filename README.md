@@ -139,6 +139,64 @@ Add this to your MCP client config. For Claude Desktop that is `claude_desktop_c
 
 Restart your AI app, then try one of the questions above. For Claude Code, run `claude mcp add citations -- npx -y student-citations-mcp`.
 
+## Frequently asked questions
+
+**Does it work with Cursor?**
+
+Yes. It runs over MCP, so it works in Cursor, Claude Desktop, VS Code with Copilot, ChatGPT and any other app that supports MCP. The config block is the same for every app, only the file it goes in changes. Copy that block into your app's MCP config, restart the app and ask for a citation.
+
+**Is it free?**
+
+Yes. It is MIT licensed and free to use. There is no account, no key, no paid plan and no trial that runs out. The DOI and ISBN lookups go to Crossref and Open Library, and the server sends no key, so there is nothing else to sign up for.
+
+**Do I need an account or an API key?**
+
+No. There is no sign up step and no key to paste into a config file. The install command is the whole setup.
+
+**What happens to my data?**
+
+Nothing is stored. The server keeps no list of your sources, writes no files and sends no usage data anywhere. It takes the details you type in the chat and, for a DOI or an ISBN, sends that identifier to Crossref or Open Library to fetch the record. The request also carries a user agent line with the server name and version, plus your email address if you set `CROSSREF_EMAIL`.
+
+**How do I install it?**
+
+Run `npx -y student-citations-mcp`. You need Node.js 20 or newer, and that is the only thing to install. `npx` fetches the package into the npm cache and runs it, so nothing is added to your project. Then add the config block to your app and restart it.
+
+**Does it work without internet?**
+
+Partly. `format_citation` and `in_text_citation` work offline, because they format the details you type. `cite_from_doi` and `cite_from_isbn` need a connection, since they fetch the record from Crossref or Open Library.
+
+**Which styles can I ask for?**
+
+APA 7, MLA 9 and Chicago author date, and no others. Ask for "APA", "MLA 9" or "Chicago" in the chat and the server works out the style name. A request for a style it does not have comes back with an error that names the three it knows.
+
+**What can I cite?**
+
+A journal article, a book or a website. With a DOI the server reads the Crossref record, which covers journal articles, many books and conference papers. With an ISBN it reads the Open Library record for the book. If the lookup fails, or the source has no DOI, `format_citation` takes the details you type and formats them.
+
+**Can I cite a book with editors or translators?**
+
+Yes. `format_citation` takes `editors` and `translators` in the same shape as `authors`, and each style puts those names where it wants them. The Editors and translators section above shows a worked example for each style.
+
+**Does it check the citation against my style guide?**
+
+No. It formats from fixed rules in the code, and every style has cases it does not cover, such as editors and translators inside a journal article, a chapter in an edited book, chapter numbers and multi volume sets. Check the result against your course's style guide or your instructor's rules.
+
+**Will it touch my files or my bibliography?**
+
+No. The tools only return text in the chat. Nothing is written to your project and nothing is added to your reference list, so copy a citation into your own bibliography if you want to keep it.
+
+**How do I remove it?**
+
+Take the block out of your app's MCP config and the server stops running. There is nothing else to uninstall, since `npx` keeps its copy in the npm cache rather than in your project.
+
+**Can I paste a DOI link or an ISBN with dashes?**
+
+Yes. `cite_from_doi` takes a plain DOI like `10.1038/nature14539` or a doi.org link, and `cite_from_isbn` takes a 10 or 13 digit ISBN with or without dashes.
+
+**Is the source code open?**
+
+Yes. The MIT license and the full source are on GitHub, and the formatting rules live in `src/format.ts` if you want to read them.
+
 ## Good to know
 
 - Always check the result against your course's style guide or your instructor's rules. Styles have many special cases this tool does not cover, such as editors and translators inside a journal article, the author of a single chapter in an edited book, chapter numbers and multi volume sets.

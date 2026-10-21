@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add a frequently asked questions section to the README, covering compatibility, cost, privacy, install and styles
 - Add a test that locks the README paste ready example to what cite_from_doi returns for 10.1038/nature14539
 - Support editors and translators in format_citation, in the places APA 7, MLA 9 and Chicago author date put them for books
 - Add a narrative form to in_text_citation, so a sentence can name the author: "LeCun et al. (2015, p. 436) argue that ..."

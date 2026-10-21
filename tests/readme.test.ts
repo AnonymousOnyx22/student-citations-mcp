@@ -102,3 +102,43 @@ describe("README", () => {
     expect(row).toContain("translators");
   });
 });
+
+describe("README frequently asked questions", () => {
+  /** The FAQ section, from its heading to the next heading. */
+  const faq = readme.split("## Frequently asked questions")[1]?.split("\n## ")[0] ?? "";
+
+  /** The server source, so the privacy answer can be checked against the code. */
+  const source = ["src/index.ts", "src/server.ts", "src/tools.ts", "src/config.ts", "src/format.ts", "src/core/http.ts", "src/core/tools.ts"]
+    .map((file) => readFileSync(new URL(`../${file}`, import.meta.url), "utf8"))
+    .join("\n");
+
+  it("answers the questions people ask before they install", () => {
+    expect(faq).toBeTruthy();
+    for (const question of ["Does it work with Cursor?", "Is it free?", "What happens to my data?"]) {
+      expect(faq).toContain(question);
+    }
+  });
+
+  it("points at the install command and the config block", () => {
+    expect(faq).toContain("npx -y student-citations-mcp");
+    expect(faq).toContain("Node.js 20 or newer");
+  });
+
+  it("names only the styles the server formats", () => {
+    expect(faq).toContain("APA 7, MLA 9 and Chicago author date");
+    expect(faq).not.toMatch(/Harvard|IEEE|Vancouver|APA 6|MLA 8/);
+  });
+
+  it("keeps the privacy answer true to the code", () => {
+    expect(faq).toContain("Nothing is stored");
+    expect(faq).toContain("Crossref");
+    expect(faq).toContain("Open Library");
+    expect(source).not.toMatch(/node:fs|writeFile|appendFile|mkdir|createWriteStream/);
+    expect(source).toContain("https://api.crossref.org");
+    expect(source).toContain("https://openlibrary.org");
+  });
+
+  it("uses plain punctuation", () => {
+    expect(faq).not.toMatch(/[\u2014\u2013]/);
+  });
+});
