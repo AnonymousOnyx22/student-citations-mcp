@@ -153,7 +153,7 @@ npm run build
 npm test
 ```
 
-Tests run against fake Crossref and Open Library servers, so they need no network.
+Tests run against fake Crossref and Open Library servers, so they need no network. The test runner needs Node.js 22.12 or newer, and the CI workflow uses Node 22.
 
 The CI workflow installs the dependencies, builds the server and runs the tests on every push to main and on every pull request. One of those tests checks that the version is the same in package.json, server.json, llms.txt and glama.json, so the npm release and the registry entry stay in step.
 
