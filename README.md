@@ -61,7 +61,7 @@ Nothing else to install. You need Node.js 20 or newer. The config block for your
 
 | Tool | What it does |
 | --- | --- |
-| `format_citation` | Format a journal article, book or website from details you type, in APA 7, MLA 9 or Chicago author date |
+| `format_citation` | Format a journal article, book or website from details you type, in APA 7, MLA 9 or Chicago author date. For books you can name the editors and the translators too |
 | `cite_from_doi` | Look up a DOI on Crossref and format the citation |
 | `cite_from_isbn` | Look up an ISBN on Open Library and format the citation |
 | `in_text_citation` | The in text citation that matches a source, with an optional page number, in the parenthetical or the narrative form |
@@ -75,6 +75,8 @@ All four tools are read only.
 - "Format this as Chicago: Smith and Jones, 2020, Learning to Learn, Journal of Study Skills, volume 4, issue 2, pages 11 to 25."
 - "What's the in text citation for a quote on page 14 of that paper?"
 - "Give me the APA citation for that in narrative form, so I can name the author in my sentence."
+- "Format this book in MLA with the editors taking the author's place: A dictionary of study words by Jamie Patel and Robin Cole, 2019, North Gate Press."
+- "Cite this translated book in APA: My brilliant friend by Elena Ferrante, translated by Ann Goldstein, 2012, Europa Editions."
 
 ## Example
 
@@ -89,6 +91,36 @@ LeCun, Y., Bengio, Y., & Hinton, G. (2015). Deep learning. *Nature*, *521*(7553)
 Italics come back as asterisks so your app can style them.
 
 If this saved you a formatting headache, please [give the repo a star](https://github.com/AnonymousOnyx22/student-citations-mcp). It sits at 0 stars, and one star helps the next student find it.
+
+## Editors and translators
+
+Edited and translated books are common in coursework, and each style puts those names in its own spot. `format_citation` takes `editors` and `translators` in the same shape as `authors`. When a book has editors and no authors, the editors take the author's place. When the book has an author as well, the extra names go after the title, next to the edition. Here is one edited book and one translated book in all three styles.
+
+```text
+A dictionary of study words
+Jamie Patel and Robin Cole, editors, 2019, North Gate Press
+
+APA 7
+Patel, J., & Cole, R., Eds. (2019). *A dictionary of study words*. North Gate Press.
+
+MLA 9
+Patel, Jamie, and Robin Cole, editors. *A dictionary of study words*. North Gate Press, 2019.
+
+Chicago author date
+Patel, Jamie, and Robin Cole, eds. 2019. *A dictionary of study words*. North Gate Press.
+
+My brilliant friend
+Elena Ferrante, 2012, translated by Ann Goldstein, Europa Editions
+
+APA 7
+Ferrante, E. (2012). *My brilliant friend* (Goldstein, A., Trans.). Europa Editions.
+
+MLA 9
+Ferrante, Elena. *My brilliant friend*. Translated by Ann Goldstein, Europa Editions, 2012.
+
+Chicago author date
+Ferrante, Elena. 2012. *My brilliant friend*. Translated by Ann Goldstein. Europa Editions.
+```
 
 ## Add it to your app
 
@@ -109,7 +141,7 @@ Restart your AI app, then try one of the questions above. For Claude Code, run `
 
 ## Good to know
 
-- Always check the result against your course's style guide or your instructor's rules. Styles have many special cases this tool does not cover, such as editors, translators and edition rules.
+- Always check the result against your course's style guide or your instructor's rules. Styles have many special cases this tool does not cover, such as editors and translators inside a journal article, the author of a single chapter in an edited book, chapter numbers and multi volume sets.
 - Titles are used as the source gives them. APA wants sentence case for article titles, so fix capitals if your style needs it.
 - Optional environment variables, `CROSSREF_EMAIL` puts your address in lookups so Crossref can reach you about heavy use, and `CROSSREF_BASE_URL` and `OPENLIBRARY_BASE_URL` point to other servers for testing.
 

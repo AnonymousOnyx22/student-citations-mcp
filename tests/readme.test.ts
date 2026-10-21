@@ -21,6 +21,29 @@ const natureDeepLearning = {
   doi: "10.1038/nature14539",
 };
 
+/** An edited book with no authors, so the editors take the author's place. */
+const editedBook = {
+  type: "book" as const,
+  authors: [],
+  editors: [
+    { family: "Patel", given: "Jamie" },
+    { family: "Cole", given: "Robin" },
+  ],
+  year: "2019",
+  title: "A dictionary of study words",
+  publisher: "North Gate Press",
+};
+
+/** A book with an author and a translator, which coursework reading lists often ask for. */
+const translatedBook = {
+  type: "book" as const,
+  authors: [{ family: "Ferrante", given: "Elena" }],
+  translators: [{ family: "Goldstein", given: "Ann" }],
+  year: "2012",
+  title: "My brilliant friend",
+  publisher: "Europa Editions",
+};
+
 describe("README", () => {
   it("shows the worked example exactly as the formatter returns it", () => {
     const citation = format(natureDeepLearning, "apa7");
@@ -62,5 +85,20 @@ describe("README", () => {
     const cells = row!.split("|").map((cell) => cell.trim());
     expect(cells[1]).toBe("Styles you get back");
     expect(cells[2]).toBe("APA 7, MLA 9, Chicago author date");
+  });
+
+  it("shows the editors and translators examples exactly as the formatter returns them", () => {
+    expect(readme).toContain("## Editors and translators");
+    for (const style of ["apa7", "mla9", "chicago-ad"] as const) {
+      expect(readme).toContain(format(editedBook, style));
+      expect(readme).toContain(format(translatedBook, style));
+    }
+  });
+
+  it("says format_citation takes editors and translators for books", () => {
+    const row = readme.split("\n").find((line) => line.startsWith("| `format_citation` |"));
+    expect(row).toBeTruthy();
+    expect(row).toContain("editors");
+    expect(row).toContain("translators");
   });
 });

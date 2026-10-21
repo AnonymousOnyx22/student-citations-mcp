@@ -72,6 +72,22 @@ describe("formatting", () => {
     const web = { type: "website" as const, authors: [], title: "How to study", container: "Example Uni", year: "2026", url: "https://example.edu/study" };
     expect(format(web, "apa7")).toBe("*How to study*. Example Uni. https://example.edu/study");
   });
+  it("puts editors in the author's place when a book has no authors", () => {
+    const edited = { type: "book" as const, authors: [], editors: [{ family: "Patel", given: "Jamie" }, { family: "Cole", given: "Robin" }], year: "2019", title: "A dictionary of study words", publisher: "North Gate Press" };
+    expect(format(edited, "apa7")).toBe("Patel, J., & Cole, R., Eds. (2019). *A dictionary of study words*. North Gate Press.");
+    expect(format(edited, "mla9")).toBe("Patel, Jamie, and Robin Cole, editors. *A dictionary of study words*. North Gate Press, 2019.");
+    expect(format(edited, "chicago-ad")).toBe("Patel, Jamie, and Robin Cole, eds. 2019. *A dictionary of study words*. North Gate Press.");
+    const one = { ...edited, editors: [{ family: "Patel", given: "Jamie" }] };
+    expect(format(one, "apa7")).toBe("Patel, J., Ed. (2019). *A dictionary of study words*. North Gate Press.");
+    expect(format(one, "mla9")).toBe("Patel, Jamie, editor. *A dictionary of study words*. North Gate Press, 2019.");
+    expect(format(one, "chicago-ad")).toBe("Patel, Jamie, ed. 2019. *A dictionary of study words*. North Gate Press.");
+  });
+  it("keeps the edition, editors and translators together after the title", () => {
+    const both = { type: "book" as const, authors: [{ family: "Ferrante", given: "Elena" }], editors: [{ family: "Rey", given: "Jean" }], translators: [{ family: "Goldstein", given: "Ann" }], year: "2012", title: "My brilliant friend", edition: "2nd", publisher: "Europa Editions", city: "New York" };
+    expect(format(both, "apa7")).toBe("Ferrante, E. (2012). *My brilliant friend* (2nd ed.; Rey, J., Ed.; Goldstein, A., Trans.). Europa Editions.");
+    expect(format(both, "mla9")).toBe("Ferrante, Elena. *My brilliant friend*. 2nd ed., Translated by Ann Goldstein, Edited by Jean Rey, Europa Editions, 2012.");
+    expect(format(both, "chicago-ad")).toBe("Ferrante, Elena. 2012. *My brilliant friend*. 2nd ed. Translated by Ann Goldstein. Edited by Jean Rey. New York: Europa Editions.");
+  });
   it("handles three or more authors and in-text forms", () => {
     const three = [{ family: "A" }, { family: "B" }, { family: "C" }];
     expect(inText(three, "2020", "apa7")).toBe("(A et al., 2020)");
@@ -135,6 +151,10 @@ describe("MCP tools", () => {
   it("formats typed details", async () => {
     const r = await call("format_citation", { ...article, style: "chicago-ad" });
     expect(r.text).toContain("2020.");
+  });
+  it("takes editors in format_citation and puts them where the author goes", async () => {
+    const r = await call("format_citation", { type: "book", title: "A dictionary of study words", editors: [{ family: "Patel", given: "Jamie" }, { family: "Cole", given: "Robin" }], year: "2019", publisher: "North Gate Press", style: "mla9" });
+    expect(r.text).toBe("Patel, Jamie, and Robin Cole, editors. *A dictionary of study words*. North Gate Press, 2019.");
   });
   it("gives the narrative in text citation when asked", async () => {
     const p = await call("in_text_citation", { authors: article.authors, year: "2020", page: "14", style: "apa7" });

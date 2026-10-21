@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Support editors and translators in format_citation, in the places APA 7, MLA 9 and Chicago author date put them for books
 - Add a narrative form to in_text_citation, so a sentence can name the author: "LeCun et al. (2015, p. 436) argue that ..."
 
 ## 0.1.1

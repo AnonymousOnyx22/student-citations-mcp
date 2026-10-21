@@ -13,7 +13,7 @@
   "tools": [
     {
       "name": "format_citation",
-      "description": "Format a journal article, book or website as a citation in APA 7, MLA 9 or Chicago author date, from details you provide. Inputs: type (journal, book or website), title, and optional authors (family plus given names), year, container, publisher, city, edition, volume, issue, pages, doi, url, date_text, accessed and style (apa7, mla9 or chicago-ad). Example prompt: \"Cite this journal article in APA 7: Learning to learn by John Kenneth Smith and Alice Jones, 2020, Journal of Study Skills, volume 4, issue 2, pages 11-25.\"",
+      "description": "Format a journal article, book or website as a citation in APA 7, MLA 9 or Chicago author date, from details you provide. Inputs: type (journal, book or website), title, and optional authors (family plus given names), year, container, publisher, city, edition, editors, translators, volume, issue, pages, doi, url, date_text, accessed and style (apa7, mla9 or chicago-ad). Editors and translators are for books and take the same shape as authors: a book with editors and no authors puts the editors where the author goes, and a book with authors too carries the other names after the title, in the spot each style uses. Example prompt: \"Cite this journal article in APA 7: Learning to learn by John Kenneth Smith and Alice Jones, 2020, Journal of Study Skills, volume 4, issue 2, pages 11-25.\"",
       "inputSchema": {
         "type": "object",
         "required": ["type", "title"],
@@ -35,6 +35,30 @@
             },
             "default": [],
             "description": "List of authors with family and optional given names."
+          },
+          "editors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["family"],
+              "properties": {
+                "family": { "type": "string", "description": "Last name" },
+                "given": { "type": "string", "description": "First and middle names" }
+              }
+            },
+            "description": "Editors of a book, same shape as authors. When a book has editors and no authors, they take the author's place in the citation."
+          },
+          "translators": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["family"],
+              "properties": {
+                "family": { "type": "string", "description": "Last name" },
+                "given": { "type": "string", "description": "First and middle names" }
+              }
+            },
+            "description": "Translators of a book, same shape as authors."
           },
           "year": { "type": "string", "description": "Publication year as text, like \"2020\"." },
           "title": { "type": "string", "description": "The title of the source." },

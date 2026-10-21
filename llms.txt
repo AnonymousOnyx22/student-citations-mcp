@@ -11,12 +11,14 @@
 ## Tools
 
 ### format_citation
-Format a journal article, book or website as a citation in APA 7, MLA 9 or Chicago author date, from details you provide. Inputs: type (journal, book or website), title, and optional authors (family plus given names), year, container, publisher, city, edition, volume, issue, pages, doi, url, date_text, accessed and style (apa7, mla9 or chicago-ad). Example prompt: "Cite this journal article in APA 7: Learning to learn by John Kenneth Smith and Alice Jones, 2020, Journal of Study Skills, volume 4, issue 2, pages 11-25."
+Format a journal article, book or website as a citation in APA 7, MLA 9 or Chicago author date, from details you provide. Inputs: type (journal, book or website), title, and optional authors (family plus given names), year, container, publisher, city, edition, editors, translators, volume, issue, pages, doi, url, date_text, accessed and style (apa7, mla9 or chicago-ad). Editors and translators are for books and take the same shape as authors: a book with editors and no authors puts the editors where the author goes, and a book with authors too carries the other names after the title, in the spot each style uses. Example prompt: "Cite this journal article in APA 7: Learning to learn by John Kenneth Smith and Alice Jones, 2020, Journal of Study Skills, volume 4, issue 2, pages 11-25."
 
 Parameters:
 - type (required): journal, book or website
 - title (required): the title of the source
 - authors (optional, default []): list of objects with family (last name) and given (first and middle names, optional), like [{"family": "Smith", "given": "John Kenneth"}]
+- editors (optional): same shape as authors, for a book. With no authors the editors go where the author goes, with the role word the style uses: Ed. or Eds. in APA, editor or editors in MLA, ed. or eds. in Chicago. With authors too they go after the title, inside the parentheses with the edition in APA and as "Edited by ..." in MLA and Chicago.
+- translators (optional): same shape as authors, for a book. They go after the title, inside the parentheses as "Trans." in APA and as "Translated by ..." in MLA and Chicago.
 - year (optional): publication year as text, like "2020"
 - container (optional): Journal name or website name.
 - publisher (optional): publisher name
@@ -32,6 +34,10 @@ Parameters:
 - style (optional, default apa7): Citation style. apa7, mla9 or chicago-ad (Chicago author date).
 
 Example: with type "journal", title "Learning to learn", authors [{"family": "Smith", "given": "John Kenneth"}, {"family": "Jones", "given": "Alice"}], year "2020", container "Journal of Study Skills", volume "4", issue "2", pages "11-25" and style "apa7", returns "Smith, J. K., & Jones, A. (2020). Learning to learn. *Journal of Study Skills*, *4*(2), 11-25."
+
+Editors in the author's place: with type "book", title "A dictionary of study words", editors [{"family": "Patel", "given": "Jamie"}, {"family": "Cole", "given": "Robin"}], year "2019", publisher "North Gate Press" and style "mla9", returns "Patel, Jamie, and Robin Cole, editors. *A dictionary of study words*. North Gate Press, 2019.". The same book in apa7 returns "Patel, J., & Cole, R., Eds. (2019). *A dictionary of study words*. North Gate Press." and in chicago-ad returns "Patel, Jamie, and Robin Cole, eds. 2019. *A dictionary of study words*. North Gate Press."
+
+Translators after the title: with type "book", title "My brilliant friend", authors [{"family": "Ferrante", "given": "Elena"}], translators [{"family": "Goldstein", "given": "Ann"}], year "2012", publisher "Europa Editions" and style "apa7", returns "Ferrante, E. (2012). *My brilliant friend* (Goldstein, A., Trans.). Europa Editions.".
 
 ### cite_from_doi
 Look up a DOI on Crossref and format the citation. Works for journal articles, many books and conference papers. Inputs: doi (a DOI like 10.1038/nature14539 or a doi.org link) and style (apa7, mla9 or chicago-ad). Example prompt: "Cite 10.1038/nature14539 in APA."

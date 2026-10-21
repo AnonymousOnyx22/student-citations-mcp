@@ -16,6 +16,8 @@ const author = z.object({ family: z.string().describe("Last name"), given: z.str
 const sourceShape = {
   type: z.enum(["journal", "book", "website"]),
   authors: z.array(author).default([]),
+  editors: z.array(author).optional().describe("Editors of a book, same shape as authors. When a book has editors and no authors, they take the author's place in the citation."),
+  translators: z.array(author).optional().describe("Translators of a book, same shape as authors."),
   year: z.string().optional(),
   title: z.string(),
   container: z.string().optional().describe("Journal name or website name."),
@@ -40,7 +42,7 @@ export const tools: ToolDef<Api>[] = [
   {
     name: "format_citation",
     title: "Format a citation",
-    description: "Format a journal article, book or website as a citation in APA 7, MLA 9 or Chicago author date, from details you provide. Inputs: type (journal, book or website), title, and optional authors (family plus given names), year, container, publisher, city, edition, volume, issue, pages, doi, url, date_text, accessed and style (apa7, mla9 or chicago-ad). Example prompt: \"Cite this journal article in APA 7: Learning to learn by John Kenneth Smith and Alice Jones, 2020, Journal of Study Skills, volume 4, issue 2, pages 11-25.\"",
+    description: "Format a journal article, book or website as a citation in APA 7, MLA 9 or Chicago author date, from details you provide. Inputs: type (journal, book or website), title, and optional authors (family plus given names), year, container, publisher, city, edition, editors, translators, volume, issue, pages, doi, url, date_text, accessed and style (apa7, mla9 or chicago-ad). Editors and translators are for books and take the same shape as authors: a book with editors and no authors puts the editors where the author goes, and a book with authors too carries the other names after the title, in the spot each style uses. Example prompt: \"Cite this journal article in APA 7: Learning to learn by John Kenneth Smith and Alice Jones, 2020, Journal of Study Skills, volume 4, issue 2, pages 11-25.\"",
     inputSchema: { ...sourceShape, style },
     run: async (a) => {
       const { style: st, ...src } = a;

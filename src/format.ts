@@ -8,6 +8,8 @@ export interface Author {
 export interface Source {
   type: "journal" | "book" | "website";
   authors: Author[];
+  editors?: Author[]; // for books, they take the author's place when there are no authors
+  translators?: Author[]; // for books
   year?: string;
   title: string;
   container?: string; // journal name or website name
@@ -59,6 +61,21 @@ function mlaAuthors(a: Author[]): string {
   return `${inverted(a[0])}, et al`;
 }
 
+/** The same name list with the period on "et al.", as Chicago writes it. */
+function chicagoNames(a: Author[]): string {
+  return mlaAuthors(a).replace(/, et al$/, ", et al.");
+}
+
+/** Names in reading order for "Translated by" and "Edited by". Three or more become the first name plus et al. */
+function people(a: Author[]): string {
+  if (a.length === 1) return normal(a[0]);
+  if (a.length === 2) return `${normal(a[0])} and ${normal(a[1])}`;
+  return `${normal(a[0])} et al.`;
+}
+
+/** One role word or two, so one editor is "ed." and two are "eds.". */
+const role = (a: Author[], one: string, many: string) => (a.length === 1 ? one : many);
+
 const dash = (p?: string) => (p ? p.replace(/\s*-\s*/g, "-") : p);
 const end = (s: string) => (/[.?!]$/.test(s) ? s : s + ".");
 const link = (s: Source) => (s.doi ? `https://doi.org/${s.doi}` : s.url ?? "");
@@ -79,8 +96,18 @@ export function format(s: Source, style: Style): string {
       push(`${vol}${s.pages ? `, ${dash(s.pages)}` : ""}.`);
       push(link(s));
     } else if (s.type === "book") {
+      const eds = s.editors ?? [];
+      const trs = s.translators ?? [];
       if (who) push(`${end(who)} (${date}).`);
-      push(end(`*${s.title}*${s.edition ? ` (${s.edition} ed.)` : ""}`));
+      else if (eds.length) push(`${end(`${apaAuthors(eds)}, ${role(eds, "Ed.", "Eds.")}`)} (${date}).`);
+      const inside = [
+        s.edition ? `${s.edition} ed.` : "",
+        eds.length && who ? `${apaAuthors(eds)}, ${role(eds, "Ed.", "Eds.")}` : "",
+        trs.length ? `${apaAuthors(trs)}, Trans.` : "",
+      ]
+        .filter(Boolean)
+        .join("; ");
+      push(end(`*${s.title}*${inside ? ` (${inside})` : ""}`));
       push(s.publisher ? end(s.publisher) : undefined);
       push(link(s));
     } else {
@@ -99,9 +126,18 @@ export function format(s: Source, style: Style): string {
       const bits = [`*${s.container ?? ""}*`, s.volume ? `vol. ${s.volume}` : "", s.issue ? `no. ${s.issue}` : "", s.year ?? "", s.pages ? `pp. ${s.pages}` : "", link(s)].filter(Boolean);
       push(end(bits.join(", ")));
     } else if (s.type === "book") {
-      push(who ? end(who) : undefined);
+      const eds = s.editors ?? [];
+      const trs = s.translators ?? [];
+      if (who) push(end(who));
+      else if (eds.length) push(end(`${mlaAuthors(eds)}, ${role(eds, "editor", "editors")}`));
       push(end(`*${s.title}*`));
-      const bits = [s.edition ? `${s.edition} ed.` : "", s.publisher ?? "", s.year ?? ""].filter(Boolean);
+      const bits = [
+        s.edition ? `${s.edition} ed.` : "",
+        trs.length ? `Translated by ${people(trs)}` : "",
+        eds.length && who ? `Edited by ${people(eds)}` : "",
+        s.publisher ?? "",
+        s.year ?? "",
+      ].filter(Boolean);
       push(bits.length ? end(bits.join(", ")) : undefined);
     } else {
       push(who ? end(who) : undefined);
@@ -113,7 +149,7 @@ export function format(s: Source, style: Style): string {
     return parts.join(" ").replace(/\s+/g, " ").trim();
   }
   // Chicago author date
-  const who = mlaAuthors(s.authors).replace(/, et al$/, ", et al.");
+  const who = chicagoNames(s.authors);
   const year = s.year ?? "n.d.";
   if (s.type === "journal") {
     push(who ? end(who) : undefined);
@@ -123,9 +159,20 @@ export function format(s: Source, style: Style): string {
     push(end(`*${s.container ?? ""}*${vi ? ` ${vi}` : ""}${s.pages ? `: ${dash(s.pages)}` : ""}`));
     push(link(s) ? end(link(s)) : undefined);
   } else if (s.type === "book") {
-    push(who ? end(who) : undefined);
+    const eds = s.editors ?? [];
+    const trs = s.translators ?? [];
+    if (who) push(end(who));
+    else if (eds.length) push(end(`${chicagoNames(eds)}, ${role(eds, "ed.", "eds.")}`));
     push(end(year));
-    push(end(`*${s.title}*${s.edition ? `. ${s.edition} ed` : ""}`));
+    const after = [
+      s.edition ? `${s.edition} ed.` : "",
+      trs.length ? `Translated by ${people(trs)}` : "",
+      eds.length && who ? `Edited by ${people(eds)}` : "",
+    ]
+      .filter(Boolean)
+      .map((x) => end(x))
+      .join(" ");
+    push(end(`*${s.title}*${after ? `. ${after}` : ""}`));
     push(s.publisher ? end(`${s.city ? `${s.city}: ` : ""}${s.publisher}`) : undefined);
   } else {
     push(who ? end(who) : undefined);
