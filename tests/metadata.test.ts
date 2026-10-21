@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { tools } from "../src/tools.js";
+import { prompts } from "../src/prompts.js";
 import { VERSION } from "../src/server.js";
 
 const read = (name: string) => readFileSync(new URL(`../${name}`, import.meta.url), "utf8");
@@ -73,6 +74,26 @@ describe("registry files", () => {
       expect(at, `${tool.name} is missing from llms.txt`).toBeGreaterThan(-1);
       expect(lines[at + 1].trim()).toBe(tool.description);
     }
+  });
+});
+
+describe("prompts", () => {
+  it("keeps the name of the prompt the clients call", () => {
+    expect(prompts.map((p) => p.name)).toEqual(["cite_this"]);
+  });
+
+  it("gives every prompt the same description in llms.txt", () => {
+    const lines = llms.split("\n");
+    for (const prompt of prompts) {
+      const at = lines.findIndex((line) => line.trim() === `### ${prompt.name}`);
+      expect(at, `${prompt.name} is missing from llms.txt`).toBeGreaterThan(-1);
+      expect(lines[at + 1].trim()).toBe(prompt.description);
+    }
+  });
+
+  it("names the prompt in the README", () => {
+    expect(readme).toContain("## Prompts");
+    for (const prompt of prompts) expect(readme).toContain(`\`${prompt.name}\``);
   });
 });
 

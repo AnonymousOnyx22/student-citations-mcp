@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Register a cite_this prompt, so clients that show prompts can start a citation with the wording the tools use
 - Widen the npm keywords and the descriptions to cover the words students type, such as citation generator, apa formatter, works cited, cite this and thesis
 
 - Follow the Crossref work type in cite_from_doi, so a book chapter, a conference paper, a dissertation, an edited book, a report, a dataset or a preprint is no longer formatted as a journal article

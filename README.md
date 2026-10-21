@@ -68,6 +68,30 @@ Nothing else to install. You need Node.js 20 or newer. The config block for your
 
 All four tools are read only.
 
+## Prompts
+
+| Prompt | What it does |
+| --- | --- |
+| `cite_this` | Start a citation in APA 7, MLA 9 or Chicago author date from a DOI, an ISBN or details you type. It fills in the wording the tools use, so you can edit the source and send it |
+
+A client that supports prompts, such as Claude Desktop or VS Code, shows it in the chat as a command you can run. In Claude Desktop it is `/cite_this`.
+
+The prompt looks nothing up. It only writes out the request, so you can check it before you send it. Here is the message it puts in the chat when you run it with no arguments:
+
+```text
+Cite this source in APA 7.
+
+Use the tool that fits the source: cite_from_doi for a DOI, cite_from_isbn for an ISBN, format_citation for details you type and in_text_citation for the in text form.
+
+Example prompts:
+- "Cite this journal article in APA 7: Learning to learn by John Kenneth Smith and Alice Jones, 2020, Journal of Study Skills, volume 4, issue 2, pages 11-25."
+- "Cite 10.1038/nature14539 in APA."
+- "Cite ISBN 978-0-262-03384-8 in APA 7."
+- "Give the APA in text citation for Smith and Jones 2020 on page 14."
+```
+
+It takes two arguments. `style` picks the style, which is APA 7 unless you say otherwise, and `source` is the DOI, the ISBN or the details you want to cite. Give it a DOI and the message says so and points at `cite_from_doi`.
+
 ## What you can ask
 
 - "Cite 10.1038/nature14539 in APA."
@@ -235,7 +259,7 @@ npm test
 
 Tests run against fake Crossref and Open Library servers, so they need no network. The test runner needs Node.js 22.12 or newer, and the CI workflow uses Node 22.
 
-The CI workflow installs the dependencies, builds the server and runs the tests on every push to main and on every pull request. One of those tests checks that the version is the same in package.json, server.json, llms.txt and glama.json, so the npm release and the registry entry stay in step. Another one checks that the paste ready example above is exactly what cite_from_doi returns for that DOI, so the page and the code stay in step. One more checks that the npm keywords and the descriptions keep the words students type when they look for a citation tool.
+The CI workflow installs the dependencies, builds the server and runs the tests on every push to main and on every pull request. One of those tests checks that the version is the same in package.json, server.json, llms.txt and glama.json, so the npm release and the registry entry stay in step. Another one checks that the paste ready example above is exactly what cite_from_doi returns for that DOI, so the page and the code stay in step. One more checks that the npm keywords and the descriptions keep the words students type when they look for a citation tool. A test also checks that the cite_this prompt is registered and that the message it returns carries the same example wording as the four tool descriptions.
 
 ## More free student MCP servers
 

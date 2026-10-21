@@ -1,7 +1,9 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { createClient } from "./core/http.js";
+import { registerPrompts } from "./core/prompts.js";
 import { registerTools } from "./core/tools.js";
 import { baseUrls } from "./config.js";
+import { prompts } from "./prompts.js";
 import { type Api, tools } from "./tools.js";
 
 export const VERSION = "0.1.1";
@@ -17,5 +19,6 @@ export function makeApi(urls = baseUrls(), fetchImpl?: typeof fetch): Api {
 export function createServer(api: Api = makeApi()): McpServer {
   const server = new McpServer({ name: "student-citations-mcp", version: VERSION });
   registerTools(server, tools, api);
+  registerPrompts(server, prompts);
   return server;
 }
