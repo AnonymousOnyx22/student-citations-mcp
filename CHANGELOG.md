@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.2
 
 - Add a README comparison table with the zotero-mcp, zoteus and xbghc zotero-mcp servers, and a FAQ answer about how this server differs from them
 - Register a cite_this prompt, so clients that show prompts can start a citation with the wording the tools use
