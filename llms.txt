@@ -96,6 +96,11 @@ Parameters:
 
 Example: with no arguments, returns one user message that starts with "Cite this source in APA 7.", names the tool that fits the source and lists the four example prompts, one for each tool. With source "10.1038/nature14539" it adds "Source: 10.1038/nature14539" and the line "That looks like a DOI, so use cite_from_doi.".
 
+## Compared with the Zotero MCP servers
+- zotero-mcp, @oscardvs/zoteus and @xbghc/zotero-mcp work with a Zotero library. Two of them talk to the Zotero desktop app and the third goes through the Zotero web API, so they need Zotero installed or an account at zotero.org.
+- They search your library, read your PDFs, give you a passage with its page number and write notes and tags back into it. This server handles one source at a time and never writes.
+- This server needs no account and no key, and formats APA 7, MLA 9 and Chicago author date.
+
 ## Links
 - Source and README, https://github.com/AnonymousOnyx22/student-citations-mcp
 - More free student MCP servers, https://brightspacemcp.com/more-mcps/

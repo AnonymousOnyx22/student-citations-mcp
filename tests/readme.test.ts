@@ -5,6 +5,11 @@ import { crossrefKind } from "../src/tools.js";
 
 const readme = readFileSync(new URL("../README.md", import.meta.url), "utf8");
 
+/** The README section that compares the server with the Zotero MCP servers. */
+function zoteroSection(): string {
+  return readme.split("## Citations MCP compared with the Zotero MCP servers")[1]?.split("\n## ")[0] ?? "";
+}
+
 /** The Crossref record for 10.1038/nature14539, as cite_from_doi reads it. */
 const natureDeepLearning = {
   type: "journal" as const,
@@ -80,6 +85,41 @@ describe("README", () => {
     expect(readme).toContain("https://www.citationmachine.net/");
   });
 
+  it("compares the server with the Zotero MCP servers", () => {
+    expect(readme).toContain("## Citations MCP compared with the Zotero MCP servers");
+    const section = zoteroSection();
+    expect(section).toBeTruthy();
+    for (const name of ["zotero-mcp", "@oscardvs/zoteus", "@xbghc/zotero-mcp"]) {
+      expect(section).toContain(name);
+      expect(section).toContain(`https://www.npmjs.com/package/${name}`);
+    }
+    for (const repo of [
+      "https://github.com/cookjohn/zotero-mcp",
+      "https://github.com/oscardvs/zoteus",
+      "https://github.com/xbghc/zotero-mcp",
+    ]) {
+      expect(section).toContain(repo);
+    }
+  });
+
+  it("says the Zotero servers need Zotero or a Zotero account", () => {
+    const section = zoteroSection();
+    expect(section).toContain("Zotero on your computer");
+    expect(section).toContain("An account at zotero.org");
+    expect(section).toContain("with an API key and a user ID");
+  });
+
+  it("claims only the styles the server formats in the Zotero comparison", () => {
+    const row = zoteroSection().split("\n").find((line) => line.startsWith("| Citation styles |"));
+    expect(row).toBeTruthy();
+    const cells = row!.split("|").map((cell) => cell.trim());
+    expect(cells[2]).toBe("APA 7, MLA 9, Chicago author date");
+  });
+
+  it("keeps the Zotero comparison free of em dashes and en dashes", () => {
+    expect(zoteroSection()).not.toMatch(/[\u2014\u2013]/);
+  });
+
   it("claims only the styles the server formats", () => {
     const row = readme.split("\n").find((line) => line.startsWith("| Styles you get back |"));
     expect(row).toBeTruthy();
@@ -136,6 +176,11 @@ describe("README frequently asked questions", () => {
     for (const question of ["Does it work with Cursor?", "Is it free?", "What happens to my data?"]) {
       expect(faq).toContain(question);
     }
+  });
+
+  it("answers the question about the Zotero MCP servers", () => {
+    expect(faq).toContain("How is this different from the Zotero MCP servers?");
+    expect(faq).toContain("Zotero library");
   });
 
   it("points at the install command and the config block", () => {

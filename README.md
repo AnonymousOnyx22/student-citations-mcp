@@ -23,6 +23,28 @@ BibGuru and Citation Machine are web pages you fill in and copy from. Citations 
 
 Both other tools cover many more styles than this one does. What you get here is a citation in the chat you are writing in, from a DOI or an ISBN, with nothing to sign up for.
 
+## Citations MCP compared with the Zotero MCP servers
+
+The other MCP servers for citations are the Zotero ones: [zotero-mcp](https://www.npmjs.com/package/zotero-mcp), [@oscardvs/zoteus](https://www.npmjs.com/package/@oscardvs/zoteus) and [@xbghc/zotero-mcp](https://www.npmjs.com/package/@xbghc/zotero-mcp). They are the closer competition, because they run inside your app as well. They are also built around a library you keep in Zotero, so they ask more of you first. Here is the side by side.
+
+| | Citations MCP | [zotero-mcp](https://www.npmjs.com/package/zotero-mcp) | [@oscardvs/zoteus](https://www.npmjs.com/package/@oscardvs/zoteus) | [@xbghc/zotero-mcp](https://www.npmjs.com/package/@xbghc/zotero-mcp) |
+| --- | --- | --- | --- | --- |
+| What it works with | A DOI, an ISBN, or the details you type | Your Zotero library | Your Zotero library | Your Zotero library |
+| What you need first | Node.js 20 or newer, nothing else | Zotero on your computer, with the plugin the project ships | Zotero on your computer, or an account at zotero.org | An account at zotero.org, with an API key and a user ID |
+| Signing in | Never | Only if you use the Zotero web library | Only for sync and group libraries | Always, the API key is how it reaches your library |
+| Citation styles | APA 7, MLA 9, Chicago author date | None of its own, it passes your items to your app | Any CSL style, through the citeproc-js library | Entries as BibTeX, RIS or CSL JSON |
+| What you get back | A finished citation, and the in text form with a page number | Items, notes and PDF text from your library | Items, PDF passages with page numbers, and formatted bibliographies | Items and PDF text, plus exports for a bibliography tool |
+| Reading your library | No, it looks up one source at a time | Search, collections, annotations and PDF text | Search by word or by meaning, PDF passages, annotations and bibliography imports | Search, details, full text, and filtering by group or tag |
+| Writing to your library | No, every tool is read only | Notes, tags, metadata and new items | Adds, edits, tags, groups and files | Creates, edits, deletes, tags, groups and attachments |
+| Where your sources live | Nowhere, nothing is stored | In your Zotero library | In your Zotero library | In your Zotero library |
+| Good for | One citation now, with nothing to set up | Working inside a library you already keep in Zotero | The same, with a deeper read of your PDFs and many more styles | The same, with export formats your bibliography tool can read |
+
+All three are open source under the MIT license, as this one is. Two of them talk to the Zotero desktop app, so you install Zotero and keep it running while you work. The third goes through the Zotero web API, so you sign in at zotero.org and paste an API key and your user ID.
+
+That is the trade. The Zotero servers do more with a library you already keep. They search it, read your PDFs, give you a passage with its page number and write notes and tags back into it. Citations MCP covers the other half of the job. You give it a DOI, an ISBN or the details of a source, and it gives you the citation and the in text form, in the chat, with nothing to install, no account and nothing stored. If your course needs one of the many styles Zotero can produce, take one of the Zotero servers. If you need the reference for one essay, this is the shorter path.
+
+Each project keeps its own setup guide: [cookjohn/zotero-mcp](https://github.com/cookjohn/zotero-mcp), [oscardvs/zoteus](https://github.com/oscardvs/zoteus) and [xbghc/zotero-mcp](https://github.com/xbghc/zotero-mcp).
+
 ## Paste ready output
 
 Here is the same paper in all three styles, with the in text citation and the narrative form for each one. The narrative form is for a sentence where you name the author, as in "LeCun et al. (2015, p. 436) argue that ...". Copy the lines you need.
@@ -194,6 +216,10 @@ Yes. It is MIT licensed and free to use. There is no account, no key, no paid pl
 **Do I need an account or an API key?**
 
 No. There is no sign up step and no key to paste into a config file. The install command is the whole setup.
+
+**How is this different from the Zotero MCP servers?**
+
+They are the other MCP servers for citations, and they are the closer competition, because they run inside your app as well. They are built around a Zotero library, so they need Zotero installed or a Zotero account, and they can search that library, read your PDFs and write back to it. This server works on one source at a time. You give it a DOI, an ISBN or the details and it gives you the citation, with nothing to install, no account and nothing stored. The comparison table above has the details.
 
 **What happens to my data?**
 
