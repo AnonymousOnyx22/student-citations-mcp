@@ -258,7 +258,7 @@ export function normalizeDoi(input: string): string {
 
 export function normalizeIsbn(input: string): string {
   const d = input.replace(/[-\s]/g, "").toUpperCase();
-  if (!/^(\d{9}[\dX]|\d{13})$/.test(d)) throw new Error(`"${input}" does not look like an ISBN. It should have 10 or 13 digits. That is not a DOI I recognise, or use format_citation and type the details.`);
+  if (!/^(\d{9}[\dX]|\d{13})$/.test(d)) throw new Error(`"${input}" does not look like an ISBN. It should have 10 or 13 digits. That is not an ISBN I recognise, or use format_citation and type the details.`);
   return d;
 }
 

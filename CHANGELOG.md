@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fix the ISBN errors so they name the ISBN instead of a DOI, and drop the repeated format_citation fallback
 - Add a frequently asked questions section to the README, covering compatibility, cost, privacy, install and styles
 - Add a test that locks the README paste ready example to what cite_from_doi returns for 10.1038/nature14539
 - Support editors and translators in format_citation, in the places APA 7, MLA 9 and Chicago author date put them for books

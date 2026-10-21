@@ -104,7 +104,7 @@ export function describeStatus(status: number): string {
     case 403:
       return "Access denied.";
     case 404:
-      return "Not found. Check the DOI, ISBN or ID you gave.";
+      return "Not found. Check the identifier you gave.";
     case 429:
       return "Rate limited by the service. Wait a minute and try again.";
     default:

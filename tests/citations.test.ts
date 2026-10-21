@@ -36,6 +36,7 @@ beforeAll(async () => {
     if (url.pathname === "/api/books") {
       const key = url.searchParams.get("bibkeys");
       if (key === "ISBN:9780262033848") return json({ [key]: { title: "Introduction to Algorithms", authors: [{ name: "Thomas H. Cormen" }, { name: "Charles E. Leiserson" }], publishers: [{ name: "MIT Press" }], publish_places: [{ name: "Cambridge, MA" }], publish_date: "July 31, 2009" } });
+      if (key === "ISBN:1111111111111") return json({}, 404);
       return json({});
     }
     json({}, 404);
@@ -163,5 +164,42 @@ describe("MCP tools", () => {
     expect(n.text).toBe("Smith and Jones (2020, p. 14)");
     const m = await call("in_text_citation", { authors: article.authors, year: "2020", page: "14", style: "mla9", form: "narrative" });
     expect(m.text).toBe("Smith and Jones (14)");
+  });
+});
+
+describe("error messages", () => {
+  it("names the ISBN when the number is the wrong shape", () => {
+    expect(() => normalizeIsbn("123")).toThrow("not an ISBN I recognise");
+    expect(() => normalizeIsbn("123")).not.toThrow("DOI");
+  });
+
+  it("names the ISBN through the tool when the number is the wrong shape", async () => {
+    const r = await call("cite_from_isbn", { isbn: "123" });
+    expect(r.isError).toBe(true);
+    expect(r.text).toContain("does not look like an ISBN");
+    expect(r.text).toContain("not an ISBN I recognise");
+    expect(r.text).not.toContain("DOI");
+  });
+
+  it("points at format_citation once when Open Library has no book for the ISBN", async () => {
+    const r = await call("cite_from_isbn", { isbn: "0306406152" });
+    expect(r.isError).toBe(true);
+    expect(r.text).toContain("no book for ISBN 0306406152");
+    expect(r.text).not.toContain("DOI");
+    expect(r.text.match(/use format_citation and type the details/g)).toHaveLength(1);
+  });
+
+  it("names the ISBN when the lookup comes back not found", async () => {
+    const r = await call("cite_from_isbn", { isbn: "1111111111111" });
+    expect(r.isError).toBe(true);
+    expect(r.text).toContain("That is not an ISBN I recognise");
+    expect(r.text).not.toContain("DOI");
+  });
+
+  it("still names the DOI for a DOI problem", async () => {
+    const r = await call("cite_from_doi", { doi: "10.1000/missing" });
+    expect(r.isError).toBe(true);
+    expect(r.text).toContain("That is not a DOI I recognise");
+    expect(() => normalizeDoi("hello")).toThrow("does not look like a DOI");
   });
 });

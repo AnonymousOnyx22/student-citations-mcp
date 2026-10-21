@@ -97,7 +97,7 @@ export const tools: ToolDef<Api>[] = [
       try {
         const res: any = await api.openLibrary.get("/api/books", { bibkeys: `ISBN:${isbn}`, format: "json", jscmd: "data" });
         const b = res[`ISBN:${isbn}`];
-        if (!b) throw new Error(`Open Library has no book for ISBN ${isbn}. Check the number, or use format_citation and type the details. That is not a DOI I recognise, or use format_citation and type the details.`);
+        if (!b) throw new Error(`Open Library has no book for ISBN ${isbn}. Check the number, or use format_citation and type the details.`);
         const year = String(b.publish_date ?? "").match(/\d{4}/)?.[0];
         const src: Source = {
           type: "book",
@@ -111,7 +111,7 @@ export const tools: ToolDef<Api>[] = [
       } catch (err) {
         if (err instanceof ApiError) {
           if (err.status === 404) {
-            throw new ApiError(`${err.message} That is not a DOI I recognise, or use format_citation and type the details.`, err.status, err.body);
+            throw new ApiError(`${err.message} That is not an ISBN I recognise, or use format_citation and type the details.`, err.status, err.body);
           }
           throw new ApiError(`${err.message}. Use format_citation and type the details instead (offline typed details path).`, err.status, err.body);
         }
