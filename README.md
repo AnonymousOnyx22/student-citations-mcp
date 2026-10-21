@@ -5,7 +5,7 @@
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![ci](https://github.com/AnonymousOnyx22/student-citations-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/AnonymousOnyx22/student-citations-mcp/actions/workflows/ci.yml)
 
-Paste a DOI or an ISBN into your AI app and get a formatted citation back in APA 7, MLA 9 or Chicago author date. You can also type the details yourself and get the matching in text citation. The wording and punctuation come from tested code, so they are the same every time. Free and open source, no account, no key and nothing stored. It works with Claude, ChatGPT, Cursor, VS Code Copilot and any other app that supports MCP.
+Paste a DOI or an ISBN into your AI app and get a formatted citation back in APA 7, MLA 9 or Chicago author date. You can also type the details yourself and get the matching in text citation, either in brackets or in the narrative form for a sentence where you name the author. The wording and punctuation come from tested code, so they are the same every time. Free and open source, no account, no key and nothing stored. It works with Claude, ChatGPT, Cursor, VS Code Copilot and any other app that supports MCP.
 
 ## Citations MCP compared with BibGuru and Citation Machine
 
@@ -16,7 +16,7 @@ BibGuru and Citation Machine are web pages you fill in and copy from. Citations 
 | Where you use it | In the AI app you already have open | In a web page in your browser | In a web page in your browser |
 | What you type in | A DOI, an ISBN, or the details of the source | A URL, a title or an author to search for, or the details you type | The details you type, or a citation you paste in |
 | Styles you get back | APA 7, MLA 9, Chicago author date | APA, MLA, Harvard and many more styles | APA, MLA, Chicago, Harvard and thousands more styles |
-| In text citation | Yes, with an optional page number | Yes | Yes |
+| In text citation | Yes, with an optional page number, in the parenthetical or the narrative form | Yes | Yes |
 | Keeping your sources | Nothing is stored | BibGuru Plus saves sources in projects and folders | The paid tier saves your citations |
 | Cost | Free, MIT license, open source | Free, with a paid plan | Free, with a paid tier |
 | Signing in | Never | Only to save your sources | Only to save your citations |
@@ -25,7 +25,7 @@ Both other tools cover many more styles than this one does. What you get here is
 
 ## Paste ready output
 
-Here is the same paper in all three styles, with the in text citation for each one. Copy the lines you need.
+Here is the same paper in all three styles, with the in text citation and the narrative form for each one. The narrative form is for a sentence where you name the author, as in "LeCun et al. (2015, p. 436) argue that ...". Copy the lines you need.
 
 ```text
 Deep learning
@@ -36,14 +36,17 @@ DOI 10.1038/nature14539
 APA 7
 LeCun, Y., Bengio, Y., & Hinton, G. (2015). Deep learning. *Nature*, *521*(7553), 436-444. https://doi.org/10.1038/nature14539
 In text: (LeCun et al., 2015, p. 436)
+Narrative: LeCun et al. (2015, p. 436)
 
 MLA 9
 LeCun, Yann, et al. "Deep learning." *Nature*, vol. 521, no. 7553, 2015, pp. 436-444, https://doi.org/10.1038/nature14539.
 In text: (LeCun et al. 436)
+Narrative: LeCun et al. (436)
 
 Chicago author date
 LeCun, Yann, et al. 2015. "Deep learning." *Nature* 521 (7553): 436-444. https://doi.org/10.1038/nature14539.
 In text: (LeCun et al. 2015, 436)
+Narrative: LeCun et al. (2015, 436)
 ```
 
 ## Install
@@ -61,7 +64,7 @@ Nothing else to install. You need Node.js 20 or newer. The config block for your
 | `format_citation` | Format a journal article, book or website from details you type, in APA 7, MLA 9 or Chicago author date |
 | `cite_from_doi` | Look up a DOI on Crossref and format the citation |
 | `cite_from_isbn` | Look up an ISBN on Open Library and format the citation |
-| `in_text_citation` | The in text citation that matches a source, with an optional page number |
+| `in_text_citation` | The in text citation that matches a source, with an optional page number, in the parenthetical or the narrative form |
 
 All four tools are read only.
 
@@ -71,6 +74,7 @@ All four tools are read only.
 - "Make an MLA citation for ISBN 9780262033848."
 - "Format this as Chicago: Smith and Jones, 2020, Learning to Learn, Journal of Study Skills, volume 4, issue 2, pages 11 to 25."
 - "What's the in text citation for a quote on page 14 of that paper?"
+- "Give me the APA citation for that in narrative form, so I can name the author in my sentence."
 
 ## Example
 

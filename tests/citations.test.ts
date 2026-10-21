@@ -4,7 +4,7 @@ import type { AddressInfo } from "node:net";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { createServer, makeApi } from "../src/server.js";
-import { format, inText, normalizeDoi, normalizeIsbn, splitName } from "../src/format.js";
+import { format, inText, narrativeInText, normalizeDoi, normalizeIsbn, splitName } from "../src/format.js";
 
 const article = {
   type: "journal" as const,
@@ -79,6 +79,16 @@ describe("formatting", () => {
     expect(inText(article.authors, "2020", "mla9", "14")).toBe("(Smith and Jones 14)");
     expect(inText(article.authors, "2020", "chicago-ad", "14")).toBe("(Smith and Jones 2020, 14)");
   });
+  it("writes the narrative form for a sentence that names the author", () => {
+    const three = [{ family: "A" }, { family: "B" }, { family: "C" }];
+    expect(narrativeInText(article.authors, "2020", "apa7", "14")).toBe("Smith and Jones (2020, p. 14)");
+    expect(narrativeInText(article.authors, "2020", "mla9", "14")).toBe("Smith and Jones (14)");
+    expect(narrativeInText(article.authors, "2020", "chicago-ad", "14")).toBe("Smith and Jones (2020, 14)");
+    expect(narrativeInText(three, "2020", "apa7")).toBe("A et al. (2020)");
+    expect(narrativeInText([{ family: "Smith" }], "2020", "apa7")).toBe("Smith (2020)");
+    expect(narrativeInText(article.authors, "2020", "mla9")).toBe("Smith and Jones");
+    expect(narrativeInText([], "2020", "apa7", "14")).toBe("(2020, p. 14)");
+  });
   it("cleans DOIs, ISBNs and names", () => {
     expect(normalizeDoi("https://doi.org/10.1000/abc")).toBe("10.1000/abc");
     expect(() => normalizeDoi("hello")).toThrow("does not look like a DOI");
@@ -125,5 +135,13 @@ describe("MCP tools", () => {
   it("formats typed details", async () => {
     const r = await call("format_citation", { ...article, style: "chicago-ad" });
     expect(r.text).toContain("2020.");
+  });
+  it("gives the narrative in text citation when asked", async () => {
+    const p = await call("in_text_citation", { authors: article.authors, year: "2020", page: "14", style: "apa7" });
+    expect(p.text).toBe("(Smith & Jones, 2020, p. 14)");
+    const n = await call("in_text_citation", { authors: article.authors, year: "2020", page: "14", style: "apa7", form: "narrative" });
+    expect(n.text).toBe("Smith and Jones (2020, p. 14)");
+    const m = await call("in_text_citation", { authors: article.authors, year: "2020", page: "14", style: "mla9", form: "narrative" });
+    expect(m.text).toBe("Smith and Jones (14)");
   });
 });

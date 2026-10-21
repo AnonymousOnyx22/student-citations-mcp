@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add a narrative form to in_text_citation, so a sentence can name the author: "LeCun et al. (2015, p. 436) argue that ..."
+
 ## 0.1.1
 
 - Make DOI and ISBN errors point to format_citation fallback

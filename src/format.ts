@@ -137,16 +137,36 @@ export function format(s: Source, style: Style): string {
   return parts.join(" ").replace(/\s+/g, " ").trim();
 }
 
+/** The author names as they read inside a sentence. APA uses "&" only inside brackets. */
+function whoFor(authors: Author[], style: Style, narrative: boolean): string {
+  const names = authors.map((a) => a.family);
+  if (names.length === 0) return "";
+  if (names.length === 1) return names[0];
+  if (names.length === 2) return `${names[0]}${style === "apa7" && !narrative ? " &" : " and"} ${names[1]}`;
+  return `${names[0]} et al.`;
+}
+
 export function inText(authors: Author[], year: string | undefined, style: Style, page?: string): string {
   const y = year ?? "n.d.";
-  const names = authors.map((a) => a.family);
-  if (style === "apa7") {
-    const who = names.length === 0 ? "" : names.length === 1 ? names[0] : names.length === 2 ? `${names[0]} & ${names[1]}` : `${names[0]} et al.`;
-    return `(${[who, y, page ? `p. ${page}` : ""].filter(Boolean).join(", ")})`;
-  }
-  const who = names.length === 0 ? "" : names.length === 1 ? names[0] : names.length === 2 ? `${names[0]} and ${names[1]}` : `${names[0]} et al.`;
+  const who = whoFor(authors, style, false);
+  if (style === "apa7") return `(${[who, y, page ? `p. ${page}` : ""].filter(Boolean).join(", ")})`;
   if (style === "mla9") return `(${[who, page ?? ""].filter(Boolean).join(" ")})`;
   return `(${[who, y].filter(Boolean).join(" ")}${page ? `, ${page}` : ""})`;
+}
+
+/**
+ * The narrative form, for a sentence where the author is already in your writing:
+ * "LeCun et al. (2015, p. 436) argue that ...". APA and Chicago keep the year in the
+ * brackets, MLA keeps only the page number there. With no authors it falls back to
+ * the parenthetical form, since there is nothing to name.
+ */
+export function narrativeInText(authors: Author[], year: string | undefined, style: Style, page?: string): string {
+  const who = whoFor(authors, style, true);
+  if (!who) return inText(authors, year, style, page);
+  const y = year ?? "n.d.";
+  if (style === "apa7") return `${who} (${[y, page ? `p. ${page}` : ""].filter(Boolean).join(", ")})`;
+  if (style === "mla9") return page ? `${who} (${page})` : who;
+  return `${who} (${[y, page ?? ""].filter(Boolean).join(", ")})`;
 }
 
 export function normalizeDoi(input: string): string {

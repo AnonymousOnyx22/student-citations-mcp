@@ -131,7 +131,7 @@
     },
     {
       "name": "in_text_citation",
-      "description": "The in text citation that goes with a source, with an optional page number. Inputs: authors (family name plus optional given names), year, page and style (apa7, mla9 or chicago-ad). Example prompt: \"Give the APA in text citation for Smith and Jones 2020 on page 14.\"",
+      "description": "The in text citation that goes with a source, with an optional page number and an optional narrative form for a sentence where the author is named. Inputs: authors (family name plus optional given names), year, page, form (parenthetical or narrative) and style (apa7, mla9 or chicago-ad). Example prompt: \"Give the APA in text citation for Smith and Jones 2020 on page 14.\"",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -150,6 +150,12 @@
           },
           "year": { "type": "string", "description": "Publication year as text, like \"2020\"." },
           "page": { "type": "string", "description": "Page number as text, like \"14\"." },
+          "form": {
+            "type": "string",
+            "enum": ["parenthetical", "narrative"],
+            "default": "parenthetical",
+            "description": "parenthetical is the usual brackets, like (Smith & Jones, 2020, p. 14). narrative puts the author in your sentence and keeps the rest in brackets, like Smith and Jones (2020, p. 14)."
+          },
           "style": {
             "type": "string",
             "enum": ["apa7", "mla9", "chicago-ad"],
@@ -170,6 +176,19 @@
             "style": "apa7"
           },
           "output": "(Smith & Jones, 2020, p. 14)"
+        },
+        {
+          "input": {
+            "authors": [
+              { "family": "Smith", "given": "John Kenneth" },
+              { "family": "Jones", "given": "Alice" }
+            ],
+            "year": "2020",
+            "page": "14",
+            "form": "narrative",
+            "style": "apa7"
+          },
+          "output": "Smith and Jones (2020, p. 14)"
         }
       ]
     }

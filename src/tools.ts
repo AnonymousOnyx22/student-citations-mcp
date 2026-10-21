@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { HttpClient } from "./core/http.js";
 import { ApiError } from "./core/http.js";
 import type { ToolDef } from "./core/tools.js";
-import { type Source, type Style, format, inText, normalizeDoi, normalizeIsbn, splitName } from "./format.js";
+import { type Source, type Style, format, inText, narrativeInText, normalizeDoi, normalizeIsbn, splitName } from "./format.js";
 
 export interface Api {
   crossref: HttpClient;
@@ -10,6 +10,7 @@ export interface Api {
 }
 
 const style = z.enum(["apa7", "mla9", "chicago-ad"]).default("apa7").describe("Citation style. apa7, mla9 or chicago-ad (Chicago author date).");
+const form = z.enum(["parenthetical", "narrative"]).default("parenthetical").describe("parenthetical is the usual brackets, like (Smith & Jones, 2020, p. 14). narrative puts the author in your sentence and keeps the rest in brackets, like Smith and Jones (2020, p. 14).");
 const author = z.object({ family: z.string().describe("Last name"), given: z.string().optional().describe("First and middle names") });
 
 const sourceShape = {
@@ -117,8 +118,8 @@ export const tools: ToolDef<Api>[] = [
   {
     name: "in_text_citation",
     title: "In text citation",
-    description: "The in text citation that goes with a source, with an optional page number. Inputs: authors (family name plus optional given names), year, page and style (apa7, mla9 or chicago-ad). Example prompt: \"Give the APA in text citation for Smith and Jones 2020 on page 14.\"",
-    inputSchema: { authors: z.array(author).default([]), year: z.string().optional(), page: z.string().optional(), style },
-    run: async (a) => inText(a.authors, a.year, a.style as Style, a.page),
+    description: "The in text citation that goes with a source, with an optional page number and an optional narrative form for a sentence where the author is named. Inputs: authors (family name plus optional given names), year, page, form (parenthetical or narrative) and style (apa7, mla9 or chicago-ad). Example prompt: \"Give the APA in text citation for Smith and Jones 2020 on page 14.\"",
+    inputSchema: { authors: z.array(author).default([]), year: z.string().optional(), page: z.string().optional(), form, style },
+    run: async (a) => (a.form === "narrative" ? narrativeInText(a.authors, a.year, a.style as Style, a.page) : inText(a.authors, a.year, a.style as Style, a.page)),
   },
 ];

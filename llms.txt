@@ -52,15 +52,18 @@ Parameters:
 Example: with isbn "978-0-262-03384-8" and style "mla9", returns that book's Open Library record formatted in MLA 9, then a blank line and "(From Open Library. Check it against your style guide.)". If Open Library has no book for the ISBN, the tool returns an error message instead.
 
 ### in_text_citation
-The in text citation that goes with a source, with an optional page number. Inputs: authors (family name plus optional given names), year, page and style (apa7, mla9 or chicago-ad). Example prompt: "Give the APA in text citation for Smith and Jones 2020 on page 14."
+The in text citation that goes with a source, with an optional page number and an optional narrative form for a sentence where the author is named. Inputs: authors (family name plus optional given names), year, page, form (parenthetical or narrative) and style (apa7, mla9 or chicago-ad). Example prompt: "Give the APA in text citation for Smith and Jones 2020 on page 14."
 
 Parameters:
 - authors (optional, default []): list of objects with family (last name) and given (first and middle names, optional), like [{"family": "Smith", "given": "John Kenneth"}]
 - year (optional): publication year as text, like "2020"
 - page (optional): page number as text, like "14"
+- form (optional, default parenthetical): parenthetical is the usual brackets, like (Smith & Jones, 2020, p. 14). narrative puts the author in your sentence and keeps the rest in brackets, like Smith and Jones (2020, p. 14).
 - style (optional, default apa7): Citation style. apa7, mla9 or chicago-ad (Chicago author date).
 
 Example: with authors [{"family": "Smith", "given": "John Kenneth"}, {"family": "Jones", "given": "Alice"}], year "2020" and page "14", style "apa7" returns "(Smith & Jones, 2020, p. 14)", style "mla9" returns "(Smith and Jones 14)" and style "chicago-ad" returns "(Smith and Jones 2020, 14)".
+
+With form "narrative" the author goes in your sentence and the rest stays in brackets, for a sentence like "Smith and Jones (2020, p. 14) argue that ...". With page "14", style "apa7" returns "Smith and Jones (2020, p. 14)", style "mla9" returns "Smith and Jones (14)" and style "chicago-ad" returns "Smith and Jones (2020, 14)". Three or more authors become "et al." in the narrative form too. With no authors given, the tool returns the parenthetical form.
 
 ## Links
 - Source and README, https://github.com/AnonymousOnyx22/student-citations-mcp

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
-import { format, inText } from "../src/format.js";
+import { format, inText, narrativeInText } from "../src/format.js";
 
 const readme = readFileSync(new URL("../README.md", import.meta.url), "utf8");
 
@@ -45,6 +45,7 @@ describe("README", () => {
     expect(readme).toContain(format(natureDeepLearning, "chicago-ad"));
     for (const style of ["apa7", "mla9", "chicago-ad"] as const) {
       expect(readme).toContain(inText(natureDeepLearning.authors, "2015", style, "436"));
+      expect(readme).toContain(`Narrative: ${narrativeInText(natureDeepLearning.authors, "2015", style, "436")}`);
     }
   });
 
