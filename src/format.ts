@@ -80,7 +80,8 @@ const dash = (p?: string) => (p ? p.replace(/\s*-\s*/g, "-") : p);
 const end = (s: string) => (/[.?!]$/.test(s) ? s : s + ".");
 const link = (s: Source) => (s.doi ? `https://doi.org/${s.doi}` : s.url ?? "");
 
-export function format(s: Source, style: Style): string {
+export function format(s: Source, styleInput: Style | string): string {
+  const style = normalizeStyle(styleInput);
   const parts: string[] = [];
   const push = (x?: string) => {
     if (x && x.trim()) parts.push(x.trim());
@@ -193,7 +194,8 @@ function whoFor(authors: Author[], style: Style, narrative: boolean): string {
   return `${names[0]} et al.`;
 }
 
-export function inText(authors: Author[], year: string | undefined, style: Style, page?: string): string {
+export function inText(authors: Author[], year: string | undefined, styleInput: Style | string, page?: string): string {
+  const style = normalizeStyle(styleInput);
   const y = year ?? "n.d.";
   const who = whoFor(authors, style, false);
   if (style === "apa7") return `(${[who, y, page ? `p. ${page}` : ""].filter(Boolean).join(", ")})`;
@@ -207,7 +209,8 @@ export function inText(authors: Author[], year: string | undefined, style: Style
  * brackets, MLA keeps only the page number there. With no authors it falls back to
  * the parenthetical form, since there is nothing to name.
  */
-export function narrativeInText(authors: Author[], year: string | undefined, style: Style, page?: string): string {
+export function narrativeInText(authors: Author[], year: string | undefined, styleInput: Style | string, page?: string): string {
+  const style = normalizeStyle(styleInput);
   const who = whoFor(authors, style, true);
   if (!who) return inText(authors, year, style, page);
   const y = year ?? "n.d.";
@@ -215,6 +218,37 @@ export function narrativeInText(authors: Author[], year: string | undefined, sty
   if (style === "mla9") return page ? `${who} (${page})` : who;
   return `${who} (${[y, page ?? ""].filter(Boolean).join(", ")})`;
 }
+
+export function normalizeStyle(input: unknown): Style {
+  const raw = String(input ?? "").trim();
+  const key = raw.toLowerCase().replace(/[-_]+/g, " ").replace(/\s+/g, " ").trim();
+  const aliases: Record<string, Style> = {
+    "apa": "apa7",
+    "apa 7": "apa7",
+    "apa7": "apa7",
+    "apa 7th": "apa7",
+    "apa seventh": "apa7",
+    "mla": "mla9",
+    "mla 9": "mla9",
+    "mla9": "mla9",
+    "mla 9th": "mla9",
+    "chicago": "chicago-ad",
+    "chicago ad": "chicago-ad",
+    "chicago-ad": "chicago-ad",
+    "chicago author date": "chicago-ad",
+    "chicago author-date": "chicago-ad",
+  };
+  const result = aliases[key];
+  if (!result) {
+    throw new Error(`"${raw}" is not a known citation style. Valid styles are apa7, mla9 and chicago ad (chicago-ad).`);
+  }
+  return result;
+}
+
+export const normalizeStyleName = normalizeStyle;
+export const normalizeStyleAlias = normalizeStyle;
+export const parseStyle = normalizeStyle;
+export const toStyle = normalizeStyle;
 
 export function normalizeDoi(input: string): string {
   const d = input.trim().replace(/^https?:\/\/(dx\.)?doi\.org\//i, "").replace(/^doi:\s*/i, "");

@@ -2,14 +2,14 @@ import { z } from "zod";
 import type { HttpClient } from "./core/http.js";
 import { ApiError } from "./core/http.js";
 import type { ToolDef } from "./core/tools.js";
-import { type Source, type Style, format, inText, narrativeInText, normalizeDoi, normalizeIsbn, splitName } from "./format.js";
+import { type Source, format, inText, narrativeInText, normalizeDoi, normalizeIsbn, normalizeStyle, splitName } from "./format.js";
 
 export interface Api {
   crossref: HttpClient;
   openLibrary: HttpClient;
 }
 
-const style = z.enum(["apa7", "mla9", "chicago-ad"]).default("apa7").describe("Citation style. apa7, mla9 or chicago-ad (Chicago author date).");
+const style = z.string().default("apa7").describe("Citation style. Aliases such as APA, MLA 9 and Chicago are accepted. Valid styles: apa7, mla9, chicago-ad (Chicago author date).");
 const form = z.enum(["parenthetical", "narrative"]).default("parenthetical").describe("parenthetical is the usual brackets, like (Smith & Jones, 2020, p. 14). narrative puts the author in your sentence and keeps the rest in brackets, like Smith and Jones (2020, p. 14).");
 const author = z.object({ family: z.string().describe("Last name"), given: z.string().optional().describe("First and middle names") });
 
@@ -46,7 +46,7 @@ export const tools: ToolDef<Api>[] = [
     inputSchema: { ...sourceShape, style },
     run: async (a) => {
       const { style: st, ...src } = a;
-      return format(src as Source, st as Style);
+      return format(src as Source, normalizeStyle(st ?? "apa7"));
     },
   },
   {
@@ -55,6 +55,7 @@ export const tools: ToolDef<Api>[] = [
     description: "Look up a DOI on Crossref and format the citation. Works for journal articles, many books and conference papers. Inputs: doi (a DOI like 10.1038/nature14539 or a doi.org link) and style (apa7, mla9 or chicago-ad). Example prompt: \"Cite 10.1038/nature14539 in APA.\"",
     inputSchema: { doi: z.string().describe("A DOI like 10.1038/nature14539, or a doi.org link."), style },
     run: async (a, api) => {
+      const st = normalizeStyle(a.style ?? "apa7");
       const doi = normalizeDoi(a.doi);
       try {
         const res: any = await api.crossref.get(`/works/${encodeURI(doi)}`);
@@ -73,7 +74,7 @@ export const tools: ToolDef<Api>[] = [
           doi: m.DOI ?? doi,
         };
         if (!src.title) throw new Error("Crossref found that DOI but it has no title, so there is nothing to cite. Use format_citation and type the details.");
-        return `${format(src, a.style as Style)}\n\n(From Crossref. Check it against your style guide.)`;
+        return `${format(src, st)}\n\n(From Crossref. Check it against your style guide.)`;
       } catch (err) {
         if (err instanceof ApiError) {
           if (err.status === 404) {
@@ -91,6 +92,7 @@ export const tools: ToolDef<Api>[] = [
     description: "Look up an ISBN on Open Library and format the book citation. Inputs: isbn (a 10 or 13 digit ISBN, dashes are fine) and style (apa7, mla9 or chicago-ad). Example prompt: \"Cite ISBN 978-0-262-03384-8 in MLA 9.\"",
     inputSchema: { isbn: z.string().describe("A 10 or 13 digit ISBN. Dashes are fine."), style },
     run: async (a, api) => {
+      const st = normalizeStyle(a.style ?? "apa7");
       const isbn = normalizeIsbn(a.isbn);
       try {
         const res: any = await api.openLibrary.get("/api/books", { bibkeys: `ISBN:${isbn}`, format: "json", jscmd: "data" });
@@ -105,7 +107,7 @@ export const tools: ToolDef<Api>[] = [
           publisher: b.publishers?.[0]?.name,
           city: b.publish_places?.[0]?.name,
         };
-        return `${format(src, a.style as Style)}\n\n(From Open Library. Check it against your style guide.)`;
+        return `${format(src, st)}\n\n(From Open Library. Check it against your style guide.)`;
       } catch (err) {
         if (err instanceof ApiError) {
           if (err.status === 404) {
@@ -122,6 +124,6 @@ export const tools: ToolDef<Api>[] = [
     title: "In text citation",
     description: "The in text citation that goes with a source, with an optional page number and an optional narrative form for a sentence where the author is named. Inputs: authors (family name plus optional given names), year, page, form (parenthetical or narrative) and style (apa7, mla9 or chicago-ad). Example prompt: \"Give the APA in text citation for Smith and Jones 2020 on page 14.\"",
     inputSchema: { authors: z.array(author).default([]), year: z.string().optional(), page: z.string().optional(), form, style },
-    run: async (a) => (a.form === "narrative" ? narrativeInText(a.authors, a.year, a.style as Style, a.page) : inText(a.authors, a.year, a.style as Style, a.page)),
+    run: async (a) => (a.form === "narrative" ? narrativeInText(a.authors, a.year, normalizeStyle(a.style ?? "apa7"), a.page) : inText(a.authors, a.year, normalizeStyle(a.style ?? "apa7"), a.page)),
   },
 ];
