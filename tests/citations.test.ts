@@ -5,6 +5,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { createServer, makeApi } from "../src/server.js";
 import { format, inText, narrativeInText, normalizeDoi, normalizeIsbn, splitName } from "../src/format.js";
+import { crossrefKind } from "../src/tools.js";
 
 const article = {
   type: "journal" as const,
@@ -32,6 +33,14 @@ beforeAll(async () => {
     };
     if (url.pathname === "/works/10.1000/jss.2020.42")
       return json({ message: { type: "journal-article", title: ["Learning to learn"], "container-title": ["Journal of Study Skills"], author: [{ given: "John Kenneth", family: "Smith" }, { given: "Alice", family: "Jones" }], issued: { "date-parts": [[2020, 5]] }, volume: "4", issue: "2", page: "11-25", DOI: "10.1000/jss.2020.42" } });
+    if (url.pathname === "/works/10.1000/handbook.1")
+      return json({ message: { type: "book-chapter", title: ["Learning to learn in groups"], "container-title": ["The Study Skills Handbook"], author: [{ given: "John Kenneth", family: "Smith" }], editor: [{ given: "Robin", family: "Cole" }], publisher: "North Gate Press", issued: { "date-parts": [[2020, 5]] }, page: "11-25", DOI: "10.1000/handbook.1" } });
+    if (url.pathname === "/works/10.1000/dict.1")
+      return json({ message: { type: "edited-book", title: ["A dictionary of study words"], editor: [{ given: "Jamie", family: "Patel" }, { given: "Robin", family: "Cole" }], publisher: "North Gate Press", issued: { "date-parts": [[2019]] }, DOI: "10.1000/dict.1" } });
+    if (url.pathname === "/works/10.1349/ddlp.2889")
+      return json({ message: { type: "dissertation", title: ["Attention and memory in first year students"], author: [{ given: "Jamie", family: "Patel" }], publisher: "Dartmouth College Library Press", institution: [{ name: "Dartmouth College" }], degree: ["Ph.D."], issued: { "date-parts": [[2019]] }, DOI: "10.1349/ddlp.2889" } });
+    if (url.pathname === "/works/10.1101/2020.01.30.927871")
+      return json({ message: { type: "posted-content", subtype: "preprint", title: ["A preprint about study groups"], author: [{ given: "Alex", family: "Stone" }], publisher: "openRxiv", institution: [{ name: "bioRxiv" }], posted: { "date-parts": [[2020, 1, 31]] }, DOI: "10.1101/2020.01.30.927871" } });
     if (url.pathname.startsWith("/works/")) return json({}, 404);
     if (url.pathname === "/api/books") {
       const key = url.searchParams.get("bibkeys");
@@ -115,6 +124,78 @@ describe("formatting", () => {
   });
 });
 
+describe("source kinds", () => {
+  const chapter = {
+    type: "chapter" as const,
+    authors: [{ family: "Smith", given: "John Kenneth" }],
+    editors: [{ family: "Cole", given: "Robin" }],
+    year: "2020",
+    title: "Learning to learn in groups",
+    container: "The Study Skills Handbook",
+    pages: "11-25",
+    publisher: "North Gate Press",
+    doi: "10.1000/handbook.1",
+  };
+  const thesis = {
+    type: "thesis" as const,
+    authors: [{ family: "Patel", given: "Jamie" }],
+    year: "2019",
+    title: "Attention and memory in first year students",
+    institution: "Dartmouth College",
+    degree: "Ph.D.",
+    doi: "10.1349/ddlp.2889",
+  };
+  const report = { type: "report" as const, authors: [{ family: "Stone", given: "Alex" }], year: "2020", title: "How students study", report_number: "2020-04", publisher: "Office of Academic Resources" };
+  const dataset = { type: "dataset" as const, authors: [{ family: "Stone", given: "Alex" }], year: "2021", title: "Study habits survey data", publisher: "Zenodo" };
+  const preprint = { type: "preprint" as const, authors: [{ family: "Stone", given: "Alex" }], year: "2022", title: "A preprint about study groups", repository: "bioRxiv" };
+
+  it("formats a book chapter as a chapter, with no volume or issue", () => {
+    expect(format(chapter, "apa7")).toBe("Smith, J. K. (2020). Learning to learn in groups. In R. Cole (Ed.), *The Study Skills Handbook* (pp. 11-25). North Gate Press. https://doi.org/10.1000/handbook.1");
+    expect(format(chapter, "mla9")).toBe('Smith, John Kenneth. "Learning to learn in groups." *The Study Skills Handbook*, edited by Robin Cole, North Gate Press, 2020, pp. 11-25, https://doi.org/10.1000/handbook.1.');
+    expect(format(chapter, "chicago-ad")).toBe('Smith, John Kenneth. 2020. "Learning to learn in groups." In *The Study Skills Handbook*, edited by Robin Cole, 11-25. North Gate Press. https://doi.org/10.1000/handbook.1.');
+  });
+  it("formats a thesis with the degree and the institution", () => {
+    expect(format(thesis, "apa7")).toBe("Patel, J. (2019). *Attention and memory in first year students* [Doctoral dissertation, Dartmouth College]. https://doi.org/10.1349/ddlp.2889");
+    expect(format(thesis, "mla9")).toBe("Patel, Jamie. *Attention and memory in first year students*. 2019. Dartmouth College, PhD dissertation. https://doi.org/10.1349/ddlp.2889.");
+    expect(format(thesis, "chicago-ad")).toBe("Patel, Jamie. 2019. *Attention and memory in first year students*. PhD diss., Dartmouth College. https://doi.org/10.1349/ddlp.2889.");
+  });
+  it("formats a report, a dataset and a preprint", () => {
+    expect(format(report, "apa7")).toBe("Stone, A. (2020). *How students study* (Report No. 2020-04). Office of Academic Resources.");
+    expect(format(report, "chicago-ad")).toBe("Stone, Alex. 2020. *How students study*. Report no. 2020-04. Office of Academic Resources.");
+    expect(format(dataset, "apa7")).toBe("Stone, A. (2021). *Study habits survey data* [Data set]. Zenodo.");
+    expect(format(preprint, "apa7")).toBe("Stone, A. (2022). *A preprint about study groups* [Preprint]. bioRxiv.");
+    expect(format(preprint, "mla9")).toBe('Stone, Alex. "A preprint about study groups." Preprint, bioRxiv, 2022.');
+  });
+  it("keeps the period a record ends a title with outside the italics", () => {
+    const dotted = { ...thesis, title: "Attention and memory in first year students." };
+    expect(format(dotted, "apa7")).toBe("Patel, J. (2019). *Attention and memory in first year students* [Doctoral dissertation, Dartmouth College]. https://doi.org/10.1349/ddlp.2889");
+    expect(format(dotted, "mla9")).toBe("Patel, Jamie. *Attention and memory in first year students*. 2019. Dartmouth College, PhD dissertation. https://doi.org/10.1349/ddlp.2889.");
+  });
+  it("reads the degree of a thesis for the words each style uses", () => {
+    expect(format({ ...thesis, degree: "M.A." }, "apa7")).toContain("[Master's thesis, Dartmouth College]");
+    expect(format({ ...thesis, degree: "M.A." }, "mla9")).toContain("Dartmouth College, MA thesis.");
+    expect(format({ ...thesis, degree: "M.A." }, "chicago-ad")).toContain("MA thesis, Dartmouth College.");
+    expect(format({ ...thesis, degree: undefined }, "apa7")).toContain("[Dissertation, Dartmouth College]");
+  });
+  it("maps each Crossref work type to the kind of source it is", () => {
+    expect(crossrefKind("journal-article")).toBe("journal");
+    expect(crossrefKind("book")).toBe("book");
+    expect(crossrefKind("monograph")).toBe("book");
+    expect(crossrefKind("edited-book")).toBe("book");
+    expect(crossrefKind("reference-book")).toBe("book");
+    expect(crossrefKind("proceedings")).toBe("book");
+    expect(crossrefKind("book-chapter")).toBe("chapter");
+    expect(crossrefKind("proceedings-article")).toBe("chapter");
+    expect(crossrefKind("dissertation")).toBe("thesis");
+    expect(crossrefKind("report")).toBe("report");
+    expect(crossrefKind("standard")).toBe("report");
+    expect(crossrefKind("dataset")).toBe("dataset");
+    expect(crossrefKind("posted-content")).toBe("preprint");
+    expect(crossrefKind("peer-review")).toBe("journal");
+    expect(crossrefKind("a-type-we-do-not-know")).toBe("journal");
+  });
+});
+
 describe("MCP tools", () => {
   it("lists four read only tools", async () => {
     const tools = (await client.listTools()).tools;
@@ -134,6 +215,29 @@ describe("MCP tools", () => {
     const r = await call("cite_from_doi", { doi: "https://doi.org/10.1000/jss.2020.42", style: "apa7" });
     expect(r.text).toContain("Smith, J. K., & Jones, A. (2020). Learning to learn.");
     expect(lastUa).toContain("mailto:me@example.com");
+  });
+  it("cites a book chapter from Crossref as a chapter, with no volume or issue", async () => {
+    const r = await call("cite_from_doi", { doi: "10.1000/handbook.1", style: "apa7" });
+    expect(r.isError).toBe(false);
+    expect(r.text).toContain("Smith, J. K. (2020). Learning to learn in groups. In R. Cole (Ed.), *The Study Skills Handbook* (pp. 11-25).");
+    expect(r.text).not.toMatch(/\*\d+\*/);
+    expect(r.text).not.toContain("vol.");
+  });
+  it("cites an edited book from Crossref with the editors in the author's place", async () => {
+    const r = await call("cite_from_doi", { doi: "10.1000/dict.1", style: "apa7" });
+    expect(r.isError).toBe(false);
+    expect(r.text).toContain("Patel, J., & Cole, R., Eds. (2019). *A dictionary of study words*. North Gate Press.");
+  });
+  it("cites a dissertation from Crossref as a thesis, with no volume or issue", async () => {
+    const r = await call("cite_from_doi", { doi: "10.1349/ddlp.2889", style: "apa7" });
+    expect(r.isError).toBe(false);
+    expect(r.text).toContain("Patel, J. (2019). *Attention and memory in first year students* [Doctoral dissertation, Dartmouth College].");
+    expect(r.text).not.toMatch(/\*\d+\*/);
+  });
+  it("cites a preprint from Crossref with the repository it was posted in", async () => {
+    const r = await call("cite_from_doi", { doi: "10.1101/2020.01.30.927871", style: "mla9" });
+    expect(r.isError).toBe(false);
+    expect(r.text).toContain('Stone, Alex. "A preprint about study groups." Preprint, bioRxiv, 2020,');
   });
   it("gives a friendly error for an unknown DOI", async () => {
     const r = await call("cite_from_doi", { doi: "10.1000/missing" });

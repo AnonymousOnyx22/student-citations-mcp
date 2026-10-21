@@ -11,16 +11,16 @@
 ## Tools
 
 ### format_citation
-Format a journal article, book or website as a citation in APA 7, MLA 9 or Chicago author date, from details you provide. Inputs: type (journal, book or website), title, and optional authors (family plus given names), year, container, publisher, city, edition, editors, translators, volume, issue, pages, doi, url, date_text, accessed and style (apa7, mla9 or chicago-ad). Editors and translators are for books and take the same shape as authors: a book with editors and no authors puts the editors where the author goes, and a book with authors too carries the other names after the title, in the spot each style uses. Example prompt: "Cite this journal article in APA 7: Learning to learn by John Kenneth Smith and Alice Jones, 2020, Journal of Study Skills, volume 4, issue 2, pages 11-25."
+Format a journal article, book, website, book chapter, thesis, report, dataset or preprint as a citation in APA 7, MLA 9 or Chicago author date, from details you provide. Inputs: type (journal, book, website, chapter, thesis, report, dataset or preprint), title, and optional authors (family plus given names), year, container, publisher, city, edition, editors, translators, volume, issue, pages, doi, url, date_text, accessed, institution, degree, repository, report_number and style (apa7, mla9 or chicago-ad). Editors and translators are for books and take the same shape as authors: a book with editors and no authors puts the editors where the author goes, and a book with authors too carries the other names after the title, in the spot each style uses. Example prompt: "Cite this journal article in APA 7: Learning to learn by John Kenneth Smith and Alice Jones, 2020, Journal of Study Skills, volume 4, issue 2, pages 11-25."
 
 Parameters:
-- type (required): journal, book or website
+- type (required): journal, book, website, chapter, thesis, report, dataset or preprint
 - title (required): the title of the source
 - authors (optional, default []): list of objects with family (last name) and given (first and middle names, optional), like [{"family": "Smith", "given": "John Kenneth"}]
-- editors (optional): same shape as authors, for a book. With no authors the editors go where the author goes, with the role word the style uses: Ed. or Eds. in APA, editor or editors in MLA, ed. or eds. in Chicago. With authors too they go after the title, inside the parentheses with the edition in APA and as "Edited by ..." in MLA and Chicago.
+- editors (optional): same shape as authors, for a book or a chapter. With no authors the editors go where the author goes, with the role word the style uses: Ed. or Eds. in APA, editor or editors in MLA, ed. or eds. in Chicago. With authors too they go after the title, inside the parentheses with the edition in APA and as "Edited by ..." in MLA and Chicago.
 - translators (optional): same shape as authors, for a book. They go after the title, inside the parentheses as "Trans." in APA and as "Translated by ..." in MLA and Chicago.
 - year (optional): publication year as text, like "2020"
-- container (optional): Journal name or website name.
+- container (optional): Journal name, the book title for a chapter, or website name.
 - publisher (optional): publisher name
 - city (optional): Publisher city, used by Chicago for books.
 - edition (optional): For example "2nd".
@@ -31,6 +31,10 @@ Parameters:
 - url (optional): a URL for the source
 - date_text (optional): Website date as you want it shown, like "2026, October 14" for APA or "14 Oct. 2026" for MLA.
 - accessed (optional): MLA access date, like "14 Oct. 2026".
+- institution (optional): the university or organisation behind a thesis, a report or a dataset
+- degree (optional): the degree of a thesis, like "Ph.D."
+- repository (optional): where a preprint was posted, like arXiv
+- report_number (optional): the number of a report or a standard
 - style (optional, default apa7): Citation style. apa7, mla9 or chicago-ad (Chicago author date).
 
 Example: with type "journal", title "Learning to learn", authors [{"family": "Smith", "given": "John Kenneth"}, {"family": "Jones", "given": "Alice"}], year "2020", container "Journal of Study Skills", volume "4", issue "2", pages "11-25" and style "apa7", returns "Smith, J. K., & Jones, A. (2020). Learning to learn. *Journal of Study Skills*, *4*(2), 11-25."
@@ -40,13 +44,22 @@ Editors in the author's place: with type "book", title "A dictionary of study wo
 Translators after the title: with type "book", title "My brilliant friend", authors [{"family": "Ferrante", "given": "Elena"}], translators [{"family": "Goldstein", "given": "Ann"}], year "2012", publisher "Europa Editions" and style "apa7", returns "Ferrante, E. (2012). *My brilliant friend* (Goldstein, A., Trans.). Europa Editions.".
 
 ### cite_from_doi
-Look up a DOI on Crossref and format the citation. Works for journal articles, many books and conference papers. Inputs: doi (a DOI like 10.1038/nature14539 or a doi.org link) and style (apa7, mla9 or chicago-ad). Example prompt: "Cite 10.1038/nature14539 in APA."
+Look up a DOI on Crossref and format the citation. The Crossref record decides the shape: a journal article, a book or an edited book, a book chapter or a conference paper, a thesis, a report, a dataset or a preprint. Inputs: doi (a DOI like 10.1038/nature14539 or a doi.org link) and style (apa7, mla9 or chicago-ad). Example prompt: "Cite 10.1038/nature14539 in APA."
 
 Parameters:
 - doi (required): A DOI like 10.1038/nature14539, or a doi.org link.
 - style (optional, default apa7): Citation style. apa7, mla9 or chicago-ad (Chicago author date).
 
 Example: with doi "10.1038/nature14539" and style "mla9", returns that DOI's Crossref record formatted in MLA 9, then a blank line and "(From Crossref. Check it against your style guide.)". If Crossref does not know the DOI, the tool returns an error message instead.
+
+How the Crossref type is read:
+- Journal article: an article with its volume, issue and pages.
+- Book, monograph, edited book, reference book, proceedings: a book, and the editors take the author's place when the book has no author.
+- Book chapter, conference paper: a chapter in its book, with the pages it covers.
+- Dissertation: a thesis, with the degree and the university.
+- Report, standard: a report, with its report number.
+- Dataset: a data set.
+- Posted content: a preprint, with the repository it was posted in.
 
 ### cite_from_isbn
 Look up an ISBN on Open Library and format the book citation. Inputs: isbn (a 10 or 13 digit ISBN, dashes are fine) and style (apa7, mla9 or chicago-ad). Example prompt: "Cite ISBN 978-0-262-03384-8 in MLA 9."

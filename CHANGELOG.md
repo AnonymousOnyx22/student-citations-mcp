@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Follow the Crossref work type in cite_from_doi, so a book chapter, a conference paper, a dissertation, an edited book, a report, a dataset or a preprint is no longer formatted as a journal article
+- Add book chapter, thesis, report, dataset and preprint kinds to format_citation, with the institution, degree, repository and report number inputs they need
 - Fix the ISBN errors so they name the ISBN instead of a DOI, and drop the repeated format_citation fallback
 - Add a frequently asked questions section to the README, covering compatibility, cost, privacy, install and styles
 - Add a test that locks the README paste ready example to what cite_from_doi returns for 10.1038/nature14539

@@ -5,14 +5,17 @@ export interface Author {
   given?: string;
 }
 
+/** The kinds of source the formatter knows how to lay out. */
+export type SourceType = "journal" | "book" | "chapter" | "thesis" | "report" | "dataset" | "preprint" | "website";
+
 export interface Source {
-  type: "journal" | "book" | "website";
+  type: SourceType;
   authors: Author[];
-  editors?: Author[]; // for books, they take the author's place when there are no authors
+  editors?: Author[]; // for books and chapters, they take the author's place when there are no authors
   translators?: Author[]; // for books
   year?: string;
   title: string;
-  container?: string; // journal name or website name
+  container?: string; // journal name, book title for a chapter, or website name
   publisher?: string;
   city?: string;
   edition?: string;
@@ -23,6 +26,10 @@ export interface Source {
   url?: string;
   date_text?: string; // for websites, like "2026, October 14" (APA) or "14 Oct. 2026" (MLA)
   accessed?: string;
+  institution?: string; // the university or organisation behind a thesis, a report or a dataset
+  degree?: string; // the degree of a thesis, like "Ph.D."
+  repository?: string; // where a preprint was posted, like arXiv
+  report_number?: string; // the number of a report or a standard
 }
 
 function initials(given = ""): string {
@@ -48,6 +55,40 @@ function apaAuthors(a: Author[]): string {
 
 function inverted(x: Author): string {
   return x.given ? `${x.family}, ${x.given}` : x.family;
+}
+
+/** APA names in reading order, like "A. Editor", which the "In" spot of a chapter wants. */
+function apaInOrder(a: Author[]): string {
+  const names = a.map((x) => (x.given ? `${initials(x.given)} ${x.family}` : x.family));
+  if (names.length === 1) return names[0];
+  return `${names.slice(0, -1).join(", ")}, & ${names[names.length - 1]}`;
+}
+
+/** What the degree says about a thesis: a doctorate, a masters, or nothing we can read. */
+function degreeKind(degree?: string): "doctorate" | "masters" | "unknown" {
+  const d = (degree ?? "").toLowerCase().replace(/\./g, "").trim();
+  if (!d) return "unknown";
+  if (/^(phd|dphil|doctor)/.test(d)) return "doctorate";
+  if (/^(ma|ms|msc|mba|mphil|meng|master)/.test(d)) return "masters";
+  return "unknown";
+}
+
+/** The words each style uses for a thesis, taken from the degree the record gives. */
+function degreeWords(degree: string | undefined, style: Style): string {
+  const kind = degreeKind(degree);
+  if (style === "apa7") {
+    if (kind === "doctorate") return "Doctoral dissertation";
+    if (kind === "masters") return "Master's thesis";
+    return "Dissertation";
+  }
+  if (style === "mla9") {
+    if (kind === "doctorate") return "PhD dissertation";
+    if (kind === "masters") return "MA thesis";
+    return "Dissertation";
+  }
+  if (kind === "doctorate") return "PhD diss.";
+  if (kind === "masters") return "MA thesis";
+  return "Diss.";
 }
 
 function normal(x: Author): string {
@@ -80,6 +121,9 @@ const dash = (p?: string) => (p ? p.replace(/\s*-\s*/g, "-") : p);
 const end = (s: string) => (/[.?!]$/.test(s) ? s : s + ".");
 const link = (s: Source) => (s.doi ? `https://doi.org/${s.doi}` : s.url ?? "");
 
+/** A title without the period the record ends it with, so the punctuation we add sits outside the italics. */
+const plainTitle = (t: string) => t.replace(/\.\s*$/, "");
+
 export function format(s: Source, styleInput: Style | string): string {
   const style = normalizeStyle(styleInput);
   const parts: string[] = [];
@@ -111,9 +155,58 @@ export function format(s: Source, styleInput: Style | string): string {
       push(end(`*${s.title}*${inside ? ` (${inside})` : ""}`));
       push(s.publisher ? end(s.publisher) : undefined);
       push(link(s));
+    } else if (s.type === "chapter") {
+      const eds = s.editors ?? [];
+      push(who ? end(who) + ` (${date}).` : undefined);
+      if (!who) push(`${end(s.title)} (${date}).`);
+      else push(end(s.title));
+      const edsPart = eds.length ? `${apaInOrder(eds)} (${role(eds, "Ed.", "Eds.")}), ` : "";
+      const pages = s.pages ? ` (pp. ${dash(s.pages)})` : "";
+      if (s.container) push(`In ${edsPart}*${s.container}*${pages}.`);
+      else if (s.pages) push(`(${dash(s.pages)}).`);
+      push(s.publisher ? end(s.publisher) : undefined);
+      push(link(s));
+    } else if (s.type === "thesis") {
+      const label = s.institution ? `${degreeWords(s.degree, "apa7")}, ${s.institution}` : degreeWords(s.degree, "apa7");
+      if (who) {
+        push(`${end(who)} (${date}).`);
+        push(`*${plainTitle(s.title)}* [${label}].`);
+      } else {
+        push(`*${plainTitle(s.title)}* [${label}] (${date}).`);
+      }
+      push(s.publisher && s.publisher !== s.institution ? end(s.publisher) : undefined);
+      push(link(s));
+    } else if (s.type === "report") {
+      const number = s.report_number ? ` (Report No. ${s.report_number})` : "";
+      if (who) {
+        push(`${end(who)} (${date}).`);
+        push(`*${plainTitle(s.title)}*${number}.`);
+      } else {
+        push(`*${plainTitle(s.title)}*${number} (${date}).`);
+      }
+      push(s.publisher ? end(s.publisher) : undefined);
+      push(link(s));
+    } else if (s.type === "dataset") {
+      if (who) {
+        push(`${end(who)} (${date}).`);
+        push(`*${plainTitle(s.title)}* [Data set].`);
+      } else {
+        push(`*${plainTitle(s.title)}* [Data set] (${date}).`);
+      }
+      push(s.publisher ? end(s.publisher) : undefined);
+      push(link(s));
+    } else if (s.type === "preprint") {
+      if (who) {
+        push(`${end(who)} (${date}).`);
+        push(`*${plainTitle(s.title)}* [Preprint].`);
+      } else {
+        push(`*${plainTitle(s.title)}* [Preprint] (${date}).`);
+      }
+      push(s.repository ? end(s.repository) : undefined);
+      push(link(s));
     } else {
       if (who) push(`${end(who)} (${date}).`);
-      push(end(`*${s.title}*`));
+      push(end(`*${plainTitle(s.title)}*`));
       push(s.container ? end(s.container) : undefined);
       push(link(s));
     }
@@ -131,7 +224,7 @@ export function format(s: Source, styleInput: Style | string): string {
       const trs = s.translators ?? [];
       if (who) push(end(who));
       else if (eds.length) push(end(`${mlaAuthors(eds)}, ${role(eds, "editor", "editors")}`));
-      push(end(`*${s.title}*`));
+      push(end(`*${plainTitle(s.title)}*`));
       const bits = [
         s.edition ? `${s.edition} ed.` : "",
         trs.length ? `Translated by ${people(trs)}` : "",
@@ -140,6 +233,44 @@ export function format(s: Source, styleInput: Style | string): string {
         s.year ?? "",
       ].filter(Boolean);
       push(bits.length ? end(bits.join(", ")) : undefined);
+    } else if (s.type === "chapter") {
+      const eds = s.editors ?? [];
+      push(who ? end(who) : undefined);
+      push(`"${end(s.title)}"`);
+      const bits = [
+        s.container ? `*${s.container}*` : "",
+        eds.length ? `edited by ${people(eds)}` : "",
+        s.publisher ?? "",
+        s.year ?? "",
+        s.pages ? `pp. ${dash(s.pages)}` : "",
+        link(s),
+      ].filter(Boolean);
+      push(end(bits.join(", ")));
+    } else if (s.type === "thesis") {
+      push(who ? end(who) : undefined);
+      push(end(`*${plainTitle(s.title)}*`));
+      push(s.year ? end(s.year) : undefined);
+      const bits = [s.institution, degreeWords(s.degree, "mla9")].filter(Boolean).join(", ");
+      push(bits ? end(bits) : undefined);
+      push(link(s) ? end(link(s)) : undefined);
+    } else if (s.type === "report") {
+      push(who ? end(who) : undefined);
+      push(end(`*${plainTitle(s.title)}*`));
+      const bits = [s.publisher ?? "", s.year ?? ""].filter(Boolean);
+      push(bits.length ? end(bits.join(", ")) : undefined);
+      push(s.report_number ? end(`Report no. ${s.report_number}`) : undefined);
+      push(link(s) ? end(link(s)) : undefined);
+    } else if (s.type === "dataset") {
+      push(who ? end(who) : undefined);
+      push(end(`*${plainTitle(s.title)}*`));
+      const bits = [s.publisher ?? "", s.year ?? ""].filter(Boolean);
+      push(bits.length ? end(bits.join(", ")) : undefined);
+      push(link(s) ? end(link(s)) : undefined);
+    } else if (s.type === "preprint") {
+      push(who ? end(who) : undefined);
+      push(`"${end(s.title)}"`);
+      const bits = ["Preprint", s.repository ?? "", s.year ?? "", link(s)].filter(Boolean);
+      push(end(bits.join(", ")));
     } else {
       push(who ? end(who) : undefined);
       push(`"${end(s.title)}"`);
@@ -175,6 +306,41 @@ export function format(s: Source, styleInput: Style | string): string {
       .join(" ");
     push(end(`*${s.title}*${after ? `. ${after}` : ""}`));
     push(s.publisher ? end(`${s.city ? `${s.city}: ` : ""}${s.publisher}`) : undefined);
+  } else if (s.type === "chapter") {
+    const eds = s.editors ?? [];
+    push(who ? end(who) : undefined);
+    push(end(year));
+    push(`"${end(s.title)}"`);
+    const inner = [s.container ? `*${s.container}*` : "", eds.length ? `edited by ${people(eds)}` : "", s.pages ? dash(s.pages) : ""].filter(Boolean);
+    push(inner.length ? end(`In ${inner.join(", ")}`) : undefined);
+    push(s.publisher ? end(`${s.city ? `${s.city}: ` : ""}${s.publisher}`) : undefined);
+    push(link(s) ? end(link(s)) : undefined);
+  } else if (s.type === "thesis") {
+    push(who ? end(who) : undefined);
+    push(end(year));
+    const bits = [degreeWords(s.degree, "chicago-ad"), s.institution].filter(Boolean).join(", ");
+    push(end(`*${plainTitle(s.title)}*${bits ? `. ${bits}` : ""}`));
+    push(link(s) ? end(link(s)) : undefined);
+  } else if (s.type === "report") {
+    push(who ? end(who) : undefined);
+    push(end(year));
+    const number = s.report_number ? `. Report no. ${s.report_number}.` : "";
+    push(end(`*${plainTitle(s.title)}*${number}`));
+    push(s.publisher ? end(`${s.city ? `${s.city}: ` : ""}${s.publisher}`) : undefined);
+    push(link(s) ? end(link(s)) : undefined);
+  } else if (s.type === "dataset") {
+    push(who ? end(who) : undefined);
+    push(end(year));
+    push(end(`*${plainTitle(s.title)}*`));
+    push(s.publisher ? end(`${s.city ? `${s.city}: ` : ""}${s.publisher}`) : undefined);
+    push(link(s) ? end(link(s)) : undefined);
+  } else if (s.type === "preprint") {
+    push(who ? end(who) : undefined);
+    push(end(year));
+    push(`"${end(s.title)}"`);
+    push("Preprint.");
+    push(s.repository ? end(s.repository) : undefined);
+    push(link(s) ? end(link(s)) : undefined);
   } else {
     push(who ? end(who) : undefined);
     push(end(s.date_text ?? year));

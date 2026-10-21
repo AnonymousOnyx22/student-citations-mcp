@@ -61,8 +61,8 @@ Nothing else to install. You need Node.js 20 or newer. The config block for your
 
 | Tool | What it does |
 | --- | --- |
-| `format_citation` | Format a journal article, book or website from details you type, in APA 7, MLA 9 or Chicago author date. For books you can name the editors and the translators too |
-| `cite_from_doi` | Look up a DOI on Crossref and format the citation |
+| `format_citation` | Format a journal article, book, website, book chapter, thesis, report, dataset or preprint from details you type, in APA 7, MLA 9 or Chicago author date. For books you can name the editors and the translators too |
+| `cite_from_doi` | Look up a DOI on Crossref and format the citation. The Crossref record decides the shape, so a book chapter comes back as a chapter and a dissertation comes back as a thesis |
 | `cite_from_isbn` | Look up an ISBN on Open Library and format the citation |
 | `in_text_citation` | The in text citation that matches a source, with an optional page number, in the parenthetical or the narrative form |
 
@@ -71,6 +71,7 @@ All four tools are read only.
 ## What you can ask
 
 - "Cite 10.1038/nature14539 in APA."
+- "Cite the DOI of this book chapter in APA, with the editors of the book."
 - "Make an MLA citation for ISBN 9780262033848."
 - "Format this as Chicago: Smith and Jones, 2020, Learning to Learn, Journal of Study Skills, volume 4, issue 2, pages 11 to 25."
 - "What's the in text citation for a quote on page 14 of that paper?"
@@ -122,6 +123,22 @@ Chicago author date
 Ferrante, Elena. 2012. *My brilliant friend*. Translated by Ann Goldstein. Europa Editions.
 ```
 
+## Source types
+
+With a DOI the server reads the Crossref record and follows the type it finds. A book does not come back as a journal article with a volume and an issue it does not have.
+
+| Crossref type | What you get back |
+| --- | --- |
+| `journal-article` | A journal article, with its volume, issue and pages |
+| `book`, `monograph`, `edited-book`, `reference-book`, `proceedings` | A book, and the editors take the author's place when the book has no author |
+| `book-chapter`, `proceedings-article` | A chapter in its book, with the pages it covers |
+| `dissertation` | A thesis, with the degree and the university |
+| `report`, `standard` | A report, with its report number |
+| `dataset` | A data set |
+| `posted-content` | A preprint, with the repository it was posted in |
+
+`format_citation` takes the same kinds of source, so you can type the details of a chapter, a thesis, a report, a data set or a preprint when there is no DOI to look up.
+
 ## Add it to your app
 
 Add this to your MCP client config. For Claude Desktop that is `claude_desktop_config.json`.
@@ -171,7 +188,7 @@ APA 7, MLA 9 and Chicago author date, and no others. Ask for "APA", "MLA 9" or "
 
 **What can I cite?**
 
-A journal article, a book or a website. With a DOI the server reads the Crossref record, which covers journal articles, many books and conference papers. With an ISBN it reads the Open Library record for the book. If the lookup fails, or the source has no DOI, `format_citation` takes the details you type and formats them.
+A journal article, a book, a book chapter, a thesis, a report, a dataset, a preprint or a website. With a DOI the server reads the Crossref record and follows the type it finds, so a journal article comes back as an article, an edited book comes back as a book with its editors, a book chapter or a conference paper comes back as a chapter, a dissertation comes back as a thesis, and a preprint comes back with the repository it was posted in. With an ISBN it reads the Open Library record for the book. If the lookup fails, or the source has no DOI, `format_citation` takes the details you type and formats them.
 
 **Can I cite a book with editors or translators?**
 
@@ -179,7 +196,7 @@ Yes. `format_citation` takes `editors` and `translators` in the same shape as `a
 
 **Does it check the citation against my style guide?**
 
-No. It formats from fixed rules in the code, and every style has cases it does not cover, such as editors and translators inside a journal article, a chapter in an edited book, chapter numbers and multi volume sets. Check the result against your course's style guide or your instructor's rules.
+No. It formats from fixed rules in the code, and every style has cases it does not cover, such as editors and translators inside a journal article, chapter numbers and multi volume sets. Check the result against your course's style guide or your instructor's rules.
 
 **Will it touch my files or my bibliography?**
 
@@ -199,7 +216,7 @@ Yes. The MIT license and the full source are on GitHub, and the formatting rules
 
 ## Good to know
 
-- Always check the result against your course's style guide or your instructor's rules. Styles have many special cases this tool does not cover, such as editors and translators inside a journal article, the author of a single chapter in an edited book, chapter numbers and multi volume sets.
+- Always check the result against your course's style guide or your instructor's rules. Styles have many special cases this tool does not cover, such as editors and translators inside a journal article, chapter numbers and multi volume sets.
 - Titles are used as the source gives them. APA wants sentence case for article titles, so fix capitals if your style needs it.
 - Optional environment variables, `CROSSREF_EMAIL` puts your address in lookups so Crossref can reach you about heavy use, and `CROSSREF_BASE_URL` and `OPENLIBRARY_BASE_URL` point to other servers for testing.
 

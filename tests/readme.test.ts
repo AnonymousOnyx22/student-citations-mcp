@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { format, inText, narrativeInText } from "../src/format.js";
+import { crossrefKind } from "../src/tools.js";
 
 const readme = readFileSync(new URL("../README.md", import.meta.url), "utf8");
 
@@ -100,6 +101,24 @@ describe("README", () => {
     expect(row).toBeTruthy();
     expect(row).toContain("editors");
     expect(row).toContain("translators");
+  });
+
+  it("lists the Crossref types it reads, the way the code maps them", () => {
+    const section = readme.split("## Source types")[1]?.split("\n## ")[0] ?? "";
+    expect(section).toBeTruthy();
+    const types = ["journal-article", "book", "monograph", "edited-book", "reference-book", "proceedings", "book-chapter", "proceedings-article", "dissertation", "report", "standard", "dataset", "posted-content"];
+    for (const type of types) {
+      expect(crossrefKind(type), `${type} has no kind in the code`).toBeTruthy();
+      expect(section, `the README does not mention ${type}`).toContain(`\`${type}\``);
+    }
+  });
+
+  it("says the new kinds of source format_citation takes", () => {
+    const row = readme.split("\n").find((line) => line.startsWith("| `format_citation` |"));
+    expect(row).toBeTruthy();
+    for (const kind of ["book chapter", "thesis", "report", "dataset", "preprint"]) {
+      expect(row).toContain(kind);
+    }
   });
 });
 

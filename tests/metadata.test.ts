@@ -65,6 +65,15 @@ describe("registry files", () => {
       expect(llms).toContain(tool.name);
     }
   });
+
+  it("gives every tool the same description in llms.txt", () => {
+    const lines = llms.split("\n");
+    for (const tool of tools) {
+      const at = lines.findIndex((line) => line.trim() === `### ${tool.name}`);
+      expect(at, `${tool.name} is missing from llms.txt`).toBeGreaterThan(-1);
+      expect(lines[at + 1].trim()).toBe(tool.description);
+    }
+  });
 });
 
 describe("dependencies", () => {

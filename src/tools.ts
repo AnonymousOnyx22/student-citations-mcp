@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { HttpClient } from "./core/http.js";
 import { ApiError } from "./core/http.js";
 import type { ToolDef } from "./core/tools.js";
-import { type Source, format, inText, narrativeInText, normalizeDoi, normalizeIsbn, normalizeStyle, splitName } from "./format.js";
+import { type Author, type Source, format, inText, narrativeInText, normalizeDoi, normalizeIsbn, normalizeStyle, splitName } from "./format.js";
 
 export interface Api {
   crossref: HttpClient;
@@ -14,13 +14,13 @@ const form = z.enum(["parenthetical", "narrative"]).default("parenthetical").des
 const author = z.object({ family: z.string().describe("Last name"), given: z.string().optional().describe("First and middle names") });
 
 const sourceShape = {
-  type: z.enum(["journal", "book", "website"]),
+  type: z.enum(["journal", "book", "website", "chapter", "thesis", "report", "dataset", "preprint"]),
   authors: z.array(author).default([]),
-  editors: z.array(author).optional().describe("Editors of a book, same shape as authors. When a book has editors and no authors, they take the author's place in the citation."),
+  editors: z.array(author).optional().describe("Editors of a book or a chapter, same shape as authors. When a book has editors and no authors, they take the author's place in the citation."),
   translators: z.array(author).optional().describe("Translators of a book, same shape as authors."),
   year: z.string().optional(),
   title: z.string(),
-  container: z.string().optional().describe("Journal name or website name."),
+  container: z.string().optional().describe("Journal name, the book title for a chapter, or website name."),
   publisher: z.string().optional(),
   city: z.string().optional().describe("Publisher city, used by Chicago for books."),
   edition: z.string().optional().describe('For example "2nd".'),
@@ -31,18 +31,101 @@ const sourceShape = {
   url: z.string().optional(),
   date_text: z.string().optional().describe('Website date as you want it shown, like "2026, October 14" for APA or "14 Oct. 2026" for MLA.'),
   accessed: z.string().optional().describe('MLA access date, like "14 Oct. 2026".'),
+  institution: z.string().optional().describe("The university or organisation behind a thesis, a report or a dataset."),
+  degree: z.string().optional().describe('The degree of a thesis, like "Ph.D.".'),
+  repository: z.string().optional().describe("Where a preprint was posted, like arXiv."),
+  report_number: z.string().optional().describe("The number of a report or a standard."),
 };
 
+/** How each Crossref work type becomes the kind of source the formatter knows. */
+const crossrefKinds: Record<string, Source["type"]> = {
+  "journal-article": "journal",
+  book: "book",
+  monograph: "book",
+  "edited-book": "book",
+  "reference-book": "book",
+  proceedings: "book",
+  "book-chapter": "chapter",
+  "proceedings-article": "chapter",
+  dissertation: "thesis",
+  report: "report",
+  standard: "report",
+  dataset: "dataset",
+  "posted-content": "preprint",
+  "peer-review": "journal",
+};
+
+/** The kind of source for a Crossref work type. A type we do not know stays a journal article. */
+export function crossrefKind(type: string): Source["type"] {
+  return crossrefKinds[type] ?? "journal";
+}
+
+/** The people on a Crossref record, in the shape the formatter takes. */
+function crossrefPeople(list: any): Author[] {
+  return (Array.isArray(list) ? list : [])
+    .filter((x: any) => x?.family)
+    .map((x: any) => ({ family: x.family, given: x.given }));
+}
+
+/** The first name on a Crossref list, like the institution behind a thesis. */
+function crossrefFirst(list: any): string | undefined {
+  const first = Array.isArray(list) ? list[0] : undefined;
+  if (first?.name) return String(first.name);
+  if (typeof first === "string") return first;
+  return undefined;
+}
+
+/** The year of a Crossref record, including the posted date that a preprint carries. */
 function yearOf(item: any): string | undefined {
-  const parts = item?.issued?.["date-parts"]?.[0] ?? item?.published?.["date-parts"]?.[0] ?? item?.["published-print"]?.["date-parts"]?.[0] ?? item?.["published-online"]?.["date-parts"]?.[0];
+  const parts = item?.issued?.["date-parts"]?.[0] ?? item?.published?.["date-parts"]?.[0] ?? item?.["published-print"]?.["date-parts"]?.[0] ?? item?.["published-online"]?.["date-parts"]?.[0] ?? item?.posted?.["date-parts"]?.[0];
   return parts?.[0] ? String(parts[0]) : undefined;
+}
+
+/** A Crossref record as a source the formatter can lay out. */
+export function crossrefSource(m: any, doi: string): Source {
+  const type = crossrefKind(String(m?.type ?? ""));
+  const editors = crossrefPeople(m?.editor);
+  const translators = crossrefPeople(m?.translator);
+  const institution = crossrefFirst(m?.institution);
+  const repository = institution ?? m?.publisher;
+  const src: Source = {
+    type,
+    authors: crossrefPeople(m?.author),
+    editors: editors.length ? editors : undefined,
+    translators: translators.length ? translators : undefined,
+    year: yearOf(m),
+    title: Array.isArray(m?.title) ? m.title[0] : m?.title,
+    container: Array.isArray(m?.["container-title"]) ? m["container-title"][0] : m?.["container-title"],
+    publisher: m?.publisher,
+    volume: m?.volume,
+    issue: m?.issue,
+    pages: m?.page,
+    doi: m?.DOI ?? doi,
+  };
+  if (type === "chapter") src.editors = editors;
+  if (type === "thesis") {
+    src.institution = institution;
+    src.degree = Array.isArray(m?.degree) ? m.degree[0] : m?.degree;
+    src.publisher = m?.publisher ?? institution;
+  }
+  if (type === "report") {
+    src.report_number = m?.number ? String(m.number) : undefined;
+    src.institution = institution;
+    src.publisher = m?.publisher ?? institution;
+  }
+  if (type === "dataset") {
+    src.institution = institution;
+    src.publisher = m?.publisher ?? institution;
+  }
+  if (type === "preprint") src.repository = repository;
+  return src;
 }
 
 export const tools: ToolDef<Api>[] = [
   {
     name: "format_citation",
     title: "Format a citation",
-    description: "Format a journal article, book or website as a citation in APA 7, MLA 9 or Chicago author date, from details you provide. Inputs: type (journal, book or website), title, and optional authors (family plus given names), year, container, publisher, city, edition, editors, translators, volume, issue, pages, doi, url, date_text, accessed and style (apa7, mla9 or chicago-ad). Editors and translators are for books and take the same shape as authors: a book with editors and no authors puts the editors where the author goes, and a book with authors too carries the other names after the title, in the spot each style uses. Example prompt: \"Cite this journal article in APA 7: Learning to learn by John Kenneth Smith and Alice Jones, 2020, Journal of Study Skills, volume 4, issue 2, pages 11-25.\"",
+    description: "Format a journal article, book, website, book chapter, thesis, report, dataset or preprint as a citation in APA 7, MLA 9 or Chicago author date, from details you provide. Inputs: type (journal, book, website, chapter, thesis, report, dataset or preprint), title, and optional authors (family plus given names), year, container, publisher, city, edition, editors, translators, volume, issue, pages, doi, url, date_text, accessed, institution, degree, repository, report_number and style (apa7, mla9 or chicago-ad). Editors and translators are for books and take the same shape as authors: a book with editors and no authors puts the editors where the author goes, and a book with authors too carries the other names after the title, in the spot each style uses. Example prompt: \"Cite this journal article in APA 7: Learning to learn by John Kenneth Smith and Alice Jones, 2020, Journal of Study Skills, volume 4, issue 2, pages 11-25.\"",
     inputSchema: { ...sourceShape, style },
     run: async (a) => {
       const { style: st, ...src } = a;
@@ -52,7 +135,7 @@ export const tools: ToolDef<Api>[] = [
   {
     name: "cite_from_doi",
     title: "Cite from a DOI",
-    description: "Look up a DOI on Crossref and format the citation. Works for journal articles, many books and conference papers. Inputs: doi (a DOI like 10.1038/nature14539 or a doi.org link) and style (apa7, mla9 or chicago-ad). Example prompt: \"Cite 10.1038/nature14539 in APA.\"",
+    description: "Look up a DOI on Crossref and format the citation. The Crossref record decides the shape: a journal article, a book or an edited book, a book chapter or a conference paper, a thesis, a report, a dataset or a preprint. Inputs: doi (a DOI like 10.1038/nature14539 or a doi.org link) and style (apa7, mla9 or chicago-ad). Example prompt: \"Cite 10.1038/nature14539 in APA.\"",
     inputSchema: { doi: z.string().describe("A DOI like 10.1038/nature14539, or a doi.org link."), style },
     run: async (a, api) => {
       const st = normalizeStyle(a.style ?? "apa7");
@@ -60,19 +143,7 @@ export const tools: ToolDef<Api>[] = [
       try {
         const res: any = await api.crossref.get(`/works/${encodeURI(doi)}`);
         const m = res.message ?? res;
-        const type = String(m.type ?? "");
-        const src: Source = {
-          type: type === "book" || type === "monograph" ? "book" : "journal",
-          authors: (m.author ?? []).filter((x: any) => x.family).map((x: any) => ({ family: x.family, given: x.given })),
-          year: yearOf(m),
-          title: Array.isArray(m.title) ? m.title[0] : m.title,
-          container: Array.isArray(m["container-title"]) ? m["container-title"][0] : m["container-title"],
-          publisher: m.publisher,
-          volume: m.volume,
-          issue: m.issue,
-          pages: m.page,
-          doi: m.DOI ?? doi,
-        };
+        const src = crossrefSource(m, doi);
         if (!src.title) throw new Error("Crossref found that DOI but it has no title, so there is nothing to cite. Use format_citation and type the details.");
         return `${format(src, st)}\n\n(From Crossref. Check it against your style guide.)`;
       } catch (err) {
