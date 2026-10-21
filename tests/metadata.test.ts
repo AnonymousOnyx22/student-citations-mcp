@@ -76,6 +76,53 @@ describe("registry files", () => {
   });
 });
 
+describe("discovery words", () => {
+  /** The words students type when they look for a citation tool. */
+  const adjacent = [
+    "citation mcp",
+    "citation generator",
+    "cite this",
+    "apa citation",
+    "apa formatter",
+    "mla formatter",
+    "chicago formatter",
+    "works cited",
+    "reference list",
+    "thesis",
+    "dissertation",
+  ];
+
+  it("keeps the keywords that students search for", () => {
+    for (const keyword of adjacent) {
+      expect(pkg.keywords, `${keyword} is missing from the keywords`).toContain(keyword);
+    }
+  });
+
+  it("keeps every keyword short and lowercase, the way npm wants them", () => {
+    for (const keyword of pkg.keywords as string[]) {
+      expect(keyword.length).toBeLessThanOrEqual(60);
+      expect(keyword).toBe(keyword.toLowerCase());
+    }
+  });
+
+  it("leads the package description with the main phrase", () => {
+    expect(pkg.description.startsWith("Citation MCP server")).toBe(true);
+  });
+
+  it("names the same words in the package description", () => {
+    expect(pkg.description).toContain("citation generator");
+    expect(pkg.description).toContain("works cited");
+    for (const name of ["APA", "MLA", "Chicago"]) {
+      expect(pkg.description).toContain(name);
+    }
+  });
+
+  it("keeps the registry descriptions in step with each other", () => {
+    expect(llms).toContain(server.description);
+    expect(glama.description).toContain("Citation generator");
+  });
+});
+
 describe("dependencies", () => {
   it("keeps the lock file in step with the ranges in package.json", () => {
     expect(lock.packages[""].dependencies).toEqual(pkg.dependencies);

@@ -5,7 +5,7 @@
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![ci](https://github.com/AnonymousOnyx22/student-citations-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/AnonymousOnyx22/student-citations-mcp/actions/workflows/ci.yml)
 
-Paste a DOI or an ISBN into your AI app and get a formatted citation back in APA 7, MLA 9 or Chicago author date. You can also type the details yourself and get the matching in text citation, either in brackets or in the narrative form for a sentence where you name the author. The wording and punctuation come from tested code, so they are the same every time. Free and open source, no account, no key and nothing stored. It works with Claude, ChatGPT, Cursor, VS Code Copilot and any other app that supports MCP.
+Paste a DOI or an ISBN into your AI app and get a formatted citation back in APA 7, MLA 9 or Chicago author date, ready to paste into your works cited list. It is a citation generator that runs inside the app you are already writing in, so there is no web page to fill in and no account to create. You can also type the details yourself and get the matching in text citation, either in brackets or in the narrative form for a sentence where you name the author. The wording and punctuation come from tested code, so they are the same every time. Free and open source, no account, no key and nothing stored. It works with Claude, ChatGPT, Cursor, VS Code Copilot and any other app that supports MCP.
 
 ## Citations MCP compared with BibGuru and Citation Machine
 
@@ -78,6 +78,7 @@ All four tools are read only.
 - "Give me the APA citation for that in narrative form, so I can name the author in my sentence."
 - "Format this book in MLA with the editors taking the author's place: A dictionary of study words by Jamie Patel and Robin Cole, 2019, North Gate Press."
 - "Cite this translated book in APA: My brilliant friend by Elena Ferrante, translated by Ann Goldstein, 2012, Europa Editions."
+- "Cite this thesis in APA: Learning to learn by Jane Doe, 2021, North Gate University, Ph.D. dissertation."
 
 ## Example
 
@@ -202,6 +203,10 @@ No. It formats from fixed rules in the code, and every style has cases it does n
 
 No. The tools only return text in the chat. Nothing is written to your project and nothing is added to your reference list, so copy a citation into your own bibliography if you want to keep it.
 
+**Can I use it to build a works cited list?**
+
+Yes, one source at a time. Ask for each source and the server gives you the formatted entry, then copy the entries into your own list in the order your style guide asks for. The server keeps no list of your sources, so your works cited list stays where you put it.
+
 **How do I remove it?**
 
 Take the block out of your app's MCP config and the server stops running. There is nothing else to uninstall, since `npx` keeps its copy in the npm cache rather than in your project.
@@ -230,7 +235,7 @@ npm test
 
 Tests run against fake Crossref and Open Library servers, so they need no network. The test runner needs Node.js 22.12 or newer, and the CI workflow uses Node 22.
 
-The CI workflow installs the dependencies, builds the server and runs the tests on every push to main and on every pull request. One of those tests checks that the version is the same in package.json, server.json, llms.txt and glama.json, so the npm release and the registry entry stay in step. Another one checks that the paste ready example above is exactly what cite_from_doi returns for that DOI, so the page and the code stay in step.
+The CI workflow installs the dependencies, builds the server and runs the tests on every push to main and on every pull request. One of those tests checks that the version is the same in package.json, server.json, llms.txt and glama.json, so the npm release and the registry entry stay in step. Another one checks that the paste ready example above is exactly what cite_from_doi returns for that DOI, so the page and the code stay in step. One more checks that the npm keywords and the descriptions keep the words students type when they look for a citation tool.
 
 ## More free student MCP servers
 
