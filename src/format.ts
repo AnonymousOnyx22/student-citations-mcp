@@ -351,6 +351,49 @@ export function format(s: Source, styleInput: Style | string): string {
   return parts.join(" ").replace(/\s+/g, " ").trim();
 }
 
+/** A lower case, accent free form of a name or a title, so a list can be alphabetised. */
+function sortText(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim();
+}
+
+/**
+ * The name or title a works cited list is alphabetised by: the first author, then a book
+ * editor when the book has no author, then the title with a leading article skipped.
+ */
+export function bibliographyKey(s: Source): string {
+  const lead = s.authors[0]?.family ?? (s.type === "book" ? s.editors?.[0]?.family : undefined);
+  if (lead) return sortText(lead);
+  return sortText(s.title.replace(/^(a|an|the)\s+/i, ""));
+}
+
+/** Alphabetise by author, then by year in APA and Chicago and by title in MLA. */
+function compareForList(a: Source, b: Source, style: Style): number {
+  const text = (x: string, y: string) => (x < y ? -1 : x > y ? 1 : 0);
+  const author = text(bibliographyKey(a), bibliographyKey(b));
+  if (author) return author;
+  const year = text(a.year ?? "", b.year ?? "");
+  const title = text(sortText(a.title), sortText(b.title));
+  return style === "mla9" ? title || year : year || title;
+}
+
+/**
+ * Several sources as one works cited list, alphabetised by author, with each entry
+ * laid out by the style. The caller's array is left as it is.
+ */
+export function formatBibliography(sources: Source[], styleInput: Style | string): string {
+  const style = normalizeStyle(styleInput);
+  if (!sources.length) throw new Error("Give at least one source for the works cited list.");
+  return [...sources]
+    .sort((a, b) => compareForList(a, b, style))
+    .map((s) => format(s, style))
+    .join("\n\n");
+}
+
 /** The author names as they read inside a sentence. APA uses "&" only inside brackets. */
 function whoFor(authors: Author[], style: Style, narrative: boolean): string {
   const names = authors.map((a) => a.family);

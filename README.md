@@ -5,7 +5,7 @@
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![ci](https://github.com/AnonymousOnyx22/student-citations-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/AnonymousOnyx22/student-citations-mcp/actions/workflows/ci.yml)
 
-Paste a DOI or an ISBN into your AI app and get a formatted citation back in APA 7, MLA 9 or Chicago author date, ready to paste into your works cited list. It is a citation generator that runs inside the app you are already writing in, so there is no web page to fill in and no account to create. You can also type the details yourself, or give the DOI or the ISBN, and get the matching in text citation, either in brackets or in the narrative form for a sentence where you name the author. The wording and punctuation come from tested code, so they are the same every time. Free and open source, no account, no key and nothing stored. It works with Claude, ChatGPT, Cursor, VS Code Copilot and any other app that supports MCP.
+Paste a DOI or an ISBN into your AI app and get a formatted citation back in APA 7, MLA 9 or Chicago author date, ready to paste into your works cited list. It is a citation generator that runs inside the app you are already writing in, so there is no web page to fill in and no account to create. You can also type the details yourself, or give the DOI or the ISBN, and get the matching in text citation, either in brackets or in the narrative form for a sentence where you name the author. Give several sources in one call and you get them back as an alphabetised works cited list. The wording and punctuation come from tested code, so they are the same every time. Free and open source, no account, no key and nothing stored. It works with Claude, ChatGPT, Cursor, VS Code Copilot and any other app that supports MCP.
 
 ## Citations MCP compared with BibGuru and Citation Machine
 
@@ -84,11 +84,12 @@ Nothing else to install. You need Node.js 20 or newer. The config block for your
 | Tool | What it does |
 | --- | --- |
 | `format_citation` | Format a journal article, book, website, book chapter, thesis, report, dataset or preprint from details you type, in APA 7, MLA 9 or Chicago author date. For books you can name the editors and the translators too |
+| `format_bibliography` | Format several sources as one works cited list, alphabetised by author, in APA 7, MLA 9 or Chicago author date. Each source takes the same fields as `format_citation` |
 | `cite_from_doi` | Look up a DOI on Crossref and format the citation. The Crossref record decides the shape, so a book chapter comes back as a chapter and a dissertation comes back as a thesis |
 | `cite_from_isbn` | Look up an ISBN on Open Library and format the citation |
 | `in_text_citation` | The in text citation that matches a source, with an optional page number, in the parenthetical or the narrative form. It takes the authors and year you type, or a DOI or an ISBN and looks up the authors and year for you |
 
-All four tools are read only.
+All five tools are read only.
 
 ## Prompts
 
@@ -127,6 +128,7 @@ It takes two arguments. `style` picks the style, which is APA 7 unless you say o
 - "Format this book in MLA with the editors taking the author's place: A dictionary of study words by Jamie Patel and Robin Cole, 2019, North Gate Press."
 - "Cite this translated book in APA: My brilliant friend by Elena Ferrante, translated by Ann Goldstein, 2012, Europa Editions."
 - "Cite this thesis in APA: Learning to learn by Jane Doe, 2021, North Gate University, Ph.D. dissertation."
+- "Put these sources into one APA works cited list, alphabetised by author."
 
 ## Example
 
@@ -187,6 +189,18 @@ With a DOI the server reads the Crossref record and follows the type it finds. A
 | `posted-content` | A preprint, with the repository it was posted in |
 
 `format_citation` takes the same kinds of source, so you can type the details of a chapter, a thesis, a report, a data set or a preprint when there is no DOI to look up.
+
+## Works cited list
+
+`format_bibliography` takes several sources in one call and returns them as one list, alphabetised by the first author's family name. A source with no author is alphabetised by its title, and a leading "A", "An" or "The" is skipped. Each source takes the same fields as `format_citation`, so a journal article, a book and a website can sit in the same list. Here are those three sources in APA 7.
+
+```text
+Cormen, T. H. (2009). *Introduction to algorithms* (3rd ed.). MIT Press.
+
+Smith, J. K., & Jones, A. (2020). Learning to learn. *Journal of Study Skills*, *4*(2), 11-25.
+
+*The water cycle*. Example Uni. https://example.edu/water
+```
 
 ## Add it to your app
 
@@ -257,7 +271,7 @@ No. The tools only return text in the chat. Nothing is written to your project a
 
 **Can I use it to build a works cited list?**
 
-Yes, one source at a time. Ask for each source and the server gives you the formatted entry, then copy the entries into your own list in the order your style guide asks for. The server keeps no list of your sources, so your works cited list stays where you put it.
+Yes. `format_bibliography` takes several sources and returns them alphabetised as one list, in APA 7, MLA 9 or Chicago author date, ready to paste into your document. Each source takes the same fields as `format_citation`. The server keeps no list of your sources, so your works cited list stays where you put it.
 
 **How do I remove it?**
 
@@ -287,7 +301,7 @@ npm test
 
 Tests run against fake Crossref and Open Library servers, so they need no network. The test runner needs Node.js 22.12 or newer, and the CI workflow uses Node 22.
 
-The CI workflow installs the dependencies, builds the server and runs the tests on every push to main and on every pull request. One of those tests checks that the version is the same in package.json, server.json, llms.txt and glama.json, so the npm release and the registry entry stay in step. Another one checks that the paste ready example above is exactly what cite_from_doi returns for that DOI, so the page and the code stay in step. One more checks that the npm keywords and the descriptions keep the words students type when they look for a citation tool. A test also checks that the cite_this prompt is registered and that the message it returns carries the same example wording as the four tool descriptions.
+The CI workflow installs the dependencies, builds the server and runs the tests on every push to main and on every pull request. One of those tests checks that the version is the same in package.json, server.json, llms.txt and glama.json, so the npm release and the registry entry stay in step. Another one checks that the paste ready example above is exactly what cite_from_doi returns for that DOI, so the page and the code stay in step. One more checks that the npm keywords and the descriptions keep the words students type when they look for a citation tool. A test also checks that the cite_this prompt is registered and that the message it returns carries the same example wording as the citation tool descriptions.
 
 ## More free student MCP servers
 

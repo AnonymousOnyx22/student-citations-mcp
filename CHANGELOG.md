@@ -2,6 +2,7 @@
 
 ## 0.1.2
 
+- Add a format_bibliography tool, so several sources come back as one works cited list, alphabetised by author in APA 7, MLA 9 or Chicago author date
 - Add doi and isbn inputs to in_text_citation, so a student with only an identifier can get the in text citation without retyping the authors and the year
 
 - Add a README comparison table with the zotero-mcp, zoteus and xbghc zotero-mcp servers, and a FAQ answer about how this server differs from them

@@ -4,7 +4,7 @@ import type { AddressInfo } from "node:net";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { createServer, makeApi } from "../src/server.js";
-import { format, inText, narrativeInText, normalizeDoi, normalizeIsbn, splitName } from "../src/format.js";
+import { format, formatBibliography, inText, narrativeInText, normalizeDoi, normalizeIsbn, splitName } from "../src/format.js";
 import { crossrefKind } from "../src/tools.js";
 
 const article = {
@@ -124,6 +124,63 @@ describe("formatting", () => {
   });
 });
 
+describe("works cited list", () => {
+  const zimmer = {
+    type: "journal" as const,
+    authors: [{ family: "Zimmer", given: "Zoe" }],
+    year: "2021",
+    title: "Later work",
+    container: "Journal of Study Skills",
+    volume: "2",
+    pages: "1-9",
+  };
+  const edited = {
+    type: "book" as const,
+    authors: [],
+    editors: [{ family: "Baker", given: "Sam" }],
+    year: "2018",
+    title: "A dictionary of study words",
+    publisher: "North Gate Press",
+  };
+  const adams = {
+    type: "book" as const,
+    authors: [{ family: "Adams", given: "Amy" }],
+    year: "2019",
+    title: "Study habits",
+    publisher: "North Gate Press",
+  };
+
+  it("alphabetises several sources into one list", () => {
+    expect(formatBibliography([zimmer, edited, adams], "apa7")).toBe(
+      [
+        "Adams, A. (2019). *Study habits*. North Gate Press.",
+        "Baker, S., Ed. (2018). *A dictionary of study words*. North Gate Press.",
+        "Zimmer, Z. (2021). Later work. *Journal of Study Skills*, *2*, 1-9.",
+      ].join("\n\n"),
+    );
+  });
+
+  it("sorts by title when there is no author and skips a leading article", () => {
+    const site = { type: "website" as const, authors: [], title: "The water cycle", container: "Example Uni", year: "2026", url: "https://example.edu/water" };
+    const young = { type: "book" as const, authors: [{ family: "Young", given: "Ada" }], year: "2020", title: "Study", publisher: "North Gate Press" };
+    const list = formatBibliography([young, site, adams], "apa7").split("\n\n");
+    expect(list[0]).toContain("Adams, A.");
+    expect(list[1]).toContain("*The water cycle*");
+    expect(list[2]).toContain("Young, A.");
+  });
+
+  it("orders one author's works by year in APA and by title in MLA", () => {
+    const early = { type: "book" as const, authors: [{ family: "Adams", given: "Amy" }], year: "2018", title: "Zebra habits", publisher: "North Gate Press" };
+    const late = { type: "book" as const, authors: [{ family: "Adams", given: "Amy" }], year: "2020", title: "Alpha methods", publisher: "North Gate Press" };
+    expect(formatBibliography([late, early], "apa7").split("\n\n")[0]).toContain("Zebra habits");
+    expect(formatBibliography([late, early], "mla9").split("\n\n")[0]).toContain("Alpha methods");
+  });
+
+  it("asks for one source at least", () => {
+    expect(() => formatBibliography([], "apa7")).toThrow("at least one source");
+  });
+});
+
 describe("source kinds", () => {
   const chapter = {
     type: "chapter" as const,
@@ -197,9 +254,9 @@ describe("source kinds", () => {
 });
 
 describe("MCP tools", () => {
-  it("lists four read only tools", async () => {
+  it("lists five read only tools", async () => {
     const tools = (await client.listTools()).tools;
-    expect(tools.map((t) => t.name).sort()).toEqual(["cite_from_doi", "cite_from_isbn", "format_citation", "in_text_citation"]);
+    expect(tools.map((t) => t.name).sort()).toEqual(["cite_from_doi", "cite_from_isbn", "format_bibliography", "format_citation", "in_text_citation"]);
     for (const t of tools) expect(t.annotations?.readOnlyHint).toBe(true);
   });
   it("gives every tool concrete inputs and an example prompt", async () => {
@@ -260,6 +317,25 @@ describe("MCP tools", () => {
   it("takes editors in format_citation and puts them where the author goes", async () => {
     const r = await call("format_citation", { type: "book", title: "A dictionary of study words", editors: [{ family: "Patel", given: "Jamie" }, { family: "Cole", given: "Robin" }], year: "2019", publisher: "North Gate Press", style: "mla9" });
     expect(r.text).toBe("Patel, Jamie, and Robin Cole, editors. *A dictionary of study words*. North Gate Press, 2019.");
+  });
+  it("puts several sources in one alphabetised list", async () => {
+    const r = await call("format_bibliography", {
+      sources: [
+        { type: "book", authors: [{ family: "Zimmer", given: "Zoe" }], year: "2021", title: "Later work", publisher: "North Gate Press" },
+        { type: "book", authors: [{ family: "Adams", given: "Amy" }], year: "2019", title: "Study habits", publisher: "North Gate Press" },
+      ],
+      style: "apa7",
+    });
+    expect(r.isError).toBe(false);
+    const entries = r.text.split("\n\n");
+    expect(entries).toHaveLength(2);
+    expect(entries[0]).toBe("Adams, A. (2019). *Study habits*. North Gate Press.");
+    expect(entries[1]).toBe("Zimmer, Z. (2021). *Later work*. North Gate Press.");
+  });
+  it("asks for at least one source in a works cited list", async () => {
+    const r = await call("format_bibliography", { sources: [] });
+    expect(r.isError).toBe(true);
+    expect(r.text).toContain("at least one source");
   });
   it("gives the narrative in text citation when asked", async () => {
     const p = await call("in_text_citation", { authors: article.authors, year: "2020", page: "14", style: "apa7" });

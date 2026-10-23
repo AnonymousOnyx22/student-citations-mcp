@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
-import { format, inText, narrativeInText } from "../src/format.js";
+import { format, formatBibliography, inText, narrativeInText } from "../src/format.js";
 import { crossrefKind } from "../src/tools.js";
 
 const readme = readFileSync(new URL("../README.md", import.meta.url), "utf8");
@@ -60,8 +60,20 @@ describe("README", () => {
     expect(readme).toContain("(From Crossref. Check it against your style guide.)");
   });
 
+  it("shows the works cited list exactly as the formatter returns it", () => {
+    const section = (readme.split("## Works cited list")[1]?.split("\n## ")[0] ?? "").replace(/\r\n/g, "\n");
+    const block = section.match(/```text\n([\s\S]*?)```/);
+    expect(block, "the README has no works cited list example").toBeTruthy();
+    const sources = [
+      { type: "journal" as const, authors: [{ family: "Smith", given: "John Kenneth" }, { family: "Jones", given: "Alice" }], year: "2020", title: "Learning to learn", container: "Journal of Study Skills", volume: "4", issue: "2", pages: "11-25" },
+      { type: "book" as const, authors: [{ family: "Cormen", given: "Thomas H." }], year: "2009", title: "Introduction to algorithms", edition: "3rd", publisher: "MIT Press", city: "Cambridge, MA" },
+      { type: "website" as const, authors: [], title: "The water cycle", container: "Example Uni", year: "2026", url: "https://example.edu/water" },
+    ];
+    expect(block![1].trim()).toBe(formatBibliography(sources, "apa7"));
+  });
+
   it("puts the install command and the tool table above the config block", () => {
-    for (const name of ["format_citation", "cite_from_doi", "cite_from_isbn", "in_text_citation"]) {
+    for (const name of ["format_citation", "format_bibliography", "cite_from_doi", "cite_from_isbn", "in_text_citation"]) {
       expect(readme).toContain(`\`${name}\``);
     }
     expect(readme.indexOf("npx -y student-citations-mcp")).toBeLessThan(readme.indexOf("## Tools"));

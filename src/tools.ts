@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { HttpClient } from "./core/http.js";
 import { ApiError } from "./core/http.js";
 import type { ToolDef } from "./core/tools.js";
-import { type Author, type Source, format, inText, narrativeInText, normalizeDoi, normalizeIsbn, normalizeStyle, splitName } from "./format.js";
+import { type Author, type Source, format, formatBibliography, inText, narrativeInText, normalizeDoi, normalizeIsbn, normalizeStyle, splitName } from "./format.js";
 
 export interface Api {
   crossref: HttpClient;
@@ -178,6 +178,16 @@ export const tools: ToolDef<Api>[] = [
       const { style: st, ...src } = a;
       return format(src as Source, normalizeStyle(st ?? "apa7"));
     },
+  },
+  {
+    name: "format_bibliography",
+    title: "Format a works cited list",
+    description: "Format several sources at once as one works cited list, alphabetised by the first author's family name, in APA 7, MLA 9 or Chicago author date. A source with no author is alphabetised by its title. Inputs: sources (an array of objects, each with the same fields as format_citation: type, title and optional authors, year, container, publisher, city, edition, editors, translators, volume, issue, pages, doi, url, date_text, accessed, institution, degree, repository and report_number) and style (apa7, mla9 or chicago-ad). Example prompt: \"Put these three sources into an APA works cited list: a journal article by Smith and Jones from 2020, a book by Cormen from 2009 and a website from example.edu.\"",
+    inputSchema: {
+      sources: z.array(z.object(sourceShape)).describe("The sources for the list. Each one takes the same fields as format_citation, so a journal article, a book, a website, a chapter, a thesis, a report, a dataset and a preprint can share one list."),
+      style,
+    },
+    run: async (a) => formatBibliography(a.sources as Source[], normalizeStyle(a.style ?? "apa7")),
   },
   {
     name: "cite_from_doi",

@@ -6,7 +6,7 @@
 - Run with npx -y student-citations-mcp
 - No key or account. Optional CROSSREF_EMAIL.
 - Styles are apa7, mla9 and chicago-ad. Italics are returned as asterisks.
-- All four tools are read only. Nothing is stored.
+- All five tools are read only. Nothing is stored.
 - The cite_this prompt looks nothing up. It only writes out the request.
 
 ## Tools
@@ -43,6 +43,15 @@ Example: with type "journal", title "Learning to learn", authors [{"family": "Sm
 Editors in the author's place: with type "book", title "A dictionary of study words", editors [{"family": "Patel", "given": "Jamie"}, {"family": "Cole", "given": "Robin"}], year "2019", publisher "North Gate Press" and style "mla9", returns "Patel, Jamie, and Robin Cole, editors. *A dictionary of study words*. North Gate Press, 2019.". The same book in apa7 returns "Patel, J., & Cole, R., Eds. (2019). *A dictionary of study words*. North Gate Press." and in chicago-ad returns "Patel, Jamie, and Robin Cole, eds. 2019. *A dictionary of study words*. North Gate Press."
 
 Translators after the title: with type "book", title "My brilliant friend", authors [{"family": "Ferrante", "given": "Elena"}], translators [{"family": "Goldstein", "given": "Ann"}], year "2012", publisher "Europa Editions" and style "apa7", returns "Ferrante, E. (2012). *My brilliant friend* (Goldstein, A., Trans.). Europa Editions.".
+
+### format_bibliography
+Format several sources at once as one works cited list, alphabetised by the first author's family name, in APA 7, MLA 9 or Chicago author date. A source with no author is alphabetised by its title. Inputs: sources (an array of objects, each with the same fields as format_citation: type, title and optional authors, year, container, publisher, city, edition, editors, translators, volume, issue, pages, doi, url, date_text, accessed, institution, degree, repository and report_number) and style (apa7, mla9 or chicago-ad). Example prompt: "Put these three sources into an APA works cited list: a journal article by Smith and Jones from 2020, a book by Cormen from 2009 and a website from example.edu."
+
+Parameters:
+- sources (required): the sources for the list. Each one takes the same fields as format_citation: type (journal, book, website, chapter, thesis, report, dataset or preprint), title, and optional authors, year, container, publisher, city, edition, editors, translators, volume, issue, pages, doi, url, date_text, accessed, institution, degree, repository and report_number. A journal article, a book, a website, a chapter, a thesis, a report, a dataset and a preprint can share one list.
+- style (optional, default apa7): Citation style. apa7, mla9 or chicago-ad (Chicago author date).
+
+Example: with sources [{"type": "journal", "title": "Learning to learn", "authors": [{"family": "Smith", "given": "John Kenneth"}, {"family": "Jones", "given": "Alice"}], "year": "2020", "container": "Journal of Study Skills", "volume": "4", "issue": "2", "pages": "11-25"}, {"type": "book", "title": "Introduction to algorithms", "authors": [{"family": "Cormen", "given": "Thomas H."}], "year": "2009", "edition": "3rd", "publisher": "MIT Press"}, {"type": "website", "title": "The water cycle", "authors": [], "container": "Example Uni", "year": "2026", "url": "https://example.edu/water"}] and style "apa7", returns three entries separated by blank lines, in the order Cormen, Smith and the website, alphabetised by author and, for the website, by the title with "The" skipped.
 
 ### cite_from_doi
 Look up a DOI on Crossref and format the citation. The Crossref record decides the shape: a journal article, a book or an edited book, a book chapter or a conference paper, a thesis, a report, a dataset or a preprint. Inputs: doi (a DOI like 10.1038/nature14539 or a doi.org link) and style (apa7, mla9 or chicago-ad). Example prompt: "Cite 10.1038/nature14539 in APA."
@@ -92,7 +101,7 @@ With form "narrative" the author goes in your sentence and the rest stays in bra
 ## Prompts
 
 ### cite_this
-Start a citation in APA 7, MLA 9 or Chicago author date from a DOI, an ISBN or details you type. The title names the default style, APA 7, and the style argument picks another one. The prompt returns the wording the four tools use, so you can edit the source and send it. Arguments: style (apa7, mla9 or chicago-ad) and source (the DOI, the ISBN or the details), both optional. Example prompt: "Cite this journal article in APA 7: Learning to learn by John Kenneth Smith and Alice Jones, 2020, Journal of Study Skills, volume 4, issue 2, pages 11-25."
+Start a citation in APA 7, MLA 9 or Chicago author date from a DOI, an ISBN or details you type. The title names the default style, APA 7, and the style argument picks another one. The prompt returns the wording the citation tools use, so you can edit the source and send it. Arguments: style (apa7, mla9 or chicago-ad) and source (the DOI, the ISBN or the details), both optional. Example prompt: "Cite this journal article in APA 7: Learning to learn by John Kenneth Smith and Alice Jones, 2020, Journal of Study Skills, volume 4, issue 2, pages 11-25."
 
 Parameters:
 - style (optional): Citation style: apa7, mla9 or chicago-ad. Aliases such as APA, MLA 9 and Chicago are accepted. Defaults to apa7 when you leave it out or leave it blank.

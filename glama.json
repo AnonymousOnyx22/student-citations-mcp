@@ -106,6 +106,122 @@
       ]
     },
     {
+      "name": "format_bibliography",
+      "description": "Format several sources at once as one works cited list, alphabetised by the first author's family name, in APA 7, MLA 9 or Chicago author date. A source with no author is alphabetised by its title. Inputs: sources (an array of objects, each with the same fields as format_citation: type, title and optional authors, year, container, publisher, city, edition, editors, translators, volume, issue, pages, doi, url, date_text, accessed, institution, degree, repository and report_number) and style (apa7, mla9 or chicago-ad). Example prompt: \"Put these three sources into an APA works cited list: a journal article by Smith and Jones from 2020, a book by Cormen from 2009 and a website from example.edu.\"",
+      "inputSchema": {
+        "type": "object",
+        "required": ["sources"],
+        "properties": {
+          "sources": {
+            "type": "array",
+            "description": "The sources for the list. Each one takes the same fields as format_citation, so a journal article, a book, a website, a chapter, a thesis, a report, a dataset and a preprint can share one list.",
+            "items": {
+              "type": "object",
+              "required": ["type", "title"],
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": ["journal", "book", "website", "chapter", "thesis", "report", "dataset", "preprint"],
+                  "description": "Source type."
+                },
+                "authors": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["family"],
+                    "properties": {
+                      "family": { "type": "string", "description": "Last name" },
+                      "given": { "type": "string", "description": "First and middle names" }
+                    }
+                  },
+                  "default": [],
+                  "description": "List of authors with family and optional given names."
+                },
+                "editors": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["family"],
+                    "properties": {
+                      "family": { "type": "string", "description": "Last name" },
+                      "given": { "type": "string", "description": "First and middle names" }
+                    }
+                  },
+                  "description": "Editors of a book or a chapter, same shape as authors. When a book has editors and no authors, they take the author's place in the citation."
+                },
+                "translators": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["family"],
+                    "properties": {
+                      "family": { "type": "string", "description": "Last name" },
+                      "given": { "type": "string", "description": "First and middle names" }
+                    }
+                  },
+                  "description": "Translators of a book, same shape as authors."
+                },
+                "year": { "type": "string", "description": "Publication year as text, like \"2020\"." },
+                "title": { "type": "string", "description": "The title of the source." },
+                "container": { "type": "string", "description": "Journal name, the book title for a chapter, or website name." },
+                "publisher": { "type": "string", "description": "Publisher name." },
+                "city": { "type": "string", "description": "Publisher city, used by Chicago for books." },
+                "edition": { "type": "string", "description": "For example \"2nd\"." },
+                "volume": { "type": "string", "description": "Volume number as text." },
+                "issue": { "type": "string", "description": "Issue number as text." },
+                "pages": { "type": "string", "description": "For example \"11-25\"." },
+                "doi": { "type": "string", "description": "A DOI for the source." },
+                "url": { "type": "string", "description": "A URL for the source." },
+                "date_text": { "type": "string", "description": "Website date as you want it shown, like \"2026, October 14\" for APA or \"14 Oct. 2026\" for MLA." },
+                "accessed": { "type": "string", "description": "MLA access date, like \"14 Oct. 2026\"." },
+                "institution": { "type": "string", "description": "The university or organisation behind a thesis, a report or a dataset." },
+                "degree": { "type": "string", "description": "The degree of a thesis, like \"Ph.D.\"." },
+                "repository": { "type": "string", "description": "Where a preprint was posted, like arXiv." },
+                "report_number": { "type": "string", "description": "The number of a report or a standard." }
+              }
+            }
+          },
+          "style": {
+            "type": "string",
+            "enum": ["apa7", "mla9", "chicago-ad"],
+            "default": "apa7",
+            "description": "Citation style. apa7, mla9 or chicago-ad (Chicago author date)."
+          }
+        }
+      },
+      "examples": [
+        {
+          "input": {
+            "sources": [
+              {
+                "type": "book",
+                "title": "Introduction to algorithms",
+                "authors": [{ "family": "Cormen", "given": "Thomas H." }],
+                "year": "2009",
+                "edition": "3rd",
+                "publisher": "MIT Press"
+              },
+              {
+                "type": "journal",
+                "title": "Learning to learn",
+                "authors": [
+                  { "family": "Smith", "given": "John Kenneth" },
+                  { "family": "Jones", "given": "Alice" }
+                ],
+                "year": "2020",
+                "container": "Journal of Study Skills",
+                "volume": "4",
+                "issue": "2",
+                "pages": "11-25"
+              }
+            ],
+            "style": "apa7"
+          },
+          "output": "Cormen, T. H. (2009). *Introduction to algorithms* (3rd ed.). MIT Press.\n\nSmith, J. K., & Jones, A. (2020). Learning to learn. *Journal of Study Skills*, *4*(2), 11-25."
+        }
+      ]
+    },
+    {
       "name": "cite_from_doi",
       "description": "Look up a DOI on Crossref and format the citation. The Crossref record decides the shape: a journal article, a book or an edited book, a book chapter or a conference paper, a thesis, a report, a dataset or a preprint. Inputs: doi (a DOI like 10.1038/nature14539 or a doi.org link) and style (apa7, mla9 or chicago-ad). Example prompt: \"Cite 10.1038/nature14539 in APA.\"",
       "inputSchema": {
