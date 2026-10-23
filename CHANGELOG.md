@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.3
+
+- Add doi and isbn inputs to in_text_citation
+- Add a format_bibliography tool for alphabetised works cited lists
+
 ## 0.1.2
 
 - Add a format_bibliography tool, so several sources come back as one works cited list, alphabetised by author in APA 7, MLA 9 or Chicago author date

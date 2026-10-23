@@ -6,7 +6,7 @@ import { baseUrls } from "./config.js";
 import { prompts } from "./prompts.js";
 import { type Api, tools } from "./tools.js";
 
-export const VERSION = "0.1.2";
+export const VERSION = "0.1.3";
 
 export function makeApi(urls = baseUrls(), fetchImpl?: typeof fetch): Api {
   const ua = `student-citations-mcp/${VERSION}${urls.email ? ` (mailto:${urls.email})` : ""}`;
