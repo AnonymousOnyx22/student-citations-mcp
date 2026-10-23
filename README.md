@@ -5,7 +5,7 @@
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![ci](https://github.com/AnonymousOnyx22/student-citations-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/AnonymousOnyx22/student-citations-mcp/actions/workflows/ci.yml)
 
-Paste a DOI or an ISBN into your AI app and get a formatted citation back in APA 7, MLA 9 or Chicago author date, ready to paste into your works cited list. It is a citation generator that runs inside the app you are already writing in, so there is no web page to fill in and no account to create. You can also type the details yourself and get the matching in text citation, either in brackets or in the narrative form for a sentence where you name the author. The wording and punctuation come from tested code, so they are the same every time. Free and open source, no account, no key and nothing stored. It works with Claude, ChatGPT, Cursor, VS Code Copilot and any other app that supports MCP.
+Paste a DOI or an ISBN into your AI app and get a formatted citation back in APA 7, MLA 9 or Chicago author date, ready to paste into your works cited list. It is a citation generator that runs inside the app you are already writing in, so there is no web page to fill in and no account to create. You can also type the details yourself, or give the DOI or the ISBN, and get the matching in text citation, either in brackets or in the narrative form for a sentence where you name the author. The wording and punctuation come from tested code, so they are the same every time. Free and open source, no account, no key and nothing stored. It works with Claude, ChatGPT, Cursor, VS Code Copilot and any other app that supports MCP.
 
 ## Citations MCP compared with BibGuru and Citation Machine
 
@@ -86,7 +86,7 @@ Nothing else to install. You need Node.js 20 or newer. The config block for your
 | `format_citation` | Format a journal article, book, website, book chapter, thesis, report, dataset or preprint from details you type, in APA 7, MLA 9 or Chicago author date. For books you can name the editors and the translators too |
 | `cite_from_doi` | Look up a DOI on Crossref and format the citation. The Crossref record decides the shape, so a book chapter comes back as a chapter and a dissertation comes back as a thesis |
 | `cite_from_isbn` | Look up an ISBN on Open Library and format the citation |
-| `in_text_citation` | The in text citation that matches a source, with an optional page number, in the parenthetical or the narrative form |
+| `in_text_citation` | The in text citation that matches a source, with an optional page number, in the parenthetical or the narrative form. It takes the authors and year you type, or a DOI or an ISBN and looks up the authors and year for you |
 
 All four tools are read only.
 
@@ -121,6 +121,8 @@ It takes two arguments. `style` picks the style, which is APA 7 unless you say o
 - "Make an MLA citation for ISBN 9780262033848."
 - "Format this as Chicago: Smith and Jones, 2020, Learning to Learn, Journal of Study Skills, volume 4, issue 2, pages 11 to 25."
 - "What's the in text citation for a quote on page 14 of that paper?"
+- "Give me the APA in text citation for DOI 10.1038/nature14539 on page 436."
+- "What's the MLA in text citation for ISBN 9780262033848?"
 - "Give me the APA citation for that in narrative form, so I can name the author in my sentence."
 - "Format this book in MLA with the editors taking the author's place: A dictionary of study words by Jamie Patel and Robin Cole, 2019, North Gate Press."
 - "Cite this translated book in APA: My brilliant friend by Elena Ferrante, translated by Ann Goldstein, 2012, Europa Editions."
@@ -231,7 +233,7 @@ Run `npx -y student-citations-mcp`. You need Node.js 20 or newer, and that is th
 
 **Does it work without internet?**
 
-Partly. `format_citation` and `in_text_citation` work offline, because they format the details you type. `cite_from_doi` and `cite_from_isbn` need a connection, since they fetch the record from Crossref or Open Library.
+Partly. `format_citation` works offline, because it formats the details you type. `in_text_citation` works offline too when you type the authors and the year. It also takes a DOI or an ISBN, and those lookups need a connection, as do `cite_from_doi` and `cite_from_isbn`, which fetch the record from Crossref or Open Library.
 
 **Which styles can I ask for?**
 
@@ -263,7 +265,7 @@ Take the block out of your app's MCP config and the server stops running. There 
 
 **Can I paste a DOI link or an ISBN with dashes?**
 
-Yes. `cite_from_doi` takes a plain DOI like `10.1038/nature14539` or a doi.org link, and `cite_from_isbn` takes a 10 or 13 digit ISBN with or without dashes.
+Yes. `cite_from_doi` and `in_text_citation` take a plain DOI like `10.1038/nature14539` or a doi.org link, and `cite_from_isbn` and `in_text_citation` take a 10 or 13 digit ISBN with or without dashes.
 
 **Is the source code open?**
 

@@ -121,6 +121,53 @@ export function crossrefSource(m: any, doi: string): Source {
   return src;
 }
 
+/** The source behind a DOI, as Crossref gives it, or an ApiError that says what to try instead. */
+async function sourceFromDoi(input: string, api: Api): Promise<Source> {
+  const doi = normalizeDoi(input);
+  try {
+    const res: any = await api.crossref.get(`/works/${encodeURI(doi)}`);
+    const m = res.message ?? res;
+    const src = crossrefSource(m, doi);
+    if (!src.title) throw new Error("Crossref found that DOI but it has no title, so there is nothing to cite. Use format_citation and type the details.");
+    return src;
+  } catch (err) {
+    if (err instanceof ApiError) {
+      if (err.status === 404) {
+        throw new ApiError(`${err.message} That is not a DOI I recognise, or use format_citation and type the details.`, err.status, err.body);
+      }
+      throw new ApiError(`${err.message}. Use format_citation and type the details instead (offline typed details path).`, err.status, err.body);
+    }
+    throw err;
+  }
+}
+
+/** The source behind an ISBN, as Open Library gives it, or an error that says what to try instead. */
+async function sourceFromIsbn(input: string, api: Api): Promise<Source> {
+  const isbn = normalizeIsbn(input);
+  try {
+    const res: any = await api.openLibrary.get("/api/books", { bibkeys: `ISBN:${isbn}`, format: "json", jscmd: "data" });
+    const b = res[`ISBN:${isbn}`];
+    if (!b) throw new Error(`Open Library has no book for ISBN ${isbn}. Check the number, or use format_citation and type the details.`);
+    const year = String(b.publish_date ?? "").match(/\d{4}/)?.[0];
+    return {
+      type: "book",
+      authors: (b.authors ?? []).map((x: any) => splitName(String(x.name))),
+      year,
+      title: b.subtitle ? `${b.title}: ${b.subtitle}` : b.title,
+      publisher: b.publishers?.[0]?.name,
+      city: b.publish_places?.[0]?.name,
+    };
+  } catch (err) {
+    if (err instanceof ApiError) {
+      if (err.status === 404) {
+        throw new ApiError(`${err.message} That is not an ISBN I recognise, or use format_citation and type the details.`, err.status, err.body);
+      }
+      throw new ApiError(`${err.message}. Use format_citation and type the details instead (offline typed details path).`, err.status, err.body);
+    }
+    throw err;
+  }
+}
+
 export const tools: ToolDef<Api>[] = [
   {
     name: "format_citation",
@@ -139,22 +186,8 @@ export const tools: ToolDef<Api>[] = [
     inputSchema: { doi: z.string().describe("A DOI like 10.1038/nature14539, or a doi.org link."), style },
     run: async (a, api) => {
       const st = normalizeStyle(a.style ?? "apa7");
-      const doi = normalizeDoi(a.doi);
-      try {
-        const res: any = await api.crossref.get(`/works/${encodeURI(doi)}`);
-        const m = res.message ?? res;
-        const src = crossrefSource(m, doi);
-        if (!src.title) throw new Error("Crossref found that DOI but it has no title, so there is nothing to cite. Use format_citation and type the details.");
-        return `${format(src, st)}\n\n(From Crossref. Check it against your style guide.)`;
-      } catch (err) {
-        if (err instanceof ApiError) {
-          if (err.status === 404) {
-            throw new ApiError(`${err.message} That is not a DOI I recognise, or use format_citation and type the details.`, err.status, err.body);
-          }
-          throw new ApiError(`${err.message}. Use format_citation and type the details instead (offline typed details path).`, err.status, err.body);
-        }
-        throw err;
-      }
+      const src = await sourceFromDoi(a.doi, api);
+      return `${format(src, st)}\n\n(From Crossref. Check it against your style guide.)`;
     },
   },
   {
@@ -164,37 +197,38 @@ export const tools: ToolDef<Api>[] = [
     inputSchema: { isbn: z.string().describe("A 10 or 13 digit ISBN. Dashes are fine."), style },
     run: async (a, api) => {
       const st = normalizeStyle(a.style ?? "apa7");
-      const isbn = normalizeIsbn(a.isbn);
-      try {
-        const res: any = await api.openLibrary.get("/api/books", { bibkeys: `ISBN:${isbn}`, format: "json", jscmd: "data" });
-        const b = res[`ISBN:${isbn}`];
-        if (!b) throw new Error(`Open Library has no book for ISBN ${isbn}. Check the number, or use format_citation and type the details.`);
-        const year = String(b.publish_date ?? "").match(/\d{4}/)?.[0];
-        const src: Source = {
-          type: "book",
-          authors: (b.authors ?? []).map((x: any) => splitName(String(x.name))),
-          year,
-          title: b.subtitle ? `${b.title}: ${b.subtitle}` : b.title,
-          publisher: b.publishers?.[0]?.name,
-          city: b.publish_places?.[0]?.name,
-        };
-        return `${format(src, st)}\n\n(From Open Library. Check it against your style guide.)`;
-      } catch (err) {
-        if (err instanceof ApiError) {
-          if (err.status === 404) {
-            throw new ApiError(`${err.message} That is not an ISBN I recognise, or use format_citation and type the details.`, err.status, err.body);
-          }
-          throw new ApiError(`${err.message}. Use format_citation and type the details instead (offline typed details path).`, err.status, err.body);
-        }
-        throw err;
-      }
+      const src = await sourceFromIsbn(a.isbn, api);
+      return `${format(src, st)}\n\n(From Open Library. Check it against your style guide.)`;
     },
   },
   {
     name: "in_text_citation",
     title: "In text citation",
-    description: "The in text citation that goes with a source, with an optional page number and an optional narrative form for a sentence where the author is named. Inputs: authors (family name plus optional given names), year, page, form (parenthetical or narrative) and style (apa7, mla9 or chicago-ad). Example prompt: \"Give the APA in text citation for Smith and Jones 2020 on page 14.\"",
-    inputSchema: { authors: z.array(author).default([]), year: z.string().optional(), page: z.string().optional(), form, style },
-    run: async (a) => (a.form === "narrative" ? narrativeInText(a.authors, a.year, normalizeStyle(a.style ?? "apa7"), a.page) : inText(a.authors, a.year, normalizeStyle(a.style ?? "apa7"), a.page)),
+    description: "The in text citation that goes with a source, with an optional page number and an optional narrative form for a sentence where the author is named. Give authors and year, or a doi or an isbn and the record fills them in. Inputs: authors (family name plus optional given names), year, doi, isbn, page, form (parenthetical or narrative) and style (apa7, mla9 or chicago-ad). A doi or an isbn cannot be combined with the other one. Example prompt: \"Give the APA in text citation for Smith and Jones 2020 on page 14.\"",
+    inputSchema: {
+      authors: z.array(author).default([]),
+      year: z.string().optional(),
+      doi: z.string().optional().describe("A DOI like 10.1038/nature14539, or a doi.org link. The lookup fills in the authors and the year."),
+      isbn: z.string().optional().describe("A 10 or 13 digit ISBN. Dashes are fine. The lookup fills in the authors and the year."),
+      page: z.string().optional(),
+      form,
+      style,
+    },
+    run: async (a, api) => {
+      const st = normalizeStyle(a.style ?? "apa7");
+      if (a.doi && a.isbn) throw new Error("Give either a doi or an isbn, not both. They each look up one source.");
+      let authors = a.authors ?? [];
+      let year = a.year;
+      if (a.doi) {
+        const src = await sourceFromDoi(a.doi, api);
+        authors = src.authors;
+        year = src.year;
+      } else if (a.isbn) {
+        const src = await sourceFromIsbn(a.isbn, api);
+        authors = src.authors;
+        year = src.year;
+      }
+      return a.form === "narrative" ? narrativeInText(authors, year, st, a.page) : inText(authors, year, st, a.page);
+    },
   },
 ];

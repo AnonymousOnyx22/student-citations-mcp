@@ -159,7 +159,7 @@
     },
     {
       "name": "in_text_citation",
-      "description": "The in text citation that goes with a source, with an optional page number and an optional narrative form for a sentence where the author is named. Inputs: authors (family name plus optional given names), year, page, form (parenthetical or narrative) and style (apa7, mla9 or chicago-ad). Example prompt: \"Give the APA in text citation for Smith and Jones 2020 on page 14.\"",
+      "description": "The in text citation that goes with a source, with an optional page number and an optional narrative form for a sentence where the author is named. Give authors and year, or a doi or an isbn and the record fills them in. Inputs: authors (family name plus optional given names), year, doi, isbn, page, form (parenthetical or narrative) and style (apa7, mla9 or chicago-ad). A doi or an isbn cannot be combined with the other one. Example prompt: \"Give the APA in text citation for Smith and Jones 2020 on page 14.\"",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -177,6 +177,8 @@
             "description": "List of authors with family and optional given names."
           },
           "year": { "type": "string", "description": "Publication year as text, like \"2020\"." },
+          "doi": { "type": "string", "description": "A DOI like 10.1038/nature14539, or a doi.org link. The lookup fills in the authors and the year." },
+          "isbn": { "type": "string", "description": "A 10 or 13 digit ISBN. Dashes are fine. The lookup fills in the authors and the year." },
           "page": { "type": "string", "description": "Page number as text, like \"14\"." },
           "form": {
             "type": "string",
@@ -217,6 +219,21 @@
             "style": "apa7"
           },
           "output": "Smith and Jones (2020, p. 14)"
+        },
+        {
+          "input": {
+            "doi": "10.1038/nature14539",
+            "page": "436",
+            "style": "apa7"
+          },
+          "output": "(LeCun et al., 2015, p. 436)"
+        },
+        {
+          "input": {
+            "isbn": "978-0-262-03384-8",
+            "style": "mla9"
+          },
+          "output": "(Cormen and Leiserson 2009)"
         }
       ]
     }

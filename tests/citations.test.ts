@@ -269,6 +269,32 @@ describe("MCP tools", () => {
     const m = await call("in_text_citation", { authors: article.authors, year: "2020", page: "14", style: "mla9", form: "narrative" });
     expect(m.text).toBe("Smith and Jones (14)");
   });
+  it("fills the authors and year from a DOI for an in text citation", async () => {
+    const p = await call("in_text_citation", { doi: "10.1000/jss.2020.42", page: "14", style: "apa7" });
+    expect(p.isError).toBe(false);
+    expect(p.text).toBe("(Smith & Jones, 2020, p. 14)");
+    const n = await call("in_text_citation", { doi: "https://doi.org/10.1000/jss.2020.42", form: "narrative", style: "mla9" });
+    expect(n.isError).toBe(false);
+    expect(n.text).toBe("Smith and Jones");
+  });
+  it("fills the authors and year from an ISBN for an in text citation", async () => {
+    const p = await call("in_text_citation", { isbn: "978-0-262-03384-8", style: "apa7" });
+    expect(p.isError).toBe(false);
+    expect(p.text).toBe("(Cormen & Leiserson, 2009)");
+    const n = await call("in_text_citation", { isbn: "9780262033848", form: "narrative", style: "chicago-ad" });
+    expect(n.isError).toBe(false);
+    expect(n.text).toBe("Cormen and Leiserson (2009)");
+  });
+  it("asks for one identifier when both a DOI and an ISBN are given", async () => {
+    const r = await call("in_text_citation", { doi: "10.1000/jss.2020.42", isbn: "978-0-262-03384-8" });
+    expect(r.isError).toBe(true);
+    expect(r.text).toContain("either a doi or an isbn");
+  });
+  it("explains a missing DOI when filling an in text citation", async () => {
+    const r = await call("in_text_citation", { doi: "10.1000/missing" });
+    expect(r.isError).toBe(true);
+    expect(r.text).toContain("That is not a DOI I recognise");
+  });
 });
 
 describe("error messages", () => {

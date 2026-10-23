@@ -2,6 +2,8 @@
 
 ## 0.1.2
 
+- Add doi and isbn inputs to in_text_citation, so a student with only an identifier can get the in text citation without retyping the authors and the year
+
 - Add a README comparison table with the zotero-mcp, zoteus and xbghc zotero-mcp servers, and a FAQ answer about how this server differs from them
 - Register a cite_this prompt, so clients that show prompts can start a citation with the wording the tools use
 - Widen the npm keywords and the descriptions to cover the words students type, such as citation generator, apa formatter, works cited, cite this and thesis
