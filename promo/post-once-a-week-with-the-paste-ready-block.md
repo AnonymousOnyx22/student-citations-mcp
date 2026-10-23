@@ -4,7 +4,7 @@ Post to: dev.to
 
 The part of an essay I dread is not the writing. It is the ten minutes at the end spent formatting references. I would keep a DOI in my notes, open a citation site, paste it, close a cookie banner, pick a style, copy the result, then fix the italics after pasting it into my document. None of that is hard. It is just another set of tabs.
 
-So I built Citations MCP. It is an MCP server, which means it adds citation tools to an AI app that already supports MCP, such as Claude Desktop, Cursor, VS Code with Copilot or ChatGPT. You ask for a citation in the chat and the formatted citation comes back in the same conversation.
+So I built Citations MCP. It is an MCP server, which means it adds citation tools to an AI app that already supports MCP, such as Claude Desktop, Claude Code, Cursor or VS Code with Copilot. You ask for a citation in the chat and the formatted citation comes back in the same conversation.
 
 It has five tools:
 
