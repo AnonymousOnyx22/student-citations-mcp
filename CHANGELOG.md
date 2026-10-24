@@ -2,9 +2,7 @@
 
 ## 0.1.4
 
-- Add a draft: Post once a week with the paste ready block
-- Update the table of sibling MCP servers in the README
-- Add a draft: Land one new listing or post this week
+- The README now ends with a table of the other free student MCP servers, so you can find the one for your school's system.
 
 ## 0.1.3
 
