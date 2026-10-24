@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.4
+
+- Add a draft: Post once a week with the paste ready block
+- Update the table of sibling MCP servers in the README
+- Add a draft: Land one new listing or post this week
+
 ## 0.1.3
 
 - Add doi and isbn inputs to in_text_citation
