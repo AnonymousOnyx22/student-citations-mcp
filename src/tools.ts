@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { HttpClient } from "./core/http.js";
 import { ApiError } from "./core/http.js";
 import type { ToolDef } from "./core/tools.js";
-import { type Author, type Source, format, formatBibliography, inText, narrativeInText, normalizeDoi, normalizeIsbn, normalizeStyle, splitName } from "./format.js";
+import { type Author, type Source, format, formatAnyStyle, formatBibliography, inText, narrativeInText, normalizeDoi, normalizeIsbn, normalizeStyle, normalizeStyleRequest, splitName } from "./format.js";
 
 export interface Api {
   crossref: HttpClient;
@@ -10,6 +10,7 @@ export interface Api {
 }
 
 const style = z.string().default("apa7").describe("Citation style. Aliases such as APA, MLA 9 and Chicago are accepted. Valid styles: apa7, mla9, chicago-ad (Chicago author date).");
+const styleAll = z.string().default("apa7").describe("Citation style. Aliases such as APA, MLA 9 and Chicago are accepted. Valid styles: apa7, mla9, chicago-ad (Chicago author date), or all to get all three in one reply with a label above each one.");
 const form = z.enum(["parenthetical", "narrative"]).default("parenthetical").describe("parenthetical is the usual brackets, like (Smith & Jones, 2020, p. 14). narrative puts the author in your sentence and keeps the rest in brackets, like Smith and Jones (2020, p. 14).");
 const author = z.object({ family: z.string().describe("Last name"), given: z.string().optional().describe("First and middle names") });
 
@@ -172,11 +173,11 @@ export const tools: ToolDef<Api>[] = [
   {
     name: "format_citation",
     title: "Format a citation",
-    description: "Format a journal article, book, website, book chapter, thesis, report, dataset or preprint as a citation in APA 7, MLA 9 or Chicago author date, from details you provide. Inputs: type (journal, book, website, chapter, thesis, report, dataset or preprint), title, and optional authors (family plus given names), year, container, publisher, city, edition, editors, translators, volume, issue, pages, doi, url, date_text, accessed, institution, degree, repository, report_number and style (apa7, mla9 or chicago-ad). Editors and translators are for books and take the same shape as authors: a book with editors and no authors puts the editors where the author goes, and a book with authors too carries the other names after the title, in the spot each style uses. Example prompt: \"Cite this journal article in APA 7: Learning to learn by John Kenneth Smith and Alice Jones, 2020, Journal of Study Skills, volume 4, issue 2, pages 11-25.\"",
-    inputSchema: { ...sourceShape, style },
+    description: "Format a journal article, book, website, book chapter, thesis, report, dataset or preprint as a citation in APA 7, MLA 9 or Chicago author date, from details you provide. Inputs: type (journal, book, website, chapter, thesis, report, dataset or preprint), title, and optional authors (family plus given names), year, container, publisher, city, edition, editors, translators, volume, issue, pages, doi, url, date_text, accessed, institution, degree, repository, report_number and style (apa7, mla9, chicago-ad or all). Pass all to get all three styles in one reply, each one with its style name on the line above it. Editors and translators are for books and take the same shape as authors: a book with editors and no authors puts the editors where the author goes, and a book with authors too carries the other names after the title, in the spot each style uses. Example prompt: \"Cite this journal article in APA 7: Learning to learn by John Kenneth Smith and Alice Jones, 2020, Journal of Study Skills, volume 4, issue 2, pages 11-25.\"",
+    inputSchema: { ...sourceShape, style: styleAll },
     run: async (a) => {
       const { style: st, ...src } = a;
-      return format(src as Source, normalizeStyle(st ?? "apa7"));
+      return formatAnyStyle(src as Source, st ?? "apa7");
     },
   },
   {
@@ -192,12 +193,12 @@ export const tools: ToolDef<Api>[] = [
   {
     name: "cite_from_doi",
     title: "Cite from a DOI",
-    description: "Look up a DOI on Crossref and format the citation. The Crossref record decides the shape: a journal article, a book or an edited book, a book chapter or a conference paper, a thesis, a report, a dataset or a preprint. Inputs: doi (a DOI like 10.1038/nature14539 or a doi.org link) and style (apa7, mla9 or chicago-ad). Example prompt: \"Cite 10.1038/nature14539 in APA.\"",
-    inputSchema: { doi: z.string().describe("A DOI like 10.1038/nature14539, or a doi.org link."), style },
+    description: "Look up a DOI on Crossref and format the citation. The Crossref record decides the shape: a journal article, a book or an edited book, a book chapter or a conference paper, a thesis, a report, a dataset or a preprint. Inputs: doi (a DOI like 10.1038/nature14539 or a doi.org link) and style (apa7, mla9, chicago-ad or all). Pass all to get all three styles in one reply, each one with its style name on the line above it. Example prompt: \"Cite 10.1038/nature14539 in APA.\"",
+    inputSchema: { doi: z.string().describe("A DOI like 10.1038/nature14539, or a doi.org link."), style: styleAll },
     run: async (a, api) => {
-      const st = normalizeStyle(a.style ?? "apa7");
+      const st = normalizeStyleRequest(a.style ?? "apa7");
       const src = await sourceFromDoi(a.doi, api);
-      return `${format(src, st)}\n\n(From Crossref. Check it against your style guide.)`;
+      return `${formatAnyStyle(src, st)}\n\n(From Crossref. Check it against your style guide.)`;
     },
   },
   {

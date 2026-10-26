@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Let `format_citation` and `cite_from_doi` take `style` as `all`, so all three styles come back in one reply with a label above each one.
+
 ## 0.1.4
 
 - The README now ends with a table of the other free student MCP servers, so you can find the one for your school's system.

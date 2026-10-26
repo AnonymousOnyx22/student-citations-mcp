@@ -4,7 +4,7 @@ import type { AddressInfo } from "node:net";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { createServer, makeApi } from "../src/server.js";
-import { format, formatBibliography, inText, narrativeInText, normalizeDoi, normalizeIsbn, splitName } from "../src/format.js";
+import { format, formatAnyStyle, formatBibliography, inText, narrativeInText, normalizeDoi, normalizeIsbn, splitName } from "../src/format.js";
 import { crossrefKind } from "../src/tools.js";
 
 const article = {
@@ -73,6 +73,17 @@ describe("formatting", () => {
   });
   it("formats a journal article in Chicago author-date", () => {
     expect(format(article, "chicago-ad")).toBe('Smith, John Kenneth, and Alice Jones. 2020. "Learning to learn." *Journal of Study Skills* 4 (2): 11-25. https://doi.org/10.1000/jss.2020.42.');
+  });
+  it("formats all three styles with a label above each one", () => {
+    expect(formatAnyStyle(article, "all")).toBe(
+      [
+        `APA 7\n${format(article, "apa7")}`,
+        `MLA 9\n${format(article, "mla9")}`,
+        `Chicago author date\n${format(article, "chicago-ad")}`,
+      ].join("\n\n"),
+    );
+    expect(formatAnyStyle(article, "ALL")).toBe(formatAnyStyle(article, "all"));
+    expect(formatAnyStyle(article, "APA")).toBe(format(article, "apa7"));
   });
   it("formats books and websites", () => {
     const book = { type: "book" as const, authors: [{ family: "Cormen", given: "Thomas H." }], year: "2009", title: "Introduction to algorithms", edition: "3rd", publisher: "MIT Press", city: "Cambridge, MA" };
@@ -313,6 +324,29 @@ describe("MCP tools", () => {
   it("formats typed details", async () => {
     const r = await call("format_citation", { ...article, style: "chicago-ad" });
     expect(r.text).toContain("2020.");
+  });
+  it("returns all three styles from format_citation when asked", async () => {
+    const r = await call("format_citation", { ...article, style: "all" });
+    expect(r.isError).toBe(false);
+    expect(r.text).toBe(
+      [
+        `APA 7\n${format(article, "apa7")}`,
+        `MLA 9\n${format(article, "mla9")}`,
+        `Chicago author date\n${format(article, "chicago-ad")}`,
+      ].join("\n\n"),
+    );
+  });
+  it("returns all three styles from cite_from_doi when asked", async () => {
+    const r = await call("cite_from_doi", { doi: "10.1000/jss.2020.42", style: "all" });
+    expect(r.isError).toBe(false);
+    expect(r.text).toBe(
+      [
+        `APA 7\n${format(article, "apa7")}`,
+        `MLA 9\n${format(article, "mla9")}`,
+        `Chicago author date\n${format(article, "chicago-ad")}`,
+        "(From Crossref. Check it against your style guide.)",
+      ].join("\n\n"),
+    );
   });
   it("takes editors in format_citation and puts them where the author goes", async () => {
     const r = await call("format_citation", { type: "book", title: "A dictionary of study words", editors: [{ family: "Patel", given: "Jamie" }, { family: "Cole", given: "Robin" }], year: "2019", publisher: "North Gate Press", style: "mla9" });

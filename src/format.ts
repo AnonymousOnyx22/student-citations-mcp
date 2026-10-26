@@ -459,6 +459,39 @@ export const normalizeStyleAlias = normalizeStyle;
 export const parseStyle = normalizeStyle;
 export const toStyle = normalizeStyle;
 
+/** A style, or "all" when the caller wants the three styles at once. */
+export type StyleRequest = Style | "all";
+
+/** The three styles and the labels the all styles output puts above each one. */
+export const allStyleLabels: { style: Style; label: string }[] = [
+  { style: "apa7", label: "APA 7" },
+  { style: "mla9", label: "MLA 9" },
+  { style: "chicago-ad", label: "Chicago author date" },
+];
+
+/** True when the caller asked for all three styles, whatever case they used. */
+export function wantsAllStyles(input: unknown): boolean {
+  return (
+    String(input ?? "")
+      .trim()
+      .toLowerCase()
+      .replace(/[-_]+/g, " ")
+      .replace(/\s+/g, " ") === "all"
+  );
+}
+
+/** Read the style argument, keeping all as its own request rather than an alias. */
+export function normalizeStyleRequest(input: unknown): StyleRequest {
+  return wantsAllStyles(input) ? "all" : normalizeStyle(input);
+}
+
+/** One citation in the style asked for, or all three with a label above each one. */
+export function formatAnyStyle(s: Source, styleInput: Style | string): string {
+  const requested = normalizeStyleRequest(styleInput);
+  if (requested !== "all") return format(s, requested);
+  return allStyleLabels.map(({ style, label }) => `${label}\n${format(s, style)}`).join("\n\n");
+}
+
 export function normalizeDoi(input: string): string {
   const d = input.trim().replace(/^https?:\/\/(dx\.)?doi\.org\//i, "").replace(/^doi:\s*/i, "");
   if (!/^10\.\d{4,9}\/\S+$/.test(d)) throw new Error(`"${input}" does not look like a DOI. A DOI starts with 10. and has a slash, like 10.1038/nature14539. That is not a DOI I recognise, or use format_citation and type the details.`);

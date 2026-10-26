@@ -71,6 +71,10 @@ In text: (LeCun et al. 2015, 436)
 Narrative: LeCun et al. (2015, 436)
 ```
 
+## All three styles at once
+
+If you are comparing styles, pass `style` as `all` to `format_citation` or `cite_from_doi`. You get one labelled citation for APA 7, MLA 9 and Chicago author date in one reply, instead of three calls. The label above each citation is the style name, so you can pick the one you want. `format_bibliography`, `cite_from_isbn` and `in_text_citation` still take one style at a time.
+
 ## Install
 
 ```bash
@@ -83,9 +87,9 @@ Nothing else to install. You need Node.js 20 or newer. The config block for your
 
 | Tool | What it does |
 | --- | --- |
-| `format_citation` | Format a journal article, book, website, book chapter, thesis, report, dataset or preprint from details you type, in APA 7, MLA 9 or Chicago author date. For books you can name the editors and the translators too |
+| `format_citation` | Format a journal article, book, website, book chapter, thesis, report, dataset or preprint from details you type, in APA 7, MLA 9 or Chicago author date. For books you can name the editors and the translators too. Pass `style` as `all` to get all three styles in one reply |
 | `format_bibliography` | Format several sources as one works cited list, alphabetised by author, in APA 7, MLA 9 or Chicago author date. Each source takes the same fields as `format_citation` |
-| `cite_from_doi` | Look up a DOI on Crossref and format the citation. The Crossref record decides the shape, so a book chapter comes back as a chapter and a dissertation comes back as a thesis |
+| `cite_from_doi` | Look up a DOI on Crossref and format the citation. The Crossref record decides the shape, so a book chapter comes back as a chapter and a dissertation comes back as a thesis. Pass `style` as `all` to get all three styles in one reply |
 | `cite_from_isbn` | Look up an ISBN on Open Library and format the citation |
 | `in_text_citation` | The in text citation that matches a source, with an optional page number, in the parenthetical or the narrative form. It takes the authors and year you type, or a DOI or an ISBN and looks up the authors and year for you |
 
@@ -118,6 +122,7 @@ It takes two arguments. `style` picks the style, which is APA 7 unless you say o
 ## What you can ask
 
 - "Cite 10.1038/nature14539 in APA."
+- "Cite 10.1038/nature14539 in all three styles."
 - "Cite the DOI of this book chapter in APA, with the editors of the book."
 - "Make an MLA citation for ISBN 9780262033848."
 - "Format this as Chicago: Smith and Jones, 2020, Learning to Learn, Journal of Study Skills, volume 4, issue 2, pages 11 to 25."
@@ -251,7 +256,7 @@ Partly. `format_citation` works offline, because it formats the details you type
 
 **Which styles can I ask for?**
 
-APA 7, MLA 9 and Chicago author date, and no others. Ask for "APA", "MLA 9" or "Chicago" in the chat and the server works out the style name. A request for a style it does not have comes back with an error that names the three it knows.
+APA 7, MLA 9 and Chicago author date, and no others. Ask for "APA", "MLA 9" or "Chicago" in the chat and the server works out the style name. `format_citation` and `cite_from_doi` also take `all`, which returns all three styles in one reply. A request for a style it does not have comes back with an error that names the three it knows.
 
 **What can I cite?**
 
