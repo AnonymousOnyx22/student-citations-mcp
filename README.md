@@ -209,7 +209,33 @@ Smith, J. K., & Jones, A. (2020). Learning to learn. *Journal of Study Skills*, 
 
 ## Add it to your app
 
-Add this to your MCP client config. For Claude Desktop that is `claude_desktop_config.json`.
+Claude Desktop. Put it in `claude_desktop_config.json`.
+
+```json
+{
+  "mcpServers": {
+    "citations": {
+      "command": "npx",
+      "args": ["-y", "student-citations-mcp"]
+    }
+  }
+}
+```
+
+Cursor. Put it in `.cursor/mcp.json`.
+
+```json
+{
+  "mcpServers": {
+    "citations": {
+      "command": "npx",
+      "args": ["-y", "student-citations-mcp"]
+    }
+  }
+}
+```
+
+VS Code. Put it in `.vscode/mcp.json`.
 
 ```json
 {
