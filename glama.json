@@ -10,6 +10,25 @@
     "url": "https://github.com/AnonymousOnyx22/student-citations-mcp",
     "source": "github"
   },
+  "_meta": {
+    "tags": [
+      "citations",
+      "apa",
+      "mla",
+      "chicago",
+      "doi",
+      "isbn",
+      "references",
+      "bibliography",
+      "works cited",
+      "in text citation"
+    ],
+    "categories": [
+      "Education"
+    ],
+    "license": "MIT",
+    "language": "en"
+  },
   "tools": [
     {
       "name": "format_citation",
