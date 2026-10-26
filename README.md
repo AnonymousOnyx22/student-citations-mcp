@@ -235,12 +235,13 @@ Cursor. Put it in `.cursor/mcp.json`.
 }
 ```
 
-VS Code. Put it in `.vscode/mcp.json`.
+VS Code. Put it in `.vscode/mcp.json`. VS Code uses a `servers` key, not `mcpServers`.
 
 ```json
 {
-  "mcpServers": {
+  "servers": {
     "citations": {
+      "type": "stdio",
       "command": "npx",
       "args": ["-y", "student-citations-mcp"]
     }
