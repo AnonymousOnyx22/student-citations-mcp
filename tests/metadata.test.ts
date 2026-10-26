@@ -75,6 +75,13 @@ describe("registry files", () => {
       expect(lines[at + 1].trim()).toBe(tool.description);
     }
   });
+
+  it("keeps the inputs list and an example prompt in every tool description", () => {
+    for (const tool of tools) {
+      expect(tool.description, `${tool.name} keeps Inputs:`).toContain("Inputs:");
+      expect(tool.description, `${tool.name} keeps Example prompt:`).toContain("Example prompt:");
+    }
+  });
 });
 
 describe("prompts", () => {
