@@ -124,8 +124,19 @@ const link = (s: Source) => (s.doi ? `https://doi.org/${s.doi}` : s.url ?? "");
 /** A title without the period the record ends it with, so the punctuation we add sits outside the italics. */
 const plainTitle = (t: string) => t.replace(/\.\s*$/, "");
 
+/** A journal article and a chapter are part of a larger work, so a citation without that work would be wrong. */
+function requireContainer(s: Source): void {
+  if (s.type !== "journal" && s.type !== "chapter") return;
+  if (s.container?.trim()) return;
+  if (s.type === "journal") {
+    throw new Error('A journal article needs a container, the name of the journal it was published in. Add container, like "Journal of Study Skills", and try again.');
+  }
+  throw new Error('A book chapter needs a container, the title of the book it appears in. Add container, like "The Study Skills Handbook", and try again.');
+}
+
 export function format(s: Source, styleInput: Style | string): string {
   const style = normalizeStyle(styleInput);
+  requireContainer(s);
   const parts: string[] = [];
   const push = (x?: string) => {
     if (x && x.trim()) parts.push(x.trim());

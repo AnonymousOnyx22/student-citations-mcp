@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Let `format_citation` and `cite_from_doi` take `style` as `all`, so all three styles come back in one reply with a label above each one.
+- Refuse to format a journal article or a chapter whose `container` is missing or blank, and return an error that names the container instead of a citation with a missing part.
 
 ## 0.1.4
 

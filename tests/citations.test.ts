@@ -264,6 +264,47 @@ describe("source kinds", () => {
   });
 });
 
+describe("missing container", () => {
+  const noContainer = { type: "journal" as const, authors: [{ family: "Smith", given: "John" }], year: "2020", title: "Learning to learn", volume: "4", pages: "11-25" };
+  const chapterNoContainer = { type: "chapter" as const, authors: [{ family: "Smith", given: "John" }], year: "2020", title: "Learning to learn in groups", pages: "11-25", publisher: "North Gate Press" };
+
+  it("rejects a journal article with no container, and names the container", () => {
+    expect(() => format(noContainer, "apa7")).toThrow("A journal article needs a container");
+    expect(() => format(noContainer, "mla9")).toThrow("name of the journal");
+    expect(() => format(noContainer, "chicago-ad")).toThrow("Add container");
+  });
+
+  it("rejects a chapter with no container, and names the container", () => {
+    expect(() => format(chapterNoContainer, "apa7")).toThrow("A book chapter needs a container");
+    expect(() => format(chapterNoContainer, "mla9")).toThrow("title of the book");
+    expect(() => format(chapterNoContainer, "chicago-ad")).toThrow("Add container");
+  });
+
+  it("rejects a blank container as well as a missing one", () => {
+    expect(() => format({ ...noContainer, container: "   " }, "apa7")).toThrow("needs a container");
+    expect(() => format({ ...chapterNoContainer, container: "" }, "mla9")).toThrow("needs a container");
+  });
+
+  it("stops a works cited list when one source has no container", () => {
+    expect(() => formatBibliography([{ ...article }, noContainer], "apa7")).toThrow("A journal article needs a container");
+  });
+
+  it("still formats a journal article and a chapter that have a container", () => {
+    expect(format({ ...noContainer, container: "Journal of Study Skills" }, "apa7")).toContain("*Journal of Study Skills*");
+    expect(format({ ...chapterNoContainer, container: "The Study Skills Handbook" }, "apa7")).toContain("In *The Study Skills Handbook*");
+  });
+
+  it("names the container in the tool error", async () => {
+    const r = await call("format_citation", { type: "journal", title: "Learning to learn", year: "2020" });
+    expect(r.isError).toBe(true);
+    expect(r.text).toContain("A journal article needs a container");
+    expect(r.text).toContain("Add container");
+    const c = await call("format_citation", { type: "chapter", title: "Learning to learn in groups", year: "2020" });
+    expect(c.isError).toBe(true);
+    expect(c.text).toContain("A book chapter needs a container");
+  });
+});
+
 describe("MCP tools", () => {
   it("lists five read only tools", async () => {
     const tools = (await client.listTools()).tools;

@@ -21,7 +21,7 @@ Parameters:
 - editors (optional): same shape as authors, for a book or a chapter. With no authors the editors go where the author goes, with the role word the style uses: Ed. or Eds. in APA, editor or editors in MLA, ed. or eds. in Chicago. With authors too they go after the title, inside the parentheses with the edition in APA and as "Edited by ..." in MLA and Chicago.
 - translators (optional): same shape as authors, for a book. They go after the title, inside the parentheses as "Trans." in APA and as "Translated by ..." in MLA and Chicago.
 - year (optional): publication year as text, like "2020"
-- container (optional): Journal name, the book title for a chapter, or website name.
+- container (optional): Journal name, the book title for a chapter, or website name. Required for a journal article and for a chapter, since without it the citation would be missing the work it appears in.
 - publisher (optional): publisher name
 - city (optional): Publisher city, used by Chicago for books.
 - edition (optional): For example "2nd".

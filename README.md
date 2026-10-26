@@ -193,7 +193,7 @@ With a DOI the server reads the Crossref record and follows the type it finds. A
 | `dataset` | A data set |
 | `posted-content` | A preprint, with the repository it was posted in |
 
-`format_citation` takes the same kinds of source, so you can type the details of a chapter, a thesis, a report, a data set or a preprint when there is no DOI to look up.
+`format_citation` takes the same kinds of source, so you can type the details of a chapter, a thesis, a report, a data set or a preprint when there is no DOI to look up. A journal article and a chapter also need `container`, the journal name or the book title they appear in. Without it the server returns an error that names the container, instead of a citation with a missing part.
 
 ## Works cited list
 

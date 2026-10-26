@@ -21,7 +21,7 @@ const sourceShape = {
   translators: z.array(author).optional().describe("Translators of a book, same shape as authors."),
   year: z.string().optional(),
   title: z.string(),
-  container: z.string().optional().describe("Journal name, the book title for a chapter, or website name."),
+  container: z.string().optional().describe("Journal name, the book title for a chapter, or website name. Required for a journal article and for a chapter, since without it the citation would be missing the work it appears in."),
   publisher: z.string().optional(),
   city: z.string().optional().describe("Publisher city, used by Chicago for books."),
   edition: z.string().optional().describe('For example "2nd".'),
