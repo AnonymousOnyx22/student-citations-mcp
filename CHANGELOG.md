@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Fall back to Open Library search when an ISBN record is missing publisher or year, so recent books still get a complete citation.
+- cite_from_isbn now looks in the Open Library search when an ISBN record has no publisher, year or place, and fills the gap only when the search names exactly one. A book with many editions is left with what the record gave, because a guess could put another edition's year or publisher in your citation.
 
 ## 0.1.5
 

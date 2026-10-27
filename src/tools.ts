@@ -163,9 +163,13 @@ async function sourceFromIsbn(input: string, api: Api): Promise<Source> {
         const searchRes: any = await api.openLibrary.get("/search.json", { q: `isbn:${isbn}`, limit: 1 });
         const doc = searchRes.docs?.[0];
         if (doc) {
-          if (!src.publisher && doc.publisher?.[0]) src.publisher = doc.publisher[0];
-          if (!src.year && doc.publish_year?.[0]) src.year = String(doc.publish_year[0]);
-          if (!src.city && doc.publish_place?.[0]) src.city = doc.publish_place[0];
+          // A search result describes the whole work, with every edition's publishers, years and places. Use a value only when
+          // the result lists exactly one, since the first of many is as likely to be another edition's, and a wrong year or
+          // publisher in a citation is worse than a missing one.
+          const only = (list: unknown): string | undefined => (Array.isArray(list) && list.length === 1 && list[0] != null ? String(list[0]) : undefined);
+          if (!src.publisher) src.publisher = only(doc.publisher) ?? src.publisher;
+          if (!src.year) src.year = only(doc.publish_year) ?? src.year;
+          if (!src.city) src.city = only(doc.publish_place) ?? src.city;
         }
       } catch {
         // Search fallback failed, return what we have

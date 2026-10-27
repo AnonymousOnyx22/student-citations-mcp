@@ -47,11 +47,14 @@ beforeAll(async () => {
       if (key === "ISBN:9780262033848") return json({ [key]: { title: "Introduction to Algorithms", authors: [{ name: "Thomas H. Cormen" }, { name: "Charles E. Leiserson" }], publishers: [{ name: "MIT Press" }], publish_places: [{ name: "Cambridge, MA" }], publish_date: "July 31, 2009" } });
       if (key === "ISBN:1111111111111") return json({}, 404);
       if (key === "ISBN:9780134685991") return json({ [key]: { title: "Effective Java", authors: [{ name: "Joshua Bloch" }] } });
+      if (key === "ISBN:9780140449136") return json({ [key]: { title: "Crime and Punishment", authors: [{ name: "Fyodor Dostoevsky" }] } });
       return json({});
     }
     if (url.pathname === "/search.json") {
       const q = url.searchParams.get("q");
       if (q === "isbn:9780134685991") return json({ docs: [{ publisher: ["Addison-Wesley"], publish_year: [2018], publish_place: ["Boston"] }] });
+      // a classic with many editions: the search describes the whole work, so no single publisher, year or place is this edition's
+      if (q === "isbn:9780140449136") return json({ docs: [{ publisher: ["Penguin", "Vintage", "Dover"], publish_year: [1866, 1950, 2003], publish_place: ["Parizh", "London", "New York"] }] });
       return json({ docs: [] });
     }
     json({}, 404);
@@ -368,6 +371,12 @@ describe("MCP tools", () => {
     expect(r.isError).toBe(false);
     expect(r.text).toContain("Bloch, J. (2018).");
     expect(r.text).toContain("Addison-Wesley");
+  });
+  it("does not guess a publisher, year or place from a search result that covers many editions", async () => {
+    const r = await call("cite_from_isbn", { isbn: "978-0-14-044913-6", style: "apa7" });
+    expect(r.isError).toBe(false);
+    expect(r.text).toContain("Dostoevsky");
+    for (const guess of ["Penguin", "Vintage", "Dover", "1866", "1950", "2003", "Parizh"]) expect(r.text).not.toContain(guess);
   });
   it("explains a missing ISBN", async () => {
     const r = await call("cite_from_isbn", { isbn: "0306406152" });
