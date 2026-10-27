@@ -46,7 +46,13 @@ beforeAll(async () => {
       const key = url.searchParams.get("bibkeys");
       if (key === "ISBN:9780262033848") return json({ [key]: { title: "Introduction to Algorithms", authors: [{ name: "Thomas H. Cormen" }, { name: "Charles E. Leiserson" }], publishers: [{ name: "MIT Press" }], publish_places: [{ name: "Cambridge, MA" }], publish_date: "July 31, 2009" } });
       if (key === "ISBN:1111111111111") return json({}, 404);
+      if (key === "ISBN:9780134685991") return json({ [key]: { title: "Effective Java", authors: [{ name: "Joshua Bloch" }] } });
       return json({});
+    }
+    if (url.pathname === "/search.json") {
+      const q = url.searchParams.get("q");
+      if (q === "isbn:9780134685991") return json({ docs: [{ publisher: ["Addison-Wesley"], publish_year: [2018], publish_place: ["Boston"] }] });
+      return json({ docs: [] });
     }
     json({}, 404);
   });
@@ -356,6 +362,12 @@ describe("MCP tools", () => {
   it("cites from an ISBN through Open Library", async () => {
     const r = await call("cite_from_isbn", { isbn: "978-0-262-03384-8", style: "mla9" });
     expect(r.text).toContain("Cormen, Thomas H., and Charles E. Leiserson. *Introduction to Algorithms*. MIT Press, 2009.");
+  });
+  it("falls back to Open Library search when the ISBN record is thin", async () => {
+    const r = await call("cite_from_isbn", { isbn: "978-0-13-468599-1", style: "apa7" });
+    expect(r.isError).toBe(false);
+    expect(r.text).toContain("Bloch, J. (2018).");
+    expect(r.text).toContain("Addison-Wesley");
   });
   it("explains a missing ISBN", async () => {
     const r = await call("cite_from_isbn", { isbn: "0306406152" });

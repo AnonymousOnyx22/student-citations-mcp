@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Fall back to Open Library search when an ISBN record is missing publisher or year, so recent books still get a complete citation.
+
 ## 0.1.5
 
 - Let `format_citation` and `cite_from_doi` take `style` as `all`, so all three styles come back in one reply with a label above each one.

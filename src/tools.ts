@@ -150,7 +150,7 @@ async function sourceFromIsbn(input: string, api: Api): Promise<Source> {
     const b = res[`ISBN:${isbn}`];
     if (!b) throw new Error(`Open Library has no book for ISBN ${isbn}. Check the number, or use format_citation and type the details.`);
     const year = String(b.publish_date ?? "").match(/\d{4}/)?.[0];
-    return {
+    const src: Source = {
       type: "book",
       authors: (b.authors ?? []).map((x: any) => splitName(String(x.name))),
       year,
@@ -158,6 +158,20 @@ async function sourceFromIsbn(input: string, api: Api): Promise<Source> {
       publisher: b.publishers?.[0]?.name,
       city: b.publish_places?.[0]?.name,
     };
+    if (!src.publisher || !src.year) {
+      try {
+        const searchRes: any = await api.openLibrary.get("/search.json", { q: `isbn:${isbn}`, limit: 1 });
+        const doc = searchRes.docs?.[0];
+        if (doc) {
+          if (!src.publisher && doc.publisher?.[0]) src.publisher = doc.publisher[0];
+          if (!src.year && doc.publish_year?.[0]) src.year = String(doc.publish_year[0]);
+          if (!src.city && doc.publish_place?.[0]) src.city = doc.publish_place[0];
+        }
+      } catch {
+        // Search fallback failed, return what we have
+      }
+    }
+    return src;
   } catch (err) {
     if (err instanceof ApiError) {
       if (err.status === 404) {
