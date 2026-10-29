@@ -22,6 +22,8 @@ export type Query = Record<string, string | number | boolean | undefined | Array
 
 export interface HttpClient {
   get<T = unknown>(path: string, query?: Query): Promise<T>;
+  /** Fetches a page as text, for HTML rather than JSON. */
+  getText(path: string): Promise<string>;
   /** Follows RFC 5988 `Link: rel="next"` pagination and concatenates array pages. */
   getAll<T = unknown>(path: string, query?: Query, maxPages?: number): Promise<T[]>;
 }
@@ -81,6 +83,11 @@ export function createClient(opts: ClientOptions): HttpClient {
     async get<T>(path: string, query?: Query): Promise<T> {
       const res = await request(buildUrl(opts.baseUrl, path, query, opts.defaultQuery));
       return (await res.json()) as T;
+    },
+    async getText(path: string): Promise<string> {
+      const res = await request(buildUrl(opts.baseUrl, path));
+      const text = await res.text();
+      return text.slice(0, 2_000_000);
     },
     async getAll<T>(path: string, query?: Query, maxPages = 10): Promise<T[]> {
       const out: T[] = [];

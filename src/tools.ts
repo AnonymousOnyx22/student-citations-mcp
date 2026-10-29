@@ -2,11 +2,13 @@ import { z } from "zod";
 import type { HttpClient } from "./core/http.js";
 import { ApiError } from "./core/http.js";
 import type { ToolDef } from "./core/tools.js";
-import { type Author, type Source, format, formatAnyStyle, formatBibliography, inText, narrativeInText, normalizeDoi, normalizeIsbn, normalizeStyle, normalizeStyleRequest, splitName } from "./format.js";
+import { type Author, type Source, allStyleLabels, format, formatAnyStyle, formatBibliography, inText, narrativeInText, normalizeDoi, normalizeIsbn, normalizeStyle, normalizeStyleRequest, splitName } from "./format.js";
+import { normalizeUrl, pageSource, parsePage, parsePageDate } from "./page.js";
 
 export interface Api {
   crossref: HttpClient;
   openLibrary: HttpClient;
+  web: HttpClient;
 }
 
 const style = z.string().default("apa7").describe("Citation style. Aliases such as APA, MLA 9 and Chicago are accepted. Valid styles: apa7, mla9, chicago-ad (Chicago author date).");
@@ -239,6 +241,50 @@ export const tools: ToolDef<Api>[] = [
       const st = normalizeStyleRequest(a.style ?? "apa7");
       const src = await sourceFromDoi(a.doi, api);
       return `${formatAnyStyle(src, st)}\n\n(From Crossref. Check it against your style guide.)`;
+    },
+  },
+  {
+    name: "cite_from_url",
+    title: "Cite from a web page",
+    description: "Fetch a web page and format it as a website citation in APA 7, MLA 9 or Chicago author date. It reads the page title, the site name and the date from the page. Inputs: url (a full web address), style (apa7, mla9, chicago-ad or all), and optional title, site_name and date to replace what the page gives. Pass all to get all three styles in one reply, each one with its style name on the line above it. Example prompt: \"Cite this page in APA: https://example.edu/study.\"",
+    inputSchema: {
+      url: z.string().describe("A full web address, like https://example.edu/study."),
+      style: styleAll,
+      title: z.string().optional().describe("Use this title instead of the one on the page."),
+      site_name: z.string().optional().describe("Use this site name instead of the one on the page."),
+      date: z.string().optional().describe("Use this date instead of the one on the page, like 2026-10-14 or October 14, 2026."),
+    },
+    run: async (a, api) => {
+      const url = normalizeUrl(a.url);
+      let html: string;
+      try {
+        html = await api.web.getText(url);
+      } catch (err) {
+        if (err instanceof ApiError) {
+          if (err.status === 404) {
+            throw new ApiError("That page was not found. Check the web address, or use format_citation and type the details.", err.status, err.body);
+          }
+          throw new ApiError(`${err.message} Check the web address, or use format_citation and type the details.`, err.status, err.body);
+        }
+        throw err;
+      }
+      const page = parsePage(html, url);
+      if (a.title?.trim()) page.title = a.title.trim();
+      if (a.site_name?.trim()) page.siteName = a.site_name.trim();
+      if (a.date?.trim()) {
+        const date = parsePageDate(a.date);
+        if (!date) throw new Error(`"${a.date}" does not look like a date. Give a date like 2026-10-14 or October 14, 2026.`);
+        page.year = date.year;
+        page.month = date.month;
+        page.day = date.day;
+      }
+      if (!page.title) throw new Error("That page has no title, so there is nothing to cite. Use format_citation and type the details.");
+      const st = normalizeStyleRequest(a.style ?? "apa7");
+      const note = "(From the page. Check it against your style guide.)";
+      if (st === "all") {
+        return `${allStyleLabels.map(({ style: s, label }) => `${label}\n${format(pageSource(page, url, s), s)}`).join("\n\n")}\n\n${note}`;
+      }
+      return `${format(pageSource(page, url, st), st)}\n\n${note}`;
     },
   },
   {

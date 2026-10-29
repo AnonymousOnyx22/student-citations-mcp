@@ -25,6 +25,7 @@ export interface Source {
   doi?: string;
   url?: string;
   date_text?: string; // for websites, like "2026, October 14" (APA) or "14 Oct. 2026" (MLA)
+  published?: string; // the date of a web page as the APA reference puts it, like "2026, October 14"
   accessed?: string;
   institution?: string; // the university or organisation behind a thesis, a report or a dataset
   degree?: string; // the degree of a thesis, like "Ph.D."
@@ -143,7 +144,8 @@ export function format(s: Source, styleInput: Style | string): string {
   };
   if (style === "apa7") {
     const who = apaAuthors(s.authors);
-    const date = s.type === "website" && s.date_text ? s.date_text : s.year ?? "n.d.";
+    const webDate = s.published ?? s.date_text;
+    const date = s.type === "website" && webDate ? webDate : s.year ?? "n.d.";
     if (s.type === "journal") {
       push(who ? end(who) + ` (${date}).` : undefined);
       if (!who) push(`${end(s.title)} (${date}).`);
@@ -217,7 +219,8 @@ export function format(s: Source, styleInput: Style | string): string {
       push(link(s));
     } else {
       if (who) push(`${end(who)} (${date}).`);
-      push(end(`*${plainTitle(s.title)}*`));
+      if (!who && s.published) push(`${end(`*${plainTitle(s.title)}*`)} (${s.published}).`);
+      else push(end(`*${plainTitle(s.title)}*`));
       push(s.container ? end(s.container) : undefined);
       push(link(s));
     }

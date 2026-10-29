@@ -27,6 +27,7 @@
     "citation mcp",
     "citation generator",
     "cite this",
+    "cite from url",
     "citations",
     "apa citation",
     "apa formatter",
@@ -60,7 +61,10 @@
     "isbn",
     "crossref",
     "thesis",
-    "dissertation"
+    "dissertation",
+    "url citation",
+    "web page citation",
+    "website citation"
   ],
   "author": "AnonymousOnyx22",
   "license": "MIT",

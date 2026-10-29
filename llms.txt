@@ -6,7 +6,7 @@
 - Run with npx -y student-citations-mcp
 - No key or account. Optional CROSSREF_EMAIL.
 - Styles are apa7, mla9 and chicago-ad. format_citation and cite_from_doi also take all to return all three styles in one reply. Italics are returned as asterisks.
-- All five tools are read only. Nothing is stored.
+- All six tools are read only. Nothing is stored.
 - The cite_this prompt looks nothing up. It only writes out the request.
 
 ## Tools
@@ -103,6 +103,18 @@ Example: with authors [{"family": "Smith", "given": "John Kenneth"}, {"family": 
 With doi "10.1038/nature14539" and page "436", style "apa7" returns "(LeCun et al., 2015, p. 436)" from the Crossref record, and style "mla9" returns "(LeCun et al. 436)". With isbn "978-0-262-03384-8", style "apa7" returns "(Cormen & Leiserson, 2009)" from the Open Library record. When you give a doi or an isbn, the authors and the year come from the record, and any authors or year you also pass are ignored.
 
 With form "narrative" the author goes in your sentence and the rest stays in brackets, for a sentence like "Smith and Jones (2020, p. 14) argue that ...". With page "14", style "apa7" returns "Smith and Jones (2020, p. 14)", style "mla9" returns "Smith and Jones (14)" and style "chicago-ad" returns "Smith and Jones (2020, 14)". Three or more authors become "et al." in the narrative form too. With no authors given, the tool returns the parenthetical form.
+
+### cite_from_url
+Fetch a web page and format it as a website citation in APA 7, MLA 9 or Chicago author date. It reads the page title, the site name and the date from the page. Inputs: url (a full web address), style (apa7, mla9, chicago-ad or all), and optional title, site_name and date to replace what the page gives. Pass all to get all three styles in one reply, each one with its style name on the line above it. Example prompt: "Cite this page in APA: https://example.edu/study."
+
+Parameters:
+- url (required): A full web address, like https://example.edu/study.
+- style (optional, default apa7): Citation style. apa7, mla9 or chicago-ad (Chicago author date), or all to get all three in one reply with a label above each one.
+- title (optional): Use this title instead of the one on the page.
+- site_name (optional): Use this site name instead of the one on the page.
+- date (optional): Use this date instead of the one on the page, like 2026-10-14 or October 14, 2026.
+
+Example: with url "https://example.edu/study" on a page whose title is "Study skills" and whose site name is "Example University", style "apa7" returns "*Study skills*. Example University. https://example.edu/study" then a blank line and "(From the page. Check it against your style guide.)".
 
 ## Prompts
 

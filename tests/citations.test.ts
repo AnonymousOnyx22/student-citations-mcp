@@ -22,6 +22,7 @@ const article = {
 let srv: http.Server;
 let client: Client;
 let lastUa = "";
+let base = "";
 
 beforeAll(async () => {
   srv = http.createServer((req, res) => {
@@ -42,6 +43,21 @@ beforeAll(async () => {
     if (url.pathname === "/works/10.1101/2020.01.30.927871")
       return json({ message: { type: "posted-content", subtype: "preprint", title: ["A preprint about study groups"], author: [{ given: "Alex", family: "Stone" }], publisher: "openRxiv", institution: [{ name: "bioRxiv" }], posted: { "date-parts": [[2020, 1, 31]] }, DOI: "10.1101/2020.01.30.927871" } });
     if (url.pathname.startsWith("/works/")) return json({}, 404);
+    if (url.pathname === "/page") {
+      res.writeHead(200, { "content-type": "text/html" });
+      res.end("<!DOCTYPE html><html><head><title>How to study | Example Uni</title><meta property=\"og:title\" content=\"How to study\"><meta property=\"og:site_name\" content=\"Example University\"><meta property=\"article:published_time\" content=\"2026-10-14T09:00:00Z\"></head><body><p>Study tips.</p></body></html>");
+      return;
+    }
+    if (url.pathname === "/notitle") {
+      res.writeHead(200, { "content-type": "text/html" });
+      res.end("<html><head></head><body><p>No title here.</p></body></html>");
+      return;
+    }
+    if (url.pathname === "/plain") {
+      res.writeHead(200, { "content-type": "text/html" });
+      res.end("<html><head><title>A plain page</title></head><body><p>Plain.</p></body></html>");
+      return;
+    }
     if (url.pathname === "/api/books") {
       const key = url.searchParams.get("bibkeys");
       if (key === "ISBN:9780262033848") return json({ [key]: { title: "Introduction to Algorithms", authors: [{ name: "Thomas H. Cormen" }, { name: "Charles E. Leiserson" }], publishers: [{ name: "MIT Press" }], publish_places: [{ name: "Cambridge, MA" }], publish_date: "July 31, 2009" } });
@@ -60,7 +76,7 @@ beforeAll(async () => {
     json({}, 404);
   });
   await new Promise<void>((r) => srv.listen(0, "127.0.0.1", r));
-  const base = `http://127.0.0.1:${(srv.address() as AddressInfo).port}`;
+  base = `http://127.0.0.1:${(srv.address() as AddressInfo).port}`;
   const [a, b] = InMemoryTransport.createLinkedPair();
   await createServer(makeApi({ crossref: base, openLibrary: base, email: "me@example.com" })).connect(a);
   client = new Client({ name: "test", version: "0" });
@@ -315,9 +331,9 @@ describe("missing container", () => {
 });
 
 describe("MCP tools", () => {
-  it("lists five read only tools", async () => {
+  it("lists six read only tools", async () => {
     const tools = (await client.listTools()).tools;
-    expect(tools.map((t) => t.name).sort()).toEqual(["cite_from_doi", "cite_from_isbn", "format_bibliography", "format_citation", "in_text_citation"]);
+    expect(tools.map((t) => t.name).sort()).toEqual(["cite_from_doi", "cite_from_isbn", "cite_from_url", "format_bibliography", "format_citation", "in_text_citation"]);
     for (const t of tools) expect(t.annotations?.readOnlyHint).toBe(true);
   });
   it("gives every tool concrete inputs and an example prompt", async () => {
@@ -486,6 +502,69 @@ describe("MCP tools", () => {
     const r = await call("in_text_citation", { doi: "10.1000/missing" });
     expect(r.isError).toBe(true);
     expect(r.text).toContain("That is not a DOI I recognise");
+  });
+});
+
+describe("cite from a web page", () => {
+  it("cites a page in APA 7, using its title, site name and date", async () => {
+    const r = await call("cite_from_url", { url: `${base}/page`, style: "apa7" });
+    expect(r.isError).toBe(false);
+    expect(r.text).toContain(`*How to study*. (2026, October 14). Example University. ${base}/page`);
+    expect(r.text).toContain("(From the page. Check it against your style guide.)");
+    expect(lastUa).toContain("mailto:me@example.com");
+  });
+
+  it("cites a page in MLA 9 with the date in the MLA form", async () => {
+    const r = await call("cite_from_url", { url: `${base}/page`, style: "mla9" });
+    expect(r.isError).toBe(false);
+    expect(r.text).toContain('"How to study."');
+    expect(r.text).toContain(`*Example University*, 14 Oct. 2026, ${base}/page.`);
+  });
+
+  it("cites all three styles with a label above each one", async () => {
+    const r = await call("cite_from_url", { url: `${base}/page`, style: "all" });
+    expect(r.isError).toBe(false);
+    expect(r.text).toContain(`APA 7\n*How to study*. (2026, October 14). Example University. ${base}/page`);
+    expect(r.text).toContain(`MLA 9\n"How to study." *Example University*, 14 Oct. 2026, ${base}/page.`);
+    expect(r.text).toContain(`Chicago author date\n2026. "How to study." Example University. ${base}/page.`);
+    expect(r.text).toContain("(From the page. Check it against your style guide.)");
+  });
+
+  it("falls back to the title element when the page has no open graph tags", async () => {
+    const r = await call("cite_from_url", { url: `${base}/plain`, style: "apa7" });
+    expect(r.isError).toBe(false);
+    expect(r.text).toContain(`*A plain page*. 127.0.0.1. ${base}/plain`);
+  });
+
+  it("uses the title, site name and date you pass in instead of the page's own", async () => {
+    const r = await call("cite_from_url", { url: `${base}/page`, title: "My title", site_name: "My Site", date: "October 14, 2026", style: "mla9" });
+    expect(r.isError).toBe(false);
+    expect(r.text).toContain('"My title."');
+    expect(r.text).toContain(`*My Site*, 14 Oct. 2026, ${base}/page.`);
+  });
+
+  it("rejects a date that does not look like a date", async () => {
+    const r = await call("cite_from_url", { url: `${base}/page`, date: "last autumn" });
+    expect(r.isError).toBe(true);
+    expect(r.text).toContain("does not look like a date");
+  });
+
+  it("gives a friendly error when the page is missing", async () => {
+    const r = await call("cite_from_url", { url: `${base}/missing` });
+    expect(r.isError).toBe(true);
+    expect(r.text).toContain("was not found");
+  });
+
+  it("gives a friendly error when the page has no title", async () => {
+    const r = await call("cite_from_url", { url: `${base}/notitle` });
+    expect(r.isError).toBe(true);
+    expect(r.text).toContain("has no title");
+  });
+
+  it("rejects an address that is not a web address", async () => {
+    const r = await call("cite_from_url", { url: "not a web address" });
+    expect(r.isError).toBe(true);
+    expect(r.text).toContain("does not look like a web address");
   });
 });
 

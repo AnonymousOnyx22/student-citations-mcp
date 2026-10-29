@@ -304,6 +304,32 @@
       ]
     },
     {
+      "name": "cite_from_url",
+      "description": "Fetch a web page and format it as a website citation in APA 7, MLA 9 or Chicago author date. It reads the page title, the site name and the date from the page. Inputs: url (a full web address), style (apa7, mla9, chicago-ad or all), and optional title, site_name and date to replace what the page gives. Pass all to get all three styles in one reply, each one with its style name on the line above it. Example prompt: \"Cite this page in APA: https://example.edu/study.\"",
+      "inputSchema": {
+        "type": "object",
+        "required": ["url"],
+        "properties": {
+          "url": { "type": "string", "description": "A full web address, like https://example.edu/study." },
+          "style": {
+            "type": "string",
+            "enum": ["apa7", "mla9", "chicago-ad", "all"],
+            "default": "apa7",
+            "description": "Citation style. apa7, mla9 or chicago-ad (Chicago author date), or all to get all three in one reply with a label above each one."
+          },
+          "title": { "type": "string", "description": "Use this title instead of the one on the page." },
+          "site_name": { "type": "string", "description": "Use this site name instead of the one on the page." },
+          "date": { "type": "string", "description": "Use this date instead of the one on the page, like 2026-10-14 or October 14, 2026." }
+        }
+      },
+      "examples": [
+        {
+          "input": { "url": "https://example.edu/study", "style": "apa7" },
+          "output": "*Study skills*. Example University. https://example.edu/study\n\n(From the page. Check it against your style guide.)"
+        }
+      ]
+    },
+    {
       "name": "in_text_citation",
       "description": "The in text citation that goes with a source, with an optional page number and an optional narrative form for a sentence where the author is named. Give authors and year, or a doi or an isbn and the record fills them in. Inputs: authors (family name plus optional given names), year, doi, isbn, page, form (parenthetical or narrative) and style (apa7, mla9 or chicago-ad). A doi or an isbn cannot be combined with the other one. Example prompt: \"Give the APA in text citation for Smith and Jones 2020 on page 14.\"",
       "inputSchema": {

@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add a cite_from_url tool, which fetches a web page and turns its title, its site name and its date into an APA 7, MLA 9 or Chicago author date website citation. Pass it a URL, and override the title, the site name or the date when you want.
+
 ## 0.1.6
 
 - format_bibliography now takes `dois` and `isbns` lists as well as typed sources. It looks each one up and puts it in the same alphabetised list, and a lookup that fails gives an error that names the DOI or ISBN.

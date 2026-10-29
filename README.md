@@ -91,9 +91,10 @@ Nothing else to install. You need Node.js 20 or newer. The config block for your
 | `format_bibliography` | Format several sources as one works cited list, alphabetised by author, in APA 7, MLA 9 or Chicago author date. Each source takes the same fields as `format_citation`, and `dois` and `isbns` lists are looked up and added to the list |
 | `cite_from_doi` | Look up a DOI on Crossref and format the citation. The Crossref record decides the shape, so a book chapter comes back as a chapter and a dissertation comes back as a thesis. Pass `style` as `all` to get all three styles in one reply |
 | `cite_from_isbn` | Look up an ISBN on Open Library and format the citation |
+| `cite_from_url` | Fetch a web page and cite it as a website in APA 7, MLA 9 or Chicago author date. It reads the page title, site name and date, and you can override any of them |
 | `in_text_citation` | The in text citation that matches a source, with an optional page number, in the parenthetical or the narrative form. It takes the authors and year you type, or a DOI or an ISBN and looks up the authors and year for you |
 
-All five tools are read only.
+All six tools are read only.
 
 ## Prompts
 
@@ -123,6 +124,7 @@ It takes two arguments. `style` picks the style, which is APA 7 unless you say o
 
 - "Cite 10.1038/nature14539 in APA."
 - "Cite 10.1038/nature14539 in all three styles."
+- "Cite this web page in APA: https://example.edu/study."
 - "Cite the DOI of this book chapter in APA, with the editors of the book."
 - "Make an MLA citation for ISBN 9780262033848."
 - "Format this as Chicago: Smith and Jones, 2020, Learning to Learn, Journal of Study Skills, volume 4, issue 2, pages 11 to 25."
@@ -271,7 +273,7 @@ They are the other MCP servers for citations, and they are the closer competitio
 
 **What happens to my data?**
 
-Nothing is stored. The server keeps no list of your sources, writes no files and sends no usage data anywhere. It takes the details you type in the chat and, for a DOI or an ISBN, sends that identifier to Crossref or Open Library to fetch the record. The request also carries a user agent line with the server name and version, plus your email address if you set `CROSSREF_EMAIL`.
+Nothing is stored. The server keeps no list of your sources, writes no files and sends no usage data anywhere. It takes the details you type in the chat and, for a DOI, an ISBN or a web page URL, sends that identifier or address to Crossref, Open Library or the page itself to fetch the record or the page. The request also carries a user agent line with the server name and version, plus your email address if you set `CROSSREF_EMAIL`.
 
 **How do I install it?**
 
@@ -279,7 +281,7 @@ Run `npx -y student-citations-mcp`. You need Node.js 20 or newer, and that is th
 
 **Does it work without internet?**
 
-Partly. `format_citation` works offline, because it formats the details you type. `in_text_citation` works offline too when you type the authors and the year. It also takes a DOI or an ISBN, and those lookups need a connection, as do `cite_from_doi` and `cite_from_isbn`, which fetch the record from Crossref or Open Library.
+Partly. `format_citation` works offline, because it formats the details you type. `in_text_citation` works offline too when you type the authors and the year. It also takes a DOI or an ISBN, and those lookups need a connection, as do `cite_from_doi`, `cite_from_isbn` and `cite_from_url`, which fetch the record or the page from Crossref, Open Library or the web address you give.
 
 **Which styles can I ask for?**
 
