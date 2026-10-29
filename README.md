@@ -88,7 +88,7 @@ Nothing else to install. You need Node.js 20 or newer. The config block for your
 | Tool | What it does |
 | --- | --- |
 | `format_citation` | Format a journal article, book, website, book chapter, thesis, report, dataset or preprint from details you type, in APA 7, MLA 9 or Chicago author date. For books you can name the editors and the translators too. Pass `style` as `all` to get all three styles in one reply |
-| `format_bibliography` | Format several sources as one works cited list, alphabetised by author, in APA 7, MLA 9 or Chicago author date. Each source takes the same fields as `format_citation` |
+| `format_bibliography` | Format several sources as one works cited list, alphabetised by author, in APA 7, MLA 9 or Chicago author date. Each source takes the same fields as `format_citation`, and `dois` and `isbns` lists are looked up and added to the list |
 | `cite_from_doi` | Look up a DOI on Crossref and format the citation. The Crossref record decides the shape, so a book chapter comes back as a chapter and a dissertation comes back as a thesis. Pass `style` as `all` to get all three styles in one reply |
 | `cite_from_isbn` | Look up an ISBN on Open Library and format the citation |
 | `in_text_citation` | The in text citation that matches a source, with an optional page number, in the parenthetical or the narrative form. It takes the authors and year you type, or a DOI or an ISBN and looks up the authors and year for you |
@@ -197,7 +197,7 @@ With a DOI the server reads the Crossref record and follows the type it finds. A
 
 ## Works cited list
 
-`format_bibliography` takes several sources in one call and returns them as one list, alphabetised by the first author's family name. A source with no author is alphabetised by its title, and a leading "A", "An" or "The" is skipped. Each source takes the same fields as `format_citation`, so a journal article, a book and a website can sit in the same list. Here are those three sources in APA 7.
+`format_bibliography` takes several sources in one call and returns them as one list, alphabetised by the first author's family name. A source with no author is alphabetised by its title, and a leading "A", "An" or "The" is skipped. Each source takes the same fields as `format_citation`, so a journal article, a book and a website can sit in the same list. You can also pass `dois` and `isbns` lists, which are looked up on Crossref and Open Library and added to the list, up to 50 in one call. If one lookup fails, the reply is an error that names it. Here are those three sources in APA 7.
 
 ```text
 Cormen, T. H. (2009). *Introduction to algorithms* (3rd ed.). MIT Press.

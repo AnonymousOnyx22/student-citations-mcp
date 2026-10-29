@@ -428,6 +428,26 @@ describe("MCP tools", () => {
     expect(entries[0]).toBe("Adams, A. (2019). *Study habits*. North Gate Press.");
     expect(entries[1]).toBe("Zimmer, Z. (2021). *Later work*. North Gate Press.");
   });
+  it("adds looked up dois and isbns to the list with the typed sources", async () => {
+    const r = await call("format_bibliography", {
+      sources: [{ type: "book", authors: [{ family: "Zimmer", given: "Zoe" }], year: "2021", title: "Later work", publisher: "North Gate Press" }],
+      dois: ["10.1000/jss.2020.42"],
+      isbns: ["978-0-262-03384-8"],
+    });
+    expect(r.isError).toBeFalsy();
+    const entries = r.text.split("\n\n");
+    expect(entries[0]).toContain("Cormen");
+    expect(entries[1]).toContain("Smith");
+    expect(entries[2]).toContain("Zimmer");
+    expect(r.text).toContain("Crossref and Open Library");
+  });
+  it("builds a list from dois alone and names a lookup that fails", async () => {
+    const ok = await call("format_bibliography", { dois: ["10.1000/jss.2020.42"] });
+    expect(ok.isError).toBeFalsy();
+    const bad = await call("format_bibliography", { dois: ["10.1000/jss.2020.42", "10.9999/nothing"] });
+    expect(bad.isError).toBe(true);
+    expect(bad.text).toContain("DOI 10.9999/nothing");
+  });
   it("asks for at least one source in a works cited list", async () => {
     const r = await call("format_bibliography", { sources: [] });
     expect(r.isError).toBe(true);

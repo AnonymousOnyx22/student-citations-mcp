@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- format_bibliography now takes `dois` and `isbns` lists as well as typed sources. It looks each one up and puts it in the same alphabetised list, and a lookup that fails gives an error that names the DOI or ISBN.
 - cite_from_isbn now looks in the Open Library search when an ISBN record has no publisher, year or place, and fills the gap only when the search names exactly one. A book with many editions is left with what the record gave, because a guess could put another edition's year or publisher in your citation.
 
 ## 0.1.5
