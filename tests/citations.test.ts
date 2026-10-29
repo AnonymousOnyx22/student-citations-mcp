@@ -58,6 +58,26 @@ beforeAll(async () => {
       res.end("<html><head><title>A plain page</title></head><body><p>Plain.</p></body></html>");
       return;
     }
+    if (url.pathname === "/jsonld") {
+      res.writeHead(200, { "content-type": "text/html" });
+      res.end("<!DOCTYPE html><html><head><title>JSON LD Page | News Site</title><meta property=\"og:title\" content=\"JSON LD Page\"><meta property=\"og:site_name\" content=\"News Site\"><script type=\"application/ld+json\">{\"@context\":\"https://schema.org\",\"@type\":\"NewsArticle\",\"datePublished\":\"2026-09-01T12:00:00Z\"}</script></head><body></body></html>");
+      return;
+    }
+    if (url.pathname === "/timedate") {
+      res.writeHead(200, { "content-type": "text/html" });
+      res.end("<!DOCTYPE html><html><head><title>Time Page</title><meta name=\"application-name\" content=\"Time Blog\"></head><body><time datetime=\"2026-08-05\">August 5, 2026</time></body></html>");
+      return;
+    }
+    if (url.pathname === "/twitter") {
+      res.writeHead(200, { "content-type": "text/html" });
+      res.end("<!DOCTYPE html><html><head><meta name=\"twitter:title\" content=\"Twitter Title\"><meta property=\"og:site_name\" content=\"Twitter Site\"><meta name=\"date\" content=\"2026-07-10\"></head><body></body></html>");
+      return;
+    }
+    if (url.pathname === "/titlepipe") {
+      res.writeHead(200, { "content-type": "text/html" });
+      res.end("<!DOCTYPE html><html><head><title>Pipe Title | Pipe Site</title></head><body></body></html>");
+      return;
+    }
     if (url.pathname === "/api/books") {
       const key = url.searchParams.get("bibkeys");
       if (key === "ISBN:9780262033848") return json({ [key]: { title: "Introduction to Algorithms", authors: [{ name: "Thomas H. Cormen" }, { name: "Charles E. Leiserson" }], publishers: [{ name: "MIT Press" }], publish_places: [{ name: "Cambridge, MA" }], publish_date: "July 31, 2009" } });
@@ -565,6 +585,39 @@ describe("cite from a web page", () => {
     const r = await call("cite_from_url", { url: "not a web address" });
     expect(r.isError).toBe(true);
     expect(r.text).toContain("does not look like a web address");
+  });
+});
+
+describe("cite from a web page parsing", () => {
+  it("reads the title, site name and date from JSON-LD", async () => {
+    const r = await call("cite_from_url", { url: `${base}/jsonld`, style: "mla9" });
+    expect(r.isError).toBe(false);
+    expect(r.text).toContain('"JSON LD Page."');
+    expect(r.text).toContain("*News Site*");
+    expect(r.text).toContain("1 Sept. 2026");
+  });
+
+  it("reads the date from a time element when no meta tags give it", async () => {
+    const r = await call("cite_from_url", { url: `${base}/timedate`, style: "apa7" });
+    expect(r.isError).toBe(false);
+    expect(r.text).toContain("*Time Page*.");
+    expect(r.text).toContain("Time Blog");
+    expect(r.text).toContain("(2026, August 5)");
+  });
+
+  it("reads from twitter meta tags and date meta tag", async () => {
+    const r = await call("cite_from_url", { url: `${base}/twitter`, style: "mla9" });
+    expect(r.isError).toBe(false);
+    expect(r.text).toContain('"Twitter Title."');
+    expect(r.text).toContain("*Twitter Site*");
+    expect(r.text).toContain("10 July 2026");
+  });
+
+  it("splits the title from the pipe in the title element", async () => {
+    const r = await call("cite_from_url", { url: `${base}/titlepipe`, style: "apa7" });
+    expect(r.isError).toBe(false);
+    expect(r.text).toContain("*Pipe Title*.");
+    expect(r.text).toContain("Pipe Site");
   });
 });
 
