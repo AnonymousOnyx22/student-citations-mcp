@@ -189,6 +189,8 @@ async function sourceFromIsbn(input: string, api: Api): Promise<Source> {
 
 /** The most DOIs and ISBNs one works cited list will look up, so a single call stays a fair load on Crossref and Open Library. */
 const maxLookups = 50;
+/** How many of those lookups run at the same time. */
+const lookupsAtOnce = 5;
 
 export const tools: ToolDef<Api>[] = [
   {
@@ -220,7 +222,10 @@ export const tools: ToolDef<Api>[] = [
         p.catch((err) => {
           throw new Error(`${id}: ${err instanceof Error ? err.message : String(err)}`);
         });
-      const found = await Promise.all([...dois.map((d) => named(`DOI ${d}`, sourceFromDoi(d, api))), ...isbns.map((i) => named(`ISBN ${i}`, sourceFromIsbn(i, api)))]);
+      // look them up a few at a time, so a long list is not a burst of 50 requests at once on Crossref and Open Library
+      const jobs: Array<() => Promise<Source>> = [...dois.map((d) => () => named(`DOI ${d}`, sourceFromDoi(d, api))), ...isbns.map((i) => () => named(`ISBN ${i}`, sourceFromIsbn(i, api)))];
+      const found: Source[] = [];
+      for (let at = 0; at < jobs.length; at += lookupsAtOnce) found.push(...(await Promise.all(jobs.slice(at, at + lookupsAtOnce).map((job) => job()))));
       const list = formatBibliography([...((a.sources ?? []) as Source[]), ...found], st);
       return found.length ? `${list}\n\n(The entries from dois and isbns come from Crossref and Open Library. Check them against your style guide.)` : list;
     },
