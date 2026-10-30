@@ -1,6 +1,6 @@
 {
   "name": "student-citations-mcp",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Citation MCP server for AI apps. A citation generator that builds APA, MLA and Chicago citations from a DOI, an ISBN or typed details, with matching in text citations and entries for a works cited list. No account.",
   "type": "module",
   "main": "build/src/index.js",

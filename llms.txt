@@ -1,6 +1,6 @@
 # student-citations-mcp
 
-> Citation generator MCP server for APA, MLA and Chicago citations from a DOI or ISBN. No account. Version 0.1.6. Free and open source MCP server for AI apps (Claude, ChatGPT, Cursor, Copilot and others).
+> Citation generator MCP server for APA, MLA and Chicago citations from a DOI or ISBN. No account. Version 0.1.7. Free and open source MCP server for AI apps (Claude, ChatGPT, Cursor, Copilot and others).
 
 ## Setup
 - Run with npx -y student-citations-mcp

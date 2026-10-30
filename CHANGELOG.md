@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.7
 
 - Add a find_doi tool. Give it a paper or book title, and an author's family name if you have one, and it searches Crossref and lists the best matches with their DOIs, ready to pass to cite_from_doi.
 
