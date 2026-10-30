@@ -110,7 +110,7 @@ The prompt looks nothing up. It only writes out the request, so you can check it
 ```text
 Cite this source in APA 7.
 
-Use the tool that fits the source: cite_from_doi for a DOI, cite_from_isbn for an ISBN, format_citation for details you type and in_text_citation for the in text form.
+Use the tool that fits the source: cite_from_doi for a DOI, cite_from_isbn for an ISBN, cite_from_url for a web address, format_citation for details you type and in_text_citation for the in text form.
 
 Example prompts:
 - "Cite this journal article in APA 7: Learning to learn by John Kenneth Smith and Alice Jones, 2020, Journal of Study Skills, volume 4, issue 2, pages 11-25."

@@ -227,24 +227,36 @@ export const tools: ToolDef<Api>[] = [
   {
     name: "format_bibliography",
     title: "Format a works cited list",
-    description: "Format several sources at once as one works cited list, alphabetised by the first author's family name, in APA 7, MLA 9 or Chicago author date. A source with no author is alphabetised by its title. Inputs: sources (an array of objects, each with the same fields as format_citation: type, title and optional authors, year, container, publisher, city, edition, editors, translators, volume, issue, pages, doi, url, date_text, accessed, institution, degree, repository and report_number), dois (a list of DOIs to look up on Crossref), isbns (a list of ISBNs to look up on Open Library) and style (apa7, mla9 or chicago-ad). Give sources, dois, isbns or any mix, up to 50 lookups in one call. If one lookup fails the reply is an error that names it. Example prompt: \"Put these three sources into an APA works cited list: a journal article by Smith and Jones from 2020, a book by Cormen from 2009 and a website from example.edu.\"",
+    description: "Format several sources at once as one works cited list, alphabetised by the first author's family name, in APA 7, MLA 9 or Chicago author date. A source with no author is alphabetised by its title. Inputs: sources (an array of objects, each with the same fields as format_citation: type, title and optional authors, year, container, publisher, city, edition, editors, translators, volume, issue, pages, doi, url, date_text, accessed, institution, degree, repository and report_number), dois (a list of DOIs to look up on Crossref), isbns (a list of ISBNs to look up on Open Library), urls (a list of web addresses to fetch and cite as websites) and style (apa7, mla9 or chicago-ad). Give sources, dois, isbns, urls or any mix, up to 50 lookups in one call. If one lookup fails the reply is an error that names it. Example prompt: \"Put these three sources into an APA works cited list: a journal article by Smith and Jones from 2020, a book by Cormen from 2009 and a website from example.edu.\"",
     inputSchema: {
       sources: z.array(z.object(sourceShape)).default([]).describe("The sources for the list. Each one takes the same fields as format_citation, so a journal article, a book, a website, a chapter, a thesis, a report, a dataset and a preprint can share one list. Optional when you give dois or isbns."),
       dois: z.array(z.string()).default([]).describe("DOIs to look up on Crossref and add to the list, each one a DOI like 10.1038/nature14539 or a doi.org link."),
       isbns: z.array(z.string()).default([]).describe("ISBNs to look up on Open Library and add to the list as books. Dashes are fine."),
+      urls: z.array(z.string()).default([]).describe("Web addresses to fetch and add to the list as websites. Each one a full URL like https://example.edu/study."),
       style,
     },
     run: async (a, api) => {
       const st = normalizeStyle(a.style ?? "apa7");
       const dois: string[] = a.dois ?? [];
-      const isbns: string[] = a.isbns ?? [];
-      if (dois.length + isbns.length > maxLookups) throw new Error(`Give at most ${maxLookups} dois and isbns in one list. Split a longer list into two calls.`);
-      const named = (id: string, p: Promise<Source>) =>
-        p.catch((err) => {
-          throw new Error(`${id}: ${err instanceof Error ? err.message : String(err)}`);
-        });
-      // look them up a few at a time, so a long list is not a burst of 50 requests at once on Crossref and Open Library
-      const jobs: Array<() => Promise<Source>> = [...dois.map((d) => () => named(`DOI ${d}`, sourceFromDoi(d, api))), ...isbns.map((i) => () => named(`ISBN ${i}`, sourceFromIsbn(i, api)))];
+const isbns: string[] = a.isbns ?? [];
+const urls: string[] = a.urls ?? [];
+if (dois.length + isbns.length + urls.length > maxLookups) throw new Error(`Give at most ${maxLookups} dois, isbns and urls in one list. Split a longer list into two calls.`);
+const named = (id: string, p: Promise<Source>) =>
+  p.catch((err) => {
+    throw new Error(`${id}: ${err instanceof Error ? err.message : String(err)}`);
+  });
+// look them up a few at a time, so a long list is not a burst of 50 requests at once on Crossref and Open Library
+const jobs: Array<() => Promise<Source>> = [
+  ...dois.map((d) => () => named(`DOI ${d}`, sourceFromDoi(d, api))),
+  ...isbns.map((i) => () => named(`ISBN ${i}`, sourceFromIsbn(i, api))),
+  ...urls.map((u) => () => named(`URL ${u}`, (async () => {
+    const url = normalizeUrl(u);
+    const html = await api.web.getText(url);
+    const page = parsePage(html, url);
+    if (!page.title) throw new Error("That page has no title, so there is nothing to cite. Use format_citation and type the details.");
+    return pageSource(page, url, st);
+  })())),
+];
       const found: Source[] = [];
       for (let at = 0; at < jobs.length; at += lookupsAtOnce) found.push(...(await Promise.all(jobs.slice(at, at + lookupsAtOnce).map((job) => job()))));
       const list = formatBibliography([...((a.sources ?? []) as Source[]), ...found], st);

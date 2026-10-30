@@ -32,10 +32,16 @@ function looksLikeIsbn(source: string): boolean {
   return /^(\d{9}[\dX]|\d{13})$/.test(source.replace(/[-\s]/g, "").toUpperCase());
 }
 
+/** True when the source is a web address. */
+function looksLikeUrl(source: string): boolean {
+  return /^https?:\/\//i.test(source.trim()) || /^[a-z0-9.-]+\.[a-z]{2,}(\/|$)/i.test(source.trim());
+}
+
 /** The line that points at the tool that fits the source. */
 function hintFor(source: string): string {
   if (looksLikeDoi(source)) return "That looks like a DOI, so use cite_from_doi.";
   if (looksLikeIsbn(source)) return "That looks like an ISBN, so use cite_from_isbn.";
+  if (looksLikeUrl(source)) return "That looks like a web address, so use cite_from_url.";
   return "Those are details you type, so use format_citation.";
 }
 
@@ -48,7 +54,7 @@ export function citeThisMessage(args: { style?: string; source?: string }): stri
   if (source) {
     lines.push("", `Source: ${source}`, "", hintFor(source));
   } else {
-    lines.push("", "Use the tool that fits the source: cite_from_doi for a DOI, cite_from_isbn for an ISBN, format_citation for details you type and in_text_citation for the in text form.");
+    lines.push("", "Use the tool that fits the source: cite_from_doi for a DOI, cite_from_isbn for an ISBN, cite_from_url for a web address, format_citation for details you type and in_text_citation for the in text form.");
   }
   lines.push("", "Example prompts:");
   for (const example of examplePrompts(style)) lines.push(`- "${example}"`);
