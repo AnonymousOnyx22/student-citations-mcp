@@ -192,6 +192,16 @@ describe("formatting", () => {
     expect(() => normalizeIsbn("123")).toThrow("ISBN");
     expect(splitName("Thomas H. Cormen")).toEqual({ family: "Cormen", given: "Thomas H." });
   });
+  it("formats a journal article in IEEE", () => {
+    expect(format(article, "ieee")).toBe(
+      'J. K. Smith, A. Jones "Learning to learn," *Journal of Study Skills*, vol. 4, no. 2, pp. 11-25, 2020 https://doi.org/10.1000/jss.2020.42',
+    );
+  });
+  it("returns a bracketed number for IEEE in text", () => {
+    expect(inText(article.authors, "2020", "ieee", "14")).toBe("[1]");
+    expect(inText(article.authors, "2020", "ieee")).toBe("[1]");
+    expect(narrativeInText(article.authors, "2020", "ieee", "14")).toBe("[1]");
+  });
 });
 
 describe("works cited list", () => {
@@ -244,6 +254,17 @@ describe("works cited list", () => {
     const late = { type: "book" as const, authors: [{ family: "Adams", given: "Amy" }], year: "2020", title: "Alpha methods", publisher: "North Gate Press" };
     expect(formatBibliography([late, early], "apa7").split("\n\n")[0]).toContain("Zebra habits");
     expect(formatBibliography([late, early], "mla9").split("\n\n")[0]).toContain("Alpha methods");
+  });
+
+  it("numbers IEEE entries in citation order instead of alphabetising", () => {
+    const list = formatBibliography([zimmer, edited, adams], "ieee").split("\n\n");
+    expect(list).toHaveLength(3);
+    expect(list[0]).toMatch(/^\[1\]/);
+    expect(list[1]).toMatch(/^\[2\]/);
+    expect(list[2]).toMatch(/^\[3\]/);
+    expect(list[0]).toContain("Zimmer");
+    expect(list[1]).toContain("Baker");
+    expect(list[2]).toContain("Adams");
   });
 
   it("asks for one source at least", () => {
@@ -549,6 +570,35 @@ describe("MCP tools", () => {
     const n = await call("in_text_citation", { isbn: "9780262033848", form: "narrative", style: "chicago-ad" });
     expect(n.isError).toBe(false);
     expect(n.text).toBe("Cormen and Leiserson (2009)");
+  });
+  it("returns the IEEE in text citation as a bracketed number", async () => {
+    const p = await call("in_text_citation", { authors: article.authors, year: "2020", style: "ieee" });
+    expect(p.isError).toBe(false);
+    expect(p.text).toBe("[1]");
+  });
+  it("formats a citation in IEEE through format_citation", async () => {
+    const r = await call("format_citation", { ...article, style: "ieee" });
+    expect(r.isError).toBe(false);
+    expect(r.text).toContain('"Learning to learn,"');
+  });
+  it("returns an IEEE numbered list in citation order from the tool", async () => {
+    const r = await call("format_bibliography", {
+      sources: [
+        { type: "book", authors: [{ family: "Zimmer", given: "Zoe" }], year: "2021", title: "Later work", publisher: "North Gate Press" },
+        { type: "book", authors: [], editors: [{ family: "Baker", given: "Sam" }], year: "2018", title: "A dictionary of study words", publisher: "North Gate Press" },
+        { type: "book", authors: [{ family: "Adams", given: "Amy" }], year: "2019", title: "Study habits", publisher: "North Gate Press" },
+      ],
+      style: "ieee",
+    });
+    expect(r.isError).toBe(false);
+    const entries = r.text.split("\n\n");
+    expect(entries).toHaveLength(3);
+    expect(entries[0]).toMatch(/^\[1\]/);
+    expect(entries[0]).toContain("Zimmer");
+    expect(entries[1]).toMatch(/^\[2\]/);
+    expect(entries[1]).toContain("Baker");
+    expect(entries[2]).toMatch(/^\[3\]/);
+    expect(entries[2]).toContain("Adams");
   });
   it("asks for one identifier when both a DOI and an ISBN are given", async () => {
     const r = await call("in_text_citation", { doi: "10.1000/jss.2020.42", isbn: "978-0-262-03384-8" });

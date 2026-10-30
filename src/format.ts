@@ -1,4 +1,4 @@
-export type Style = "apa7" | "mla9" | "chicago-ad" | "harvard";
+export type Style = "apa7" | "mla9" | "chicago-ad" | "harvard" | "ieee";
 
 export interface Author {
   family: string;
@@ -152,6 +152,7 @@ function requireContainer(s: Source): void {
 export function format(s: Source, styleInput: Style | string): string {
   const style = normalizeStyle(styleInput);
   requireContainer(s);
+  if (style === "ieee") return ieeeFormat(s);
   const parts: string[] = [];
   const push = (x?: string) => {
     if (x && x.trim()) parts.push(x.trim());
@@ -427,6 +428,51 @@ export function format(s: Source, styleInput: Style | string): string {
   return parts.join(" ").replace(/\s+/g, " ").trim();
 }
 
+/** IEEE author names as initials and family names, like "J. K. Smith, A. Jones". */
+function ieeeAuthors(a: Author[]): string {
+  const names = a.map((x) => (x.given ? `${initials(x.given)} ${x.family}` : x.family));
+  if (names.length === 0) return "";
+  return names.join(", ");
+}
+
+/** One source laid out as an IEEE reference, without its number. The bibliography adds [1], [2] and so on. */
+function ieeeFormat(s: Source): string {
+  const parts: string[] = [];
+  const push = (x?: string) => {
+    if (x && x.trim()) parts.push(x.trim());
+  };
+  const who = ieeeAuthors(s.authors);
+  const year = s.year ?? "n.d.";
+  push(who);
+  if (s.type === "book") {
+    push(`*${plainTitle(s.title)}*`);
+    const eds = s.editors ?? [];
+    if (!who && eds.length) push(`${ieeeAuthors(eds)}, ${role(eds, "ed.", "eds.")}`);
+    if (s.edition) push(`${s.edition} ed.`);
+    const place = s.publisher ? `${s.city ? `${s.city}: ` : ""}${s.publisher}` : "";
+    push(place);
+    push(year);
+  } else if (s.type === "chapter") {
+    push(`"${plainTitle(s.title)},"`);
+    const eds = s.editors ?? [];
+    if (s.container) push(`In *${s.container}*`);
+    if (eds.length) push(`edited by ${people(eds)}`);
+    if (s.publisher) push(s.publisher);
+    push(year);
+  } else {
+    push(`"${plainTitle(s.title)},"`);
+    const rest: string[] = [];
+    if (s.container) rest.push(`*${s.container}*`);
+    if (s.volume) rest.push(`vol. ${s.volume}`);
+    if (s.issue) rest.push(`no. ${s.issue}`);
+    if (s.pages) rest.push(`pp. ${dash(s.pages)}`);
+    rest.push(year);
+    push(rest.join(", "));
+  }
+  push(link(s));
+  return parts.join(" ").replace(/\s+/g, " ").trim();
+}
+
 /** A lower case, accent free form of a name or a title, so a list can be alphabetised. */
 function sortText(value: string): string {
   return value
@@ -464,9 +510,12 @@ function compareForList(a: Source, b: Source, style: Style): number {
 export function formatBibliography(sources: Source[], styleInput: Style | string): string {
   const style = normalizeStyle(styleInput);
   if (!sources.length) throw new Error("Give at least one source for the works cited list.");
-  return [...sources]
-    .sort((a, b) => compareForList(a, b, style))
-    .map((s) => format(s, style))
+  const ordered =
+    style === "ieee"
+      ? [...sources]
+      : [...sources].sort((a, b) => compareForList(a, b, style));
+  return ordered
+    .map((s, i) => (style === "ieee" ? `[${i + 1}] ${format(s, style)}` : format(s, style)))
     .join("\n\n");
 }
 
@@ -483,6 +532,7 @@ function whoFor(authors: Author[], style: Style, narrative: boolean): string {
 export function inText(authors: Author[], year: string | undefined, styleInput: Style | string, page?: string): string {
   const style = normalizeStyle(styleInput);
   const y = year ?? "n.d.";
+  if (style === "ieee") return "[1]";
   const who = whoFor(authors, style, false);
   if (style === "apa7" || style === "harvard") return `(${[who, y, page ? `p. ${page}` : ""].filter(Boolean).join(", ")})`;
   if (style === "mla9") return `(${[who, page ?? ""].filter(Boolean).join(" ")})`;
@@ -497,6 +547,7 @@ export function inText(authors: Author[], year: string | undefined, styleInput: 
  */
 export function narrativeInText(authors: Author[], year: string | undefined, styleInput: Style | string, page?: string): string {
   const style = normalizeStyle(styleInput);
+  if (style === "ieee") return inText(authors, year, style, page);
   const who = whoFor(authors, style, true);
   if (!who) return inText(authors, year, style, page);
   const y = year ?? "n.d.";
@@ -526,10 +577,11 @@ export function normalizeStyle(input: unknown): Style {
     "harvard": "harvard",
     "harvard referencing": "harvard",
     "harvard style": "harvard",
+    "ieee": "ieee",
   };
   const result = aliases[key];
   if (!result) {
-    throw new Error(`"${raw}" is not a known citation style. Valid styles are apa7, mla9, chicago ad (chicago-ad) and harvard.`);
+    throw new Error(`"${raw}" is not a known citation style. Valid styles are apa7, mla9, chicago ad (chicago-ad), harvard and ieee.`);
   }
   return result;
 }

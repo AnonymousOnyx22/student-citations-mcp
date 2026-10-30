@@ -8,6 +8,7 @@ const styleWords: Record<Style, { short: string; long: string }> = {
   mla9: { short: "MLA", long: "MLA 9" },
   "chicago-ad": { short: "Chicago", long: "Chicago author date" },
   harvard: { short: "Harvard", long: "Harvard" },
+  ieee: { short: "IEEE", long: "IEEE" },
 };
 
 /** The example wording the citation tools carry, in the style that was asked for. */
