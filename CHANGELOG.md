@@ -9,7 +9,9 @@
 - cite_from_isbn now reads the publisher city from the Open Library record for that exact edition when the book data and the search give none, so Chicago author date citations of books more often include the city.
 - cite_from_doi and cite_from_isbn now try a Crossref or Open Library lookup up to 2 more times when the service answers with a rate limit or a server error, so a short outage no longer sends you back to typing the source by hand.
 - Add a cite_from_url tool, which fetches a web page and turns its title, its site name and its date into an APA 7, MLA 9 or Chicago author date website citation. Pass it a URL, and override the title, the site name or the date when you want.
-- Add IEEE style. format_bibliography keeps sources in citation order and numbers them [1], [2] and so on, and in_text_citation returns the citation as a bracketed number like [1].
+- Add IEEE style. format_bibliography keeps sources in citation order and numbers them [1], [2] and so on, with "and" before the last author and "doi:" or "[Online]. Available:" before the link. in_text_citation returns a bracketed number like [1], or [1, p. 14] with a page.
+- Add Harvard style, with the matching in text citation. Ask for harvard, "Harvard referencing" or "Harvard style".
+- format_bibliography takes a urls list, fetches each page and adds it to the list as a website.
 
 ## 0.1.6
 

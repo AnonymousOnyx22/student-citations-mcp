@@ -11,8 +11,8 @@ export interface Api {
   web: HttpClient;
 }
 
-const style = z.string().default("apa7").describe("Citation style. Aliases such as APA, MLA 9 and Chicago are accepted. Valid styles: apa7, mla9, chicago-ad (Chicago author date).");
-const styleAll = z.string().default("apa7").describe("Citation style. Aliases such as APA, MLA 9 and Chicago are accepted. Valid styles: apa7, mla9, chicago-ad (Chicago author date), or all to get all three in one reply with a label above each one.");
+const style = z.string().default("apa7").describe("Citation style. Aliases such as APA, MLA 9 and Chicago are accepted. Valid styles: apa7, mla9, chicago-ad (Chicago author date), harvard and ieee.");
+const styleAll = z.string().default("apa7").describe("Citation style. Aliases such as APA, MLA 9 and Chicago are accepted. Valid styles: apa7, mla9, chicago-ad (Chicago author date), harvard and ieee, or all to get APA 7, MLA 9 and Chicago author date in one reply with a label above each one.");
 const form = z.enum(["parenthetical", "narrative"]).default("parenthetical").describe("parenthetical is the usual brackets, like (Smith & Jones, 2020, p. 14). narrative puts the author in your sentence and keeps the rest in brackets, like Smith and Jones (2020, p. 14).");
 const author = z.object({ family: z.string().describe("Last name"), given: z.string().optional().describe("First and middle names") });
 
@@ -229,7 +229,7 @@ export const tools: ToolDef<Api>[] = [
     title: "Format a works cited list",
     description: "Format several sources at once as one works cited list, alphabetised by the first author's family name in APA 7, MLA 9 or Chicago author date, or numbered in citation order in IEEE. A source with no author is alphabetised by its title. Inputs: sources (an array of objects, each with the same fields as format_citation: type, title and optional authors, year, container, publisher, city, edition, editors, translators, volume, issue, pages, doi, url, date_text, accessed, institution, degree, repository and report_number), dois (a list of DOIs to look up on Crossref), isbns (a list of ISBNs to look up on Open Library), urls (a list of web addresses to fetch and cite as websites) and style (apa7, mla9, chicago-ad or ieee). Give sources, dois, isbns, urls or any mix, up to 50 lookups in one call. If one lookup fails the reply is an error that names it. Example prompt: \"Put these three sources into an APA works cited list: a journal article by Smith and Jones from 2020, a book by Cormen from 2009 and a website from example.edu.\"",
     inputSchema: {
-      sources: z.array(z.object(sourceShape)).default([]).describe("The sources for the list. Each one takes the same fields as format_citation, so a journal article, a book, a website, a chapter, a thesis, a report, a dataset and a preprint can share one list. Optional when you give dois or isbns."),
+      sources: z.array(z.object(sourceShape)).default([]).describe("The sources for the list. Each one takes the same fields as format_citation, so a journal article, a book, a website, a chapter, a thesis, a report, a dataset and a preprint can share one list. Optional when you give dois, isbns or urls."),
       dois: z.array(z.string()).default([]).describe("DOIs to look up on Crossref and add to the list, each one a DOI like 10.1038/nature14539 or a doi.org link."),
       isbns: z.array(z.string()).default([]).describe("ISBNs to look up on Open Library and add to the list as books. Dashes are fine."),
       urls: z.array(z.string()).default([]).describe("Web addresses to fetch and add to the list as websites. Each one a full URL like https://example.edu/study."),
@@ -238,29 +238,32 @@ export const tools: ToolDef<Api>[] = [
     run: async (a, api) => {
       const st = normalizeStyle(a.style ?? "apa7");
       const dois: string[] = a.dois ?? [];
-const isbns: string[] = a.isbns ?? [];
-const urls: string[] = a.urls ?? [];
-if (dois.length + isbns.length + urls.length > maxLookups) throw new Error(`Give at most ${maxLookups} dois, isbns and urls in one list. Split a longer list into two calls.`);
-const named = (id: string, p: Promise<Source>) =>
-  p.catch((err) => {
-    throw new Error(`${id}: ${err instanceof Error ? err.message : String(err)}`);
-  });
-// look them up a few at a time, so a long list is not a burst of 50 requests at once on Crossref and Open Library
-const jobs: Array<() => Promise<Source>> = [
-  ...dois.map((d) => () => named(`DOI ${d}`, sourceFromDoi(d, api))),
-  ...isbns.map((i) => () => named(`ISBN ${i}`, sourceFromIsbn(i, api))),
-  ...urls.map((u) => () => named(`URL ${u}`, (async () => {
-    const url = normalizeUrl(u);
-    const html = await api.web.getText(url);
-    const page = parsePage(html, url);
-    if (!page.title) throw new Error("That page has no title, so there is nothing to cite. Use format_citation and type the details.");
-    return pageSource(page, url, st);
-  })())),
-];
+      const isbns: string[] = a.isbns ?? [];
+      const urls: string[] = a.urls ?? [];
+      if (dois.length + isbns.length + urls.length > maxLookups) throw new Error(`Give at most ${maxLookups} dois, isbns and urls in one list. Split a longer list into two calls.`);
+      const named = (id: string, p: Promise<Source>) =>
+        p.catch((err) => {
+          throw new Error(`${id}: ${err instanceof Error ? err.message : String(err)}`);
+        });
+      const fromUrl = async (u: string): Promise<Source> => {
+        const url = normalizeUrl(u);
+        const html = await api.web.getText(url);
+        const page = parsePage(html, url);
+        if (!page.title) throw new Error("That page has no title, so there is nothing to cite. Use format_citation and type the details.");
+        return pageSource(page, url, st);
+      };
+      // look them up a few at a time, so a long list is not a burst of 50 requests at once on Crossref, Open Library and the web
+      const jobs: Array<() => Promise<Source>> = [
+        ...dois.map((d) => () => named(`DOI ${d}`, sourceFromDoi(d, api))),
+        ...isbns.map((i) => () => named(`ISBN ${i}`, sourceFromIsbn(i, api))),
+        ...urls.map((u) => () => named(`URL ${u}`, fromUrl(u))),
+      ];
       const found: Source[] = [];
       for (let at = 0; at < jobs.length; at += lookupsAtOnce) found.push(...(await Promise.all(jobs.slice(at, at + lookupsAtOnce).map((job) => job()))));
       const list = formatBibliography([...((a.sources ?? []) as Source[]), ...found], st);
-      return found.length ? `${list}\n\n(The entries from dois and isbns come from Crossref and Open Library. Check them against your style guide.)` : list;
+      if (!found.length) return list;
+      if (!urls.length) return `${list}\n\n(The entries from dois and isbns come from Crossref and Open Library. Check them against your style guide.)`;
+      return `${list}\n\n(The entries from dois, isbns and urls come from Crossref, Open Library and the web pages. Check them against your style guide.)`;
     },
   },
   {

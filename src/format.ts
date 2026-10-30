@@ -428,49 +428,56 @@ export function format(s: Source, styleInput: Style | string): string {
   return parts.join(" ").replace(/\s+/g, " ").trim();
 }
 
-/** IEEE author names as initials and family names, like "J. K. Smith, A. Jones". */
+/**
+ * IEEE author names as initials and family names: "J. K. Smith", "J. K. Smith and A. Jones",
+ * "J. K. Smith, A. Jones, and B. Lee". Seven or more become the first one plus et al.
+ */
 function ieeeAuthors(a: Author[]): string {
   const names = a.map((x) => (x.given ? `${initials(x.given)} ${x.family}` : x.family));
   if (names.length === 0) return "";
-  return names.join(", ");
+  if (names.length >= 7) return `${names[0]} et al.`;
+  if (names.length === 1) return names[0];
+  if (names.length === 2) return `${names[0]} and ${names[1]}`;
+  return `${names.slice(0, -1).join(", ")}, and ${names[names.length - 1]}`;
 }
 
 /** One source laid out as an IEEE reference, without its number. The bibliography adds [1], [2] and so on. */
 function ieeeFormat(s: Source): string {
-  const parts: string[] = [];
-  const push = (x?: string) => {
-    if (x && x.trim()) parts.push(x.trim());
-  };
-  const who = ieeeAuthors(s.authors);
   const year = s.year ?? "n.d.";
-  push(who);
+  const eds = s.editors ?? [];
+  const title = plainTitle(s.title);
+  const place = s.publisher ? `${s.city ? `${s.city}: ` : ""}${s.publisher}` : "";
+  let who = ieeeAuthors(s.authors);
+  let body: string;
   if (s.type === "book") {
-    push(`*${plainTitle(s.title)}*`);
-    const eds = s.editors ?? [];
-    if (!who && eds.length) push(`${ieeeAuthors(eds)}, ${role(eds, "ed.", "eds.")}`);
-    if (s.edition) push(`${s.edition} ed.`);
-    const place = s.publisher ? `${s.city ? `${s.city}: ` : ""}${s.publisher}` : "";
-    push(place);
-    push(year);
+    // a book with editors and no authors puts the editors first, as IEEE does
+    if (!who && eds.length) who = `${ieeeAuthors(eds)}, ${role(eds, "Ed.", "Eds.")}`;
+    const after = [s.edition ? `${s.edition} ed.` : "", place].filter(Boolean).join(" ");
+    body = [`*${title}*`, after, year].filter(Boolean).join(", ");
   } else if (s.type === "chapter") {
-    push(`"${plainTitle(s.title)},"`);
-    const eds = s.editors ?? [];
-    if (s.container) push(`In *${s.container}*`);
-    if (eds.length) push(`edited by ${people(eds)}`);
-    if (s.publisher) push(s.publisher);
-    push(year);
+    const editors = eds.length ? `, ${ieeeAuthors(eds)}, ${role(eds, "Ed.", "Eds.")}` : "";
+    const book = `in *${s.container ?? ""}*${editors}`;
+    body = `"${title}," ${[book, place, year, s.pages ? `pp. ${dash(s.pages)}` : ""].filter(Boolean).join(", ")}`;
+  } else if (s.type === "thesis") {
+    const kind = degreeWords(s.degree, "harvard");
+    body = `"${title}," ${[kind, s.institution, year].filter(Boolean).join(", ")}`;
+  } else if (s.type === "report") {
+    body = `"${title}," ${[s.publisher, s.report_number ? `Rep. ${s.report_number}` : "", year].filter(Boolean).join(", ")}`;
   } else {
-    push(`"${plainTitle(s.title)},"`);
-    const rest: string[] = [];
-    if (s.container) rest.push(`*${s.container}*`);
-    if (s.volume) rest.push(`vol. ${s.volume}`);
-    if (s.issue) rest.push(`no. ${s.issue}`);
-    if (s.pages) rest.push(`pp. ${dash(s.pages)}`);
-    rest.push(year);
-    push(rest.join(", "));
+    const rest = [
+      s.container ? `*${s.container}*` : s.repository ?? "",
+      s.volume ? `vol. ${s.volume}` : "",
+      s.issue ? `no. ${s.issue}` : "",
+      s.pages ? `pp. ${dash(s.pages)}` : "",
+      year,
+    ].filter(Boolean);
+    body = `"${title}," ${rest.join(", ")}`;
   }
-  push(link(s));
-  return parts.join(" ").replace(/\s+/g, " ").trim();
+  let out = `${who ? `${who}, ` : ""}${body}`;
+  if (s.doi) out = `${out}, doi: ${s.doi}.`;
+  else if (s.url) out = `${end(out)} [Online]. Available: ${s.url}`;
+  else out = end(out);
+  return out.replace(/\s+/g, " ").trim();
 }
 
 /** A lower case, accent free form of a name or a title, so a list can be alphabetised. */
@@ -532,7 +539,8 @@ function whoFor(authors: Author[], style: Style, narrative: boolean): string {
 export function inText(authors: Author[], year: string | undefined, styleInput: Style | string, page?: string): string {
   const style = normalizeStyle(styleInput);
   const y = year ?? "n.d.";
-  if (style === "ieee") return "[1]";
+  // IEEE numbers sources in the order they are first cited, which only the writer knows, so this is the first one
+  if (style === "ieee") return page ? `[1, p. ${page}]` : "[1]";
   const who = whoFor(authors, style, false);
   if (style === "apa7" || style === "harvard") return `(${[who, y, page ? `p. ${page}` : ""].filter(Boolean).join(", ")})`;
   if (style === "mla9") return `(${[who, page ?? ""].filter(Boolean).join(" ")})`;

@@ -100,9 +100,9 @@
           "report_number": { "type": "string", "description": "The number of a report or a standard." },
           "style": {
             "type": "string",
-            "enum": ["apa7", "mla9", "chicago-ad", "ieee", "all"],
+            "enum": ["apa7", "mla9", "chicago-ad", "harvard", "ieee", "all"],
             "default": "apa7",
-            "description": "Citation style. apa7, mla9 or chicago-ad (Chicago author date), or all to get all three in one reply with a label above each one."
+            "description": "Citation style. apa7, mla9, chicago-ad (Chicago author date), harvard or ieee, or all to get APA 7, MLA 9 and Chicago author date in one reply with a label above each one."
           }
         }
       },
@@ -215,9 +215,9 @@
           },
           "style": {
             "type": "string",
-            "enum": ["apa7", "mla9", "chicago-ad", "ieee"],
+            "enum": ["apa7", "mla9", "chicago-ad", "harvard", "ieee"],
             "default": "apa7",
-            "description": "Citation style. apa7, mla9 or chicago-ad (Chicago author date)."
+            "description": "Citation style. apa7, mla9, chicago-ad (Chicago author date), harvard or ieee."
           }
         }
       },
@@ -263,9 +263,9 @@
           "doi": { "type": "string", "description": "A DOI like 10.1038/nature14539, or a doi.org link." },
           "style": {
             "type": "string",
-            "enum": ["apa7", "mla9", "chicago-ad", "ieee", "all"],
+            "enum": ["apa7", "mla9", "chicago-ad", "harvard", "ieee", "all"],
             "default": "apa7",
-            "description": "Citation style. apa7, mla9 or chicago-ad (Chicago author date), or all to get all three in one reply with a label above each one."
+            "description": "Citation style. apa7, mla9, chicago-ad (Chicago author date), harvard or ieee, or all to get APA 7, MLA 9 and Chicago author date in one reply with a label above each one."
           }
         }
       },
@@ -311,9 +311,9 @@
           "isbn": { "type": "string", "description": "A 10 or 13 digit ISBN. Dashes are fine." },
           "style": {
             "type": "string",
-            "enum": ["apa7", "mla9", "chicago-ad", "ieee"],
+            "enum": ["apa7", "mla9", "chicago-ad", "harvard", "ieee"],
             "default": "apa7",
-            "description": "Citation style. apa7, mla9 or chicago-ad (Chicago author date)."
+            "description": "Citation style. apa7, mla9, chicago-ad (Chicago author date), harvard or ieee."
           }
         }
       },
@@ -337,9 +337,9 @@
           "url": { "type": "string", "description": "A full web address, like https://example.edu/study." },
           "style": {
             "type": "string",
-            "enum": ["apa7", "mla9", "chicago-ad", "ieee", "all"],
+            "enum": ["apa7", "mla9", "chicago-ad", "harvard", "ieee", "all"],
             "default": "apa7",
-            "description": "Citation style. apa7, mla9 or chicago-ad (Chicago author date), or all to get all three in one reply with a label above each one."
+            "description": "Citation style. apa7, mla9, chicago-ad (Chicago author date), harvard or ieee, or all to get APA 7, MLA 9 and Chicago author date in one reply with a label above each one."
           },
           "title": { "type": "string", "description": "Use this title instead of the one on the page." },
           "site_name": { "type": "string", "description": "Use this site name instead of the one on the page." },
@@ -384,9 +384,9 @@
           },
           "style": {
             "type": "string",
-            "enum": ["apa7", "mla9", "chicago-ad", "ieee"],
+            "enum": ["apa7", "mla9", "chicago-ad", "harvard", "ieee"],
             "default": "apa7",
-            "description": "Citation style. apa7, mla9 or chicago-ad (Chicago author date)."
+            "description": "Citation style. apa7, mla9, chicago-ad (Chicago author date), harvard or ieee."
           }
         }
       },

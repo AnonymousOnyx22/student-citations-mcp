@@ -5,7 +5,7 @@
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![ci](https://github.com/AnonymousOnyx22/student-citations-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/AnonymousOnyx22/student-citations-mcp/actions/workflows/ci.yml)
 
-Paste a DOI or an ISBN into your AI app and get a formatted citation back in APA 7, MLA 9 or Chicago author date, ready to paste into your works cited list. It is a citation generator that runs inside the app you are already writing in, so there is no web page to fill in and no account to create. You can also type the details yourself, or give the DOI or the ISBN, and get the matching in text citation, either in brackets or in the narrative form for a sentence where you name the author. Give several sources in one call and you get them back as an alphabetised works cited list. The wording and punctuation come from tested code, so they are the same every time. Free and open source, no account, no key and nothing stored. It works with Claude, ChatGPT, Cursor, VS Code Copilot and any other app that supports MCP.
+Paste a DOI or an ISBN into your AI app and get a formatted citation back in APA 7, MLA 9, Chicago author date, Harvard or IEEE, ready to paste into your works cited list. It is a citation generator that runs inside the app you are already writing in, so there is no web page to fill in and no account to create. You can also type the details yourself, or give the DOI or the ISBN, and get the matching in text citation, either in brackets or in the narrative form for a sentence where you name the author. Give several sources in one call and you get them back as an alphabetised works cited list. The wording and punctuation come from tested code, so they are the same every time. Free and open source, no account, no key and nothing stored. It works with Claude, ChatGPT, Cursor, VS Code Copilot and any other app that supports MCP.
 
 ## Citations MCP compared with BibGuru and Citation Machine
 
@@ -15,7 +15,7 @@ BibGuru and Citation Machine are web pages you fill in and copy from. Citations 
 | --- | --- | --- | --- |
 | Where you use it | In the AI app you already have open | In a web page in your browser | In a web page in your browser |
 | What you type in | A DOI, an ISBN, or the details of the source | A URL, a title or an author to search for, or the details you type | The details you type, or a citation you paste in |
-| Styles you get back | APA 7, MLA 9, Chicago author date | APA, MLA, Harvard and many more styles | APA, MLA, Chicago, Harvard and thousands more styles |
+| Styles you get back | APA 7, MLA 9, Chicago author date, Harvard, IEEE | APA, MLA, Harvard and many more styles | APA, MLA, Chicago, Harvard and thousands more styles |
 | In text citation | Yes, with an optional page number, in the parenthetical or the narrative form | Yes | Yes |
 | Keeping your sources | Nothing is stored | BibGuru Plus saves sources in projects and folders | The paid tier saves your citations |
 | Cost | Free, MIT license, open source | Free, with a paid plan | Free, with a paid tier |
@@ -32,7 +32,7 @@ The other MCP servers for citations are the Zotero ones: [zotero-mcp](https://ww
 | What it works with | A DOI, an ISBN, or the details you type | Your Zotero library | Your Zotero library | Your Zotero library |
 | What you need first | Node.js 20 or newer, nothing else | Zotero on your computer, with the plugin the project ships | Zotero on your computer, or an account at zotero.org | An account at zotero.org, with an API key and a user ID |
 | Signing in | Never | Only if you use the Zotero web library | Only for sync and group libraries | Always, the API key is how it reaches your library |
-| Citation styles | APA 7, MLA 9, Chicago author date | None of its own, it passes your items to your app | Any CSL style, through the citeproc-js library | Entries as BibTeX, RIS or CSL JSON |
+| Citation styles | APA 7, MLA 9, Chicago author date, Harvard, IEEE | None of its own, it passes your items to your app | Any CSL style, through the citeproc-js library | Entries as BibTeX, RIS or CSL JSON |
 | What you get back | A finished citation, and the in text form with a page number | Items, notes and PDF text from your library | Items, PDF passages with page numbers, and formatted bibliographies | Items and PDF text, plus exports for a bibliography tool |
 | Reading your library | No, it looks up one source at a time | Search, collections, annotations and PDF text | Search by word or by meaning, PDF passages, annotations and bibliography imports | Search, details, full text, and filtering by group or tag |
 | Writing to your library | No, every tool is read only | Notes, tags, metadata and new items | Adds, edits, tags, groups and files | Creates, edits, deletes, tags, groups and attachments |
@@ -87,12 +87,12 @@ Nothing else to install. You need Node.js 20 or newer. The config block for your
 
 | Tool | What it does |
 | --- | --- |
-| `format_citation` | Format a journal article, book, website, book chapter, thesis, report, dataset or preprint from details you type, in APA 7, MLA 9 or Chicago author date. For books you can name the editors and the translators too. Pass `style` as `all` to get all three styles in one reply |
-| `format_bibliography` | Format several sources as one works cited list, alphabetised by author, in APA 7, MLA 9 or Chicago author date. Each source takes the same fields as `format_citation`, and `dois` and `isbns` lists are looked up and added to the list |
+| `format_citation` | Format a journal article, book, website, book chapter, thesis, report, dataset or preprint from details you type, in APA 7, MLA 9, Chicago author date, Harvard or IEEE. For books you can name the editors and the translators too. Pass `style` as `all` to get all three styles in one reply |
+| `format_bibliography` | Format several sources as one works cited list, alphabetised by author in APA 7, MLA 9, Chicago author date or Harvard, or numbered in the order you give them in IEEE. Each source takes the same fields as `format_citation`, and `dois`, `isbns` and `urls` lists are looked up and added to the list |
 | `cite_from_doi` | Look up a DOI on Crossref and format the citation. The Crossref record decides the shape, so a book chapter comes back as a chapter and a dissertation comes back as a thesis. Pass `style` as `all` to get all three styles in one reply |
 | `find_doi` | Search Crossref by title, and optionally an author's family name, and list the best matches with their DOIs. Pass the one you want to `cite_from_doi` |
 | `cite_from_isbn` | Look up an ISBN on Open Library and format the citation |
-| `cite_from_url` | Fetch a web page and cite it as a website in APA 7, MLA 9 or Chicago author date. It reads the page title, site name and date, and you can override any of them |
+| `cite_from_url` | Fetch a web page and cite it as a website in APA 7, MLA 9, Chicago author date, Harvard or IEEE. It reads the page title, site name and date, and you can override any of them |
 | `in_text_citation` | The in text citation that matches a source, with an optional page number, in the parenthetical or the narrative form. It takes the authors and year you type, or a DOI or an ISBN and looks up the authors and year for you |
 
 All seven tools are read only.
@@ -286,7 +286,7 @@ Partly. `format_citation` works offline, because it formats the details you type
 
 **Which styles can I ask for?**
 
-APA 7, MLA 9 and Chicago author date, and no others. Ask for "APA", "MLA 9" or "Chicago" in the chat and the server works out the style name. `format_citation` and `cite_from_doi` also take `all`, which returns all three styles in one reply. A request for a style it does not have comes back with an error that names the three it knows.
+APA 7, MLA 9, Chicago author date, Harvard and IEEE. Ask for "APA", "MLA 9", "Chicago" or "Harvard" in the chat and the server works out the style name. In IEEE, `format_bibliography` numbers the list [1], [2] and so on in the order you give the sources, and `in_text_citation` gives [1], so change the number to the one the source has in your list. `format_citation`, `cite_from_doi` and `cite_from_url` also take `all`, which returns APA 7, MLA 9 and Chicago author date in one reply. A request for a style it does not have comes back with an error that names the styles it knows.
 
 **What can I cite?**
 

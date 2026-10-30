@@ -5,7 +5,7 @@
 ## Setup
 - Run with npx -y student-citations-mcp
 - No key or account. Optional CROSSREF_EMAIL.
-- Styles are apa7, mla9, chicago-ad and ieee. format_citation and cite_from_doi also take all to return all three styles in one reply. Italics are returned as asterisks.
+- Styles are apa7, mla9, chicago-ad, harvard and ieee. format_citation, cite_from_doi and cite_from_url also take all to return APA 7, MLA 9 and Chicago author date in one reply. Italics are returned as asterisks.
 - All seven tools are read only. Nothing is stored.
 - The cite_this prompt looks nothing up. It only writes out the request.
 
@@ -36,7 +36,7 @@ Parameters:
 - degree (optional): the degree of a thesis, like "Ph.D."
 - repository (optional): where a preprint was posted, like arXiv
 - report_number (optional): the number of a report or a standard
-- style (optional, default apa7): Citation style. apa7, mla9, chicago-ad (Chicago author date) or ieee, or all to get all three in one reply with a label above each one.
+- style (optional, default apa7): Citation style. apa7, mla9, chicago-ad (Chicago author date), harvard or ieee, or all to get APA 7, MLA 9 and Chicago author date in one reply with a label above each one.
 
 Example: with type "journal", title "Learning to learn", authors [{"family": "Smith", "given": "John Kenneth"}, {"family": "Jones", "given": "Alice"}], year "2020", container "Journal of Study Skills", volume "4", issue "2", pages "11-25" and style "apa7", returns "Smith, J. K., & Jones, A. (2020). Learning to learn. *Journal of Study Skills*, *4*(2), 11-25."
 
@@ -50,10 +50,11 @@ Translators after the title: with type "book", title "My brilliant friend", auth
 Format several sources at once as one works cited list, alphabetised by the first author's family name in APA 7, MLA 9 or Chicago author date, or numbered in citation order in IEEE. A source with no author is alphabetised by its title. Inputs: sources (an array of objects, each with the same fields as format_citation: type, title and optional authors, year, container, publisher, city, edition, editors, translators, volume, issue, pages, doi, url, date_text, accessed, institution, degree, repository and report_number), dois (a list of DOIs to look up on Crossref), isbns (a list of ISBNs to look up on Open Library), urls (a list of web addresses to fetch and cite as websites) and style (apa7, mla9, chicago-ad or ieee). Give sources, dois, isbns, urls or any mix, up to 50 lookups in one call. If one lookup fails the reply is an error that names it. Example prompt: "Put these three sources into an APA works cited list: a journal article by Smith and Jones from 2020, a book by Cormen from 2009 and a website from example.edu."
 
 Parameters:
-- sources (optional when dois or isbns are given): the sources for the list. Each one takes the same fields as format_citation: type (journal, book, website, chapter, thesis, report, dataset or preprint), title, and optional authors, year, container, publisher, city, edition, editors, translators, volume, issue, pages, doi, url, date_text, accessed, institution, degree, repository and report_number. A journal article, a book, a website, a chapter, a thesis, a report, a dataset and a preprint can share one list.
+- sources (optional when dois, isbns or urls are given): the sources for the list. Each one takes the same fields as format_citation: type (journal, book, website, chapter, thesis, report, dataset or preprint), title, and optional authors, year, container, publisher, city, edition, editors, translators, volume, issue, pages, doi, url, date_text, accessed, institution, degree, repository and report_number. A journal article, a book, a website, a chapter, a thesis, a report, a dataset and a preprint can share one list.
 - dois (optional): DOIs to look up on Crossref and add to the list, each one a DOI like 10.1038/nature14539 or a doi.org link.
 - isbns (optional): ISBNs to look up on Open Library and add to the list as books. Dashes are fine.
-- style (optional, default apa7): Citation style. apa7, mla9, chicago-ad (Chicago author date) or ieee.
+- urls (optional): Web addresses to fetch and add to the list as websites. Each one a full URL like https://example.edu/study.
+- style (optional, default apa7): Citation style. apa7, mla9, chicago-ad (Chicago author date), harvard or ieee.
 
 Example: with sources [{"type": "journal", "title": "Learning to learn", "authors": [{"family": "Smith", "given": "John Kenneth"}, {"family": "Jones", "given": "Alice"}], "year": "2020", "container": "Journal of Study Skills", "volume": "4", "issue": "2", "pages": "11-25"}, {"type": "book", "title": "Introduction to algorithms", "authors": [{"family": "Cormen", "given": "Thomas H."}], "year": "2009", "edition": "3rd", "publisher": "MIT Press"}, {"type": "website", "title": "The water cycle", "authors": [], "container": "Example Uni", "year": "2026", "url": "https://example.edu/water"}] and style "apa7", returns three entries separated by blank lines, in the order Cormen, Smith and the website, alphabetised by author and, for the website, by the title with "The" skipped.
 
@@ -62,7 +63,7 @@ Look up a DOI on Crossref and format the citation. The Crossref record decides t
 
 Parameters:
 - doi (required): A DOI like 10.1038/nature14539, or a doi.org link.
-- style (optional, default apa7): Citation style. apa7, mla9, chicago-ad (Chicago author date) or ieee, or all to get all three in one reply with a label above each one.
+- style (optional, default apa7): Citation style. apa7, mla9, chicago-ad (Chicago author date), harvard or ieee, or all to get APA 7, MLA 9 and Chicago author date in one reply with a label above each one.
 
 Example: with doi "10.1038/nature14539" and style "mla9", returns that DOI's Crossref record formatted in MLA 9, then a blank line and "(From Crossref. Check it against your style guide.)". If Crossref does not know the DOI, the tool returns an error message instead.
 
@@ -92,7 +93,7 @@ Look up an ISBN on Open Library and format the book citation in APA 7, MLA 9, Ch
 
 Parameters:
 - isbn (required): A 10 or 13 digit ISBN. Dashes are fine.
-- style (optional, default apa7): Citation style. apa7, mla9, chicago-ad (Chicago author date) or ieee.
+- style (optional, default apa7): Citation style. apa7, mla9, chicago-ad (Chicago author date), harvard or ieee.
 
 Example: with isbn "978-0-262-03384-8" and style "mla9", returns that book's Open Library record formatted in MLA 9, then a blank line and "(From Open Library. Check it against your style guide.)". If Open Library has no book for the ISBN, the tool returns an error message instead.
 
@@ -106,7 +107,7 @@ Parameters:
 - isbn (optional): a 10 or 13 digit ISBN, dashes are fine. The lookup fills in the authors and the year.
 - page (optional): page number as text, like "14"
 - form (optional, default parenthetical): parenthetical is the usual brackets, like (Smith & Jones, 2020, p. 14). narrative puts the author in your sentence and keeps the rest in brackets, like Smith and Jones (2020, p. 14).
-- style (optional, default apa7): Citation style. apa7, mla9, chicago-ad (Chicago author date) or ieee.
+- style (optional, default apa7): Citation style. apa7, mla9, chicago-ad (Chicago author date), harvard or ieee.
 
 Example: with authors [{"family": "Smith", "given": "John Kenneth"}, {"family": "Jones", "given": "Alice"}], year "2020" and page "14", style "apa7" returns "(Smith & Jones, 2020, p. 14)", style "mla9" returns "(Smith and Jones 14)" and style "chicago-ad" returns "(Smith and Jones 2020, 14)".
 
@@ -119,7 +120,7 @@ Fetch a web page and format it as a website citation in APA 7, MLA 9, Chicago au
 
 Parameters:
 - url (required): A full web address, like https://example.edu/study.
-- style (optional, default apa7): Citation style. apa7, mla9, chicago-ad (Chicago author date) or ieee, or all to get all three in one reply with a label above each one.
+- style (optional, default apa7): Citation style. apa7, mla9, chicago-ad (Chicago author date), harvard or ieee, or all to get APA 7, MLA 9 and Chicago author date in one reply with a label above each one.
 - title (optional): Use this title instead of the one on the page.
 - site_name (optional): Use this site name instead of the one on the page.
 - date (optional): Use this date instead of the one on the page, like 2026-10-14 or October 14, 2026.

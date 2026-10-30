@@ -194,13 +194,21 @@ describe("formatting", () => {
   });
   it("formats a journal article in IEEE", () => {
     expect(format(article, "ieee")).toBe(
-      'J. K. Smith, A. Jones "Learning to learn," *Journal of Study Skills*, vol. 4, no. 2, pp. 11-25, 2020 https://doi.org/10.1000/jss.2020.42',
+      'J. K. Smith and A. Jones, "Learning to learn," *Journal of Study Skills*, vol. 4, no. 2, pp. 11-25, 2020, doi: 10.1000/jss.2020.42.',
     );
   });
-  it("returns a bracketed number for IEEE in text", () => {
-    expect(inText(article.authors, "2020", "ieee", "14")).toBe("[1]");
+  it("formats a book, an edited book, three authors and a web page in IEEE", () => {
+    const book = { type: "book" as const, title: "Introduction to algorithms", authors: [{ family: "Cormen", given: "Thomas H." }, { family: "Leiserson", given: "Charles E." }, { family: "Rivest", given: "Ronald L." }], year: "2009", edition: "3rd", city: "Cambridge, MA", publisher: "MIT Press" };
+    expect(format(book, "ieee")).toBe("T. H. Cormen, C. E. Leiserson, and R. L. Rivest, *Introduction to algorithms*, 3rd ed. Cambridge, MA: MIT Press, 2009.");
+    const edited = { type: "book" as const, title: "A dictionary of study words", authors: [], editors: [{ family: "Baker", given: "Sam" }], year: "2018", publisher: "North Gate Press" };
+    expect(format(edited, "ieee")).toBe("S. Baker, Ed., *A dictionary of study words*, North Gate Press, 2018.");
+    const web = { type: "website" as const, title: "The water cycle", authors: [], container: "Example Uni", year: "2026", url: "https://example.edu/water" };
+    expect(format(web, "ieee")).toBe('"The water cycle," *Example Uni*, 2026. [Online]. Available: https://example.edu/water');
+  });
+  it("returns a bracketed number for IEEE in text, with the page when one is given", () => {
+    expect(inText(article.authors, "2020", "ieee", "14")).toBe("[1, p. 14]");
     expect(inText(article.authors, "2020", "ieee")).toBe("[1]");
-    expect(narrativeInText(article.authors, "2020", "ieee", "14")).toBe("[1]");
+    expect(narrativeInText(article.authors, "2020", "ieee", "14")).toBe("[1, p. 14]");
   });
 });
 
@@ -635,6 +643,19 @@ describe("cite from a web page", () => {
     expect(r.text).toContain(`MLA 9\n"How to study." *Example University*, 14 Oct. 2026, ${base}/page.`);
     expect(r.text).toContain(`Chicago author date\n2026. "How to study." Example University. ${base}/page.`);
     expect(r.text).toContain("(From the page. Check it against your style guide.)");
+  });
+
+  it("adds pages from urls to a works cited list and names where they came from", async () => {
+    const r = await call("format_bibliography", { urls: [`${base}/page`], style: "apa7" });
+    expect(r.isError).toBe(false);
+    expect(r.text).toContain(`*How to study*. (2026, October 14). Example University. ${base}/page`);
+    expect(r.text).toContain("come from Crossref, Open Library and the web pages");
+  });
+
+  it("names the url that failed in a works cited list", async () => {
+    const r = await call("format_bibliography", { urls: [`${base}/notitle`] });
+    expect(r.isError).toBe(true);
+    expect(r.text).toContain(`URL ${base}/notitle`);
   });
 
   it("falls back to the title element when the page has no open graph tags", async () => {

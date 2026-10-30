@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
-import { format, formatBibliography, inText, narrativeInText } from "../src/format.js";
+import { format, formatBibliography, inText, narrativeInText, normalizeStyle } from "../src/format.js";
 import { crossrefKind } from "../src/tools.js";
 
 const readme = readFileSync(new URL("../README.md", import.meta.url), "utf8");
@@ -125,7 +125,7 @@ describe("README", () => {
     const row = zoteroSection().split("\n").find((line) => line.startsWith("| Citation styles |"));
     expect(row).toBeTruthy();
     const cells = row!.split("|").map((cell) => cell.trim());
-    expect(cells[2]).toBe("APA 7, MLA 9, Chicago author date");
+    expect(cells[2]).toBe("APA 7, MLA 9, Chicago author date, Harvard, IEEE");
   });
 
   it("keeps the Zotero comparison free of em dashes and en dashes", () => {
@@ -137,7 +137,7 @@ describe("README", () => {
     expect(row).toBeTruthy();
     const cells = row!.split("|").map((cell) => cell.trim());
     expect(cells[1]).toBe("Styles you get back");
-    expect(cells[2]).toBe("APA 7, MLA 9, Chicago author date");
+    expect(cells[2]).toBe("APA 7, MLA 9, Chicago author date, Harvard, IEEE");
   });
 
   it("shows the editors and translators examples exactly as the formatter returns them", () => {
@@ -201,8 +201,9 @@ describe("README frequently asked questions", () => {
   });
 
   it("names only the styles the server formats", () => {
-    expect(faq).toContain("APA 7, MLA 9 and Chicago author date");
-    expect(faq).not.toMatch(/Harvard|IEEE|Vancouver|APA 6|MLA 8/);
+    expect(faq).toContain("APA 7, MLA 9, Chicago author date, Harvard and IEEE");
+    for (const style of ["apa7", "mla9", "chicago-ad", "harvard", "ieee"]) expect(normalizeStyle(style)).toBe(style);
+    expect(faq).not.toMatch(/Vancouver|APA 6|MLA 8/);
   });
 
   it("keeps the privacy answer true to the code", () => {
