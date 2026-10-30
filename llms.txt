@@ -6,7 +6,7 @@
 - Run with npx -y student-citations-mcp
 - No key or account. Optional CROSSREF_EMAIL.
 - Styles are apa7, mla9 and chicago-ad. format_citation and cite_from_doi also take all to return all three styles in one reply. Italics are returned as asterisks.
-- All six tools are read only. Nothing is stored.
+- All seven tools are read only. Nothing is stored.
 - The cite_this prompt looks nothing up. It only writes out the request.
 
 ## Tools
@@ -76,6 +76,16 @@ How the Crossref type is read:
 - Report, standard: a report, with its report number.
 - Dataset: a data set.
 - Posted content: a preprint, with the repository it was posted in.
+
+### find_doi
+Search Crossref for the DOI of a paper or a book when you have its title but no DOI. Returns the best matches, 5 by default, each with its title, authors, year, container and DOI, so you can pick the right one and pass the DOI to cite_from_doi. Inputs: title (the title, or as much of it as you know), optional author (a family name to narrow the search) and optional limit (1 to 10 matches). Example prompt: "Find the DOI for the paper Deep learning by LeCun."
+
+Parameters:
+- title (required): The title of the paper or book, or as much of it as you know.
+- author (optional): An author's family name, to narrow the search.
+- limit (optional, default 5): How many matches to return, 1 to 10.
+
+Example: with title "Deep learning" and author "LeCun", returns a numbered list such as "1. Deep learning. LeCun, Bengio, Hinton. 2015. Nature. DOI: 10.1038/nature14539", then a blank line and a note to check the match before passing the DOI to cite_from_doi. If Crossref finds nothing, the tool says so.
 
 ### cite_from_isbn
 Look up an ISBN on Open Library and format the book citation. Inputs: isbn (a 10 or 13 digit ISBN, dashes are fine) and style (apa7, mla9 or chicago-ad). Example prompt: "Cite ISBN 978-0-262-03384-8 in MLA 9."

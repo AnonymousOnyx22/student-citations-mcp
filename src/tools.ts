@@ -265,6 +265,38 @@ export const tools: ToolDef<Api>[] = [
     },
   },
   {
+    name: "find_doi",
+    title: "Find a DOI from a title",
+    description: "Search Crossref for the DOI of a paper or a book when you have its title but no DOI. Returns the best matches, 5 by default, each with its title, authors, year, container and DOI, so you can pick the right one and pass the DOI to cite_from_doi. Inputs: title (the title, or as much of it as you know), optional author (a family name to narrow the search) and optional limit (1 to 10 matches). Example prompt: \"Find the DOI for the paper Deep learning by LeCun.\"",
+    inputSchema: {
+      title: z.string().describe("The title of the paper or book, or as much of it as you know."),
+      author: z.string().optional().describe("An author's family name, to narrow the search."),
+      limit: z.number().int().min(1).max(10).default(5).describe("How many matches to return, 1 to 10."),
+    },
+    run: async (a, api) => {
+      const title = String(a.title ?? "").trim();
+      if (!title) throw new Error("Give the title of the paper or book to look up.");
+      const query: Record<string, string | number> = { "query.bibliographic": title, rows: a.limit ?? 5, select: "DOI,title,author,issued,published,container-title,type" };
+      if (a.author?.trim()) query["query.author"] = a.author.trim();
+      let res: any;
+      try {
+        res = await api.crossref.get("/works", query);
+      } catch (err) {
+        if (err instanceof ApiError) throw new ApiError(`${err.message}. Try again, or use cite_from_doi if you can find the DOI on the paper.`, err.status, err.body);
+        throw err;
+      }
+      const items: any[] = (res?.message?.items ?? []).filter((m: any) => m?.DOI && (Array.isArray(m.title) ? m.title[0] : m.title));
+      if (!items.length) return "Crossref found no match for that title. Check the spelling, try fewer words, or use format_citation and type the details.";
+      const lines = items.map((m, i) => {
+        const src = crossrefSource(m, m.DOI);
+        const names = src.authors.slice(0, 3).map((x) => x.family).join(", ") + (src.authors.length > 3 ? " and others" : "");
+        const parts = [src.title, names, src.year, src.container].filter((x) => x && String(x).trim());
+        return `${i + 1}. ${parts.join(". ")}. DOI: ${m.DOI}`;
+      });
+      return `${lines.join("\n")}\n\n(From Crossref. Check that the title and authors are the work you mean, then pass the DOI to cite_from_doi.)`;
+    },
+  },
+  {
     name: "cite_from_url",
     title: "Cite from a web page",
     description: "Fetch a web page and format it as a website citation in APA 7, MLA 9 or Chicago author date. It reads the page title, the site name and the date from the page. Inputs: url (a full web address), style (apa7, mla9, chicago-ad or all), and optional title, site_name and date to replace what the page gives. Pass all to get all three styles in one reply, each one with its style name on the line above it. Example prompt: \"Cite this page in APA: https://example.edu/study.\"",

@@ -22,6 +22,7 @@ const article = {
 let srv: http.Server;
 let client: Client;
 let lastUa = "";
+let lastSearch = "";
 let base = "";
 
 beforeAll(async () => {
@@ -44,6 +45,15 @@ beforeAll(async () => {
       return json({ message: { type: "dissertation", title: ["Attention and memory in first year students"], author: [{ given: "Jamie", family: "Patel" }], publisher: "Dartmouth College Library Press", institution: [{ name: "Dartmouth College" }], degree: ["Ph.D."], issued: { "date-parts": [[2019]] }, DOI: "10.1349/ddlp.2889" } });
     if (url.pathname === "/works/10.1101/2020.01.30.927871")
       return json({ message: { type: "posted-content", subtype: "preprint", title: ["A preprint about study groups"], author: [{ given: "Alex", family: "Stone" }], publisher: "openRxiv", institution: [{ name: "bioRxiv" }], posted: { "date-parts": [[2020, 1, 31]] }, DOI: "10.1101/2020.01.30.927871" } });
+    if (url.pathname === "/works") {
+      const q = url.searchParams.get("query.bibliographic") ?? "";
+      if (q === "nothing like this") return json({ message: { items: [] } });
+      lastSearch = url.search;
+      return json({ message: { items: [
+        { DOI: "10.1000/jss.2020.42", type: "journal-article", title: ["Learning to learn"], "container-title": ["Journal of Study Skills"], author: [{ given: "John Kenneth", family: "Smith" }, { given: "Alice", family: "Jones" }], issued: { "date-parts": [[2020, 5]] } },
+        { DOI: "10.1000/notitle", type: "journal-article" },
+      ] } });
+    }
     if (url.pathname.startsWith("/works/")) return json({}, 404);
     if (url.pathname === "/page") {
       res.writeHead(200, { "content-type": "text/html" });
@@ -355,9 +365,9 @@ describe("missing container", () => {
 });
 
 describe("MCP tools", () => {
-  it("lists six read only tools", async () => {
+  it("lists seven read only tools", async () => {
     const tools = (await client.listTools()).tools;
-    expect(tools.map((t) => t.name).sort()).toEqual(["cite_from_doi", "cite_from_isbn", "cite_from_url", "format_bibliography", "format_citation", "in_text_citation"]);
+    expect(tools.map((t) => t.name).sort()).toEqual(["cite_from_doi", "cite_from_isbn", "cite_from_url", "find_doi", "format_bibliography", "format_citation", "in_text_citation"]);
     for (const t of tools) expect(t.annotations?.readOnlyHint).toBe(true);
   });
   it("gives every tool concrete inputs and an example prompt", async () => {
@@ -368,6 +378,18 @@ describe("MCP tools", () => {
     }
     const doi = tools.find((t) => t.name === "cite_from_doi")!;
     expect(doi.description).toContain("10.1038/nature14539");
+  });
+  it("finds a DOI from a title and skips records without a title", async () => {
+    const r = await call("find_doi", { title: "Learning to learn", author: "Smith", limit: 3 });
+    expect(r.text).toContain("1. Learning to learn. Smith, Jones. 2020. Journal of Study Skills. DOI: 10.1000/jss.2020.42");
+    expect(r.text).not.toContain("10.1000/notitle");
+    expect(r.text).toContain("cite_from_doi");
+    expect(lastSearch).toContain("rows=3");
+    expect(lastSearch).toContain("query.author=Smith");
+  });
+  it("says so when no DOI matches the title", async () => {
+    const r = await call("find_doi", { title: "nothing like this" });
+    expect(r.text).toContain("found no match");
   });
   it("cites from a DOI through Crossref", async () => {
     const r = await call("cite_from_doi", { doi: "https://doi.org/10.1000/jss.2020.42", style: "apa7" });

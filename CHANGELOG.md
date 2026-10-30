@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add a find_doi tool. Give it a paper or book title, and an author's family name if you have one, and it searches Crossref and lists the best matches with their DOIs, ready to pass to cite_from_doi.
+
 - cite_from_doi now adds a line to its note when the Crossref record has no volume, pages, year, publisher or container that the citation usually needs, so you know what to check in the source.
 
 - cite_from_isbn now reads the publisher city from the Open Library record for that exact edition when the book data and the search give none, so Chicago author date citations of books more often include the city.

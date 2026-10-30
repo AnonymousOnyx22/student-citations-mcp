@@ -278,6 +278,28 @@
       ]
     },
     {
+      "name": "find_doi",
+      "description": "Search Crossref for the DOI of a paper or a book when you have its title but no DOI. Returns the best matches, 5 by default, each with its title, authors, year, container and DOI, so you can pick the right one and pass the DOI to cite_from_doi. Inputs: title (the title, or as much of it as you know), optional author (a family name to narrow the search) and optional limit (1 to 10 matches). Example prompt: \"Find the DOI for the paper Deep learning by LeCun.\"",
+      "inputSchema": {
+        "type": "object",
+        "required": ["title"],
+        "properties": {
+          "title": { "type": "string", "description": "The title of the paper or book, or as much of it as you know." },
+          "author": { "type": "string", "description": "An author's family name, to narrow the search." },
+          "limit": { "type": "integer", "minimum": 1, "maximum": 10, "default": 5, "description": "How many matches to return, 1 to 10." }
+        }
+      },
+      "examples": [
+        {
+          "input": {
+            "title": "Deep learning",
+            "author": "LeCun"
+          },
+          "output": "1. Deep learning. LeCun, Bengio, Hinton. 2015. Nature. DOI: 10.1038/nature14539\n\n(From Crossref. Check that the title and authors are the work you mean, then pass the DOI to cite_from_doi.)"
+        }
+      ]
+    },
+    {
       "name": "cite_from_isbn",
       "description": "Look up an ISBN on Open Library and format the book citation. Inputs: isbn (a 10 or 13 digit ISBN, dashes are fine) and style (apa7, mla9 or chicago-ad). Example prompt: \"Cite ISBN 978-0-262-03384-8 in MLA 9.\"",
       "inputSchema": {
