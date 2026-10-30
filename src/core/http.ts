@@ -3,6 +3,7 @@ export class ApiError extends Error {
     message: string,
     public status: number,
     public body?: string,
+    public retryAfterMs?: number,
   ) {
     super(message);
     this.name = "ApiError";
@@ -16,6 +17,10 @@ export interface ClientOptions {
   defaultQuery?: Record<string, string>;
   timeoutMs?: number;
   fetchImpl?: typeof fetch;
+  /** Extra attempts after a 429 or 5xx reply or a network error. Default 0. */
+  retries?: number;
+  /** Wait before the first retry, doubled each time. A Retry-After header wins, up to 5s. */
+  retryDelayMs?: number;
 }
 
 export type Query = Record<string, string | number | boolean | undefined | Array<string | number>>;
@@ -55,7 +60,24 @@ export function createClient(opts: ClientOptions): HttpClient {
   const doFetch = opts.fetchImpl ?? fetch;
   const timeout = opts.timeoutMs ?? 20000;
 
+  const retries = opts.retries ?? 0;
+  const retryDelay = opts.retryDelayMs ?? 500;
+
   async function request(url: string): Promise<Response> {
+    for (let attempt = 0; ; attempt++) {
+      try {
+        return await requestOnce(url);
+      } catch (err) {
+        const status = err instanceof ApiError ? err.status : -1;
+        const transient = status === 429 || status >= 500 || status === 0;
+        if (!transient || attempt >= retries) throw err;
+        const asked = err instanceof ApiError ? err.retryAfterMs : undefined;
+        await new Promise((r) => setTimeout(r, Math.min(asked ?? retryDelay * 2 ** attempt, 5000)));
+      }
+    }
+  }
+
+  async function requestOnce(url: string): Promise<Response> {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), timeout);
     try {
@@ -65,7 +87,11 @@ export function createClient(opts: ClientOptions): HttpClient {
       });
       if (!res.ok) {
         const body = await res.text().catch(() => "");
-        throw new ApiError(describeStatus(res.status), res.status, body.slice(0, 500));
+        const err = new ApiError(describeStatus(res.status), res.status, body.slice(0, 500));
+        const header = res.headers.get("retry-after");
+        const secs = Number(header);
+        if (header && Number.isFinite(secs) && secs >= 0) err.retryAfterMs = secs * 1000;
+        throw err;
       }
       return res;
     } catch (err) {

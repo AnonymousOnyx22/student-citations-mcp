@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- cite_from_doi and cite_from_isbn now try a Crossref or Open Library lookup up to 2 more times when the service answers with a rate limit or a server error, so a short outage no longer sends you back to typing the source by hand.
 - Add a cite_from_url tool, which fetches a web page and turns its title, its site name and its date into an APA 7, MLA 9 or Chicago author date website citation. Pass it a URL, and override the title, the site name or the date when you want.
 
 ## 0.1.6

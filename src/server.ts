@@ -11,8 +11,8 @@ export const VERSION = "0.1.6";
 export function makeApi(urls = baseUrls(), fetchImpl?: typeof fetch): Api {
   const ua = `student-citations-mcp/${VERSION}${urls.email ? ` (mailto:${urls.email})` : ""}`;
   return {
-    crossref: createClient({ baseUrl: urls.crossref, headers: { "User-Agent": ua }, fetchImpl }),
-    openLibrary: createClient({ baseUrl: urls.openLibrary, headers: { "User-Agent": ua }, fetchImpl }),
+    crossref: createClient({ baseUrl: urls.crossref, headers: { "User-Agent": ua }, fetchImpl, retries: 2 }),
+    openLibrary: createClient({ baseUrl: urls.openLibrary, headers: { "User-Agent": ua }, fetchImpl, retries: 2 }),
     web: createClient({
       baseUrl: "",
       headers: { "User-Agent": ua, Accept: "text/html,application/xhtml+xml" },
