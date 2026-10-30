@@ -34,6 +34,8 @@ beforeAll(async () => {
     };
     if (url.pathname === "/works/10.1000/jss.2020.42")
       return json({ message: { type: "journal-article", title: ["Learning to learn"], "container-title": ["Journal of Study Skills"], author: [{ given: "John Kenneth", family: "Smith" }, { given: "Alice", family: "Jones" }], issued: { "date-parts": [[2020, 5]] }, volume: "4", issue: "2", page: "11-25", DOI: "10.1000/jss.2020.42" } });
+    if (url.pathname === "/works/10.1000/thin.1")
+      return json({ message: { type: "journal-article", title: ["A thin record"], "container-title": ["Journal of Study Skills"], author: [{ given: "Alice", family: "Jones" }], issued: { "date-parts": [[2020]] }, DOI: "10.1000/thin.1" } });
     if (url.pathname === "/works/10.1000/handbook.1")
       return json({ message: { type: "book-chapter", title: ["Learning to learn in groups"], "container-title": ["The Study Skills Handbook"], author: [{ given: "John Kenneth", family: "Smith" }], editor: [{ given: "Robin", family: "Cole" }], publisher: "North Gate Press", issued: { "date-parts": [[2020, 5]] }, page: "11-25", DOI: "10.1000/handbook.1" } });
     if (url.pathname === "/works/10.1000/dict.1")
@@ -371,6 +373,12 @@ describe("MCP tools", () => {
     const r = await call("cite_from_doi", { doi: "https://doi.org/10.1000/jss.2020.42", style: "apa7" });
     expect(r.text).toContain("Smith, J. K., & Jones, A. (2020). Learning to learn.");
     expect(lastUa).toContain("mailto:me@example.com");
+  });
+  it("warns when the Crossref record has no volume or pages", async () => {
+    const r = await call("cite_from_doi", { doi: "10.1000/thin.1", style: "apa7" });
+    expect(r.text).toContain("The Crossref record has no volume or pages, so check those in the source.");
+    const ok = await call("cite_from_doi", { doi: "10.1000/jss.2020.42", style: "apa7" });
+    expect(ok.text).not.toContain("so check");
   });
   it("cites a book chapter from Crossref as a chapter, with no volume or issue", async () => {
     const r = await call("cite_from_doi", { doi: "10.1000/handbook.1", style: "apa7" });

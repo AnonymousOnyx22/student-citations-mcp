@@ -204,6 +204,15 @@ const maxLookups = 50;
 /** How many of those lookups run at the same time. */
 const lookupsAtOnce = 5;
 
+/** The fields a citation of this type usually needs that a Crossref record left empty. */
+function thinFields(src: Source): string[] {
+  const needed: Array<[string, string | undefined]> = [["year", src.year]];
+  if (src.type === "journal") needed.push(["volume", src.volume], ["pages", src.pages], ["journal name", src.container]);
+  else if (src.type === "chapter") needed.push(["pages", src.pages], ["book title", src.container], ["publisher", src.publisher]);
+  else if (src.type === "book") needed.push(["publisher", src.publisher]);
+  return needed.filter(([, v]) => !v?.trim()).map(([name]) => name);
+}
+
 export const tools: ToolDef<Api>[] = [
   {
     name: "format_citation",
@@ -250,7 +259,9 @@ export const tools: ToolDef<Api>[] = [
     run: async (a, api) => {
       const st = normalizeStyleRequest(a.style ?? "apa7");
       const src = await sourceFromDoi(a.doi, api);
-      return `${formatAnyStyle(src, st)}\n\n(From Crossref. Check it against your style guide.)`;
+      const thin = thinFields(src);
+      const warning = thin.length ? ` The Crossref record has no ${thin.length > 1 ? `${thin.slice(0, -1).join(", ")} or ${thin[thin.length - 1]}` : thin[0]}, so check ${thin.length === 1 ? "that" : "those"} in the source.` : "";
+      return `${formatAnyStyle(src, st)}\n\n(From Crossref. Check it against your style guide.${warning})`;
     },
   },
   {
