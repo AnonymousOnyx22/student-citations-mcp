@@ -65,7 +65,7 @@ export function citeThisMessage(args: { style?: string; source?: string }): stri
 const style = z
   .string()
   .optional()
-  .describe("Citation style: apa7, mla9 or chicago-ad. Aliases such as APA, MLA 9 and Chicago are accepted. Defaults to apa7 when you leave it out or leave it blank.");
+  .describe("Citation style: apa7, mla9, chicago-ad or harvard. Aliases such as APA, MLA 9, Chicago and Harvard are accepted. Defaults to apa7 when you leave it out or leave it blank.");
 
 const source = z
   .string()
@@ -77,7 +77,7 @@ export const prompts: PromptDef[] = [
     name: "cite_this",
     title: "Cite a source in APA",
     description:
-      "Start a citation in APA 7, MLA 9 or Chicago author date from a DOI, an ISBN or details you type. The title names the default style, APA 7, and the style argument picks another one. The prompt returns the wording the citation tools use, so you can edit the source and send it. Arguments: style (apa7, mla9 or chicago-ad) and source (the DOI, the ISBN or the details), both optional. Example prompt: \"Cite this journal article in APA 7: Learning to learn by John Kenneth Smith and Alice Jones, 2020, Journal of Study Skills, volume 4, issue 2, pages 11-25.\"",
+      "Start a citation in APA 7, MLA 9, Chicago author date or Harvard from a DOI, an ISBN or details you type. The title names the default style, APA 7, and the style argument picks another one. The prompt returns the wording the citation tools use, so you can edit the source and send it. Arguments: style (apa7, mla9, chicago-ad or harvard) and source (the DOI, the ISBN or the details), both optional. Example prompt: \"Cite this journal article in APA 7: Learning to learn by John Kenneth Smith and Alice Jones, 2020, Journal of Study Skills, volume 4, issue 2, pages 11-25.\"",
     argsSchema: { style, source },
     build: (args) => citeThisMessage(args),
   },
