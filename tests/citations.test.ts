@@ -83,9 +83,11 @@ beforeAll(async () => {
       if (key === "ISBN:9780262033848") return json({ [key]: { title: "Introduction to Algorithms", authors: [{ name: "Thomas H. Cormen" }, { name: "Charles E. Leiserson" }], publishers: [{ name: "MIT Press" }], publish_places: [{ name: "Cambridge, MA" }], publish_date: "July 31, 2009" } });
       if (key === "ISBN:1111111111111") return json({}, 404);
       if (key === "ISBN:9780134685991") return json({ [key]: { title: "Effective Java", authors: [{ name: "Joshua Bloch" }] } });
+      if (key === "ISBN:9780226103891") return json({ [key]: { title: "The Craft of Research", authors: [{ name: "Wayne C. Booth" }], publishers: [{ name: "University of Chicago Press" }], publish_date: "2016" } });
       if (key === "ISBN:9780140449136") return json({ [key]: { title: "Crime and Punishment", authors: [{ name: "Fyodor Dostoevsky" }] } });
       return json({});
     }
+    if (url.pathname === "/isbn/9780226103891.json") return json({ publish_places: ["Chicago"] });
     if (url.pathname === "/search.json") {
       const q = url.searchParams.get("q");
       if (q === "isbn:9780134685991") return json({ docs: [{ publisher: ["Addison-Wesley"], publish_year: [2018], publish_place: ["Boston"] }] });
@@ -407,6 +409,11 @@ describe("MCP tools", () => {
     expect(r.isError).toBe(false);
     expect(r.text).toContain("Bloch, J. (2018).");
     expect(r.text).toContain("Addison-Wesley");
+  });
+  it("fills the city from the edition record when the book record and search have none", async () => {
+    const r = await call("cite_from_isbn", { isbn: "978-0-226-10389-1", style: "chicago-ad" });
+    expect(r.isError).toBe(false);
+    expect(r.text).toContain("Chicago: University of Chicago Press");
   });
   it("does not guess a publisher, year or place from a search result that covers many editions", async () => {
     const r = await call("cite_from_isbn", { isbn: "978-0-14-044913-6", style: "apa7" });

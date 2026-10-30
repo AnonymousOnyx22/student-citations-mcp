@@ -177,6 +177,16 @@ async function sourceFromIsbn(input: string, api: Api): Promise<Source> {
         // Search fallback failed, return what we have
       }
     }
+    if (!src.city) {
+      try {
+        // The edition record is for this ISBN alone, so its first place is this edition's, unlike the search result for the whole work.
+        const edition: any = await api.openLibrary.get(`/isbn/${isbn}.json`);
+        const place = Array.isArray(edition?.publish_places) ? edition.publish_places[0] : undefined;
+        if (typeof place === "string" && place.trim()) src.city = place.trim();
+      } catch {
+        // No edition record, leave the city empty
+      }
+    }
     return src;
   } catch (err) {
     if (err instanceof ApiError) {
