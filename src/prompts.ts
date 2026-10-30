@@ -7,6 +7,7 @@ const styleWords: Record<Style, { short: string; long: string }> = {
   apa7: { short: "APA", long: "APA 7" },
   mla9: { short: "MLA", long: "MLA 9" },
   "chicago-ad": { short: "Chicago", long: "Chicago author date" },
+  harvard: { short: "Harvard", long: "Harvard" },
 };
 
 /** The example wording the citation tools carry, in the style that was asked for. */

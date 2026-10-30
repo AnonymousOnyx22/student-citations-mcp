@@ -1,4 +1,4 @@
-export type Style = "apa7" | "mla9" | "chicago-ad";
+export type Style = "apa7" | "mla9" | "chicago-ad" | "harvard";
 
 export interface Author {
   family: string;
@@ -87,6 +87,11 @@ function degreeWords(degree: string | undefined, style: Style): string {
     if (kind === "masters") return "MA thesis";
     return "Dissertation";
   }
+  if (style === "harvard") {
+    if (kind === "doctorate") return "PhD thesis";
+    if (kind === "masters") return "MA thesis";
+    return "Thesis";
+  }
   if (kind === "doctorate") return "PhD diss.";
   if (kind === "masters") return "MA thesis";
   return "Diss.";
@@ -101,6 +106,15 @@ function mlaAuthors(a: Author[]): string {
   if (a.length === 1) return inverted(a[0]);
   if (a.length === 2) return `${inverted(a[0])}, and ${normal(a[1])}`;
   return `${inverted(a[0])}, et al`;
+}
+
+/** Harvard names as "Smith, J.K. and Jones, A.". Four or more authors become the first one plus et al. */
+function harvardNames(a: Author[]): string {
+  const one = (x: Author) => (x.given ? `${x.family}, ${initials(x.given).replace(/ /g, "")}` : x.family);
+  if (a.length === 0) return "";
+  if (a.length >= 4) return `${one(a[0])} et al.`;
+  if (a.length === 1) return one(a[0]);
+  return `${a.slice(0, -1).map(one).join(", ")} and ${one(a[a.length - 1])}`;
 }
 
 /** The same name list with the period on "et al.", as Chicago writes it. */
@@ -294,6 +308,54 @@ export function format(s: Source, styleInput: Style | string): string {
     }
     return parts.join(" ").replace(/\s+/g, " ").trim();
   }
+  if (style === "harvard") {
+    const eds = s.editors ?? [];
+    const trs = s.translators ?? [];
+    const edLabel = role(eds, "(ed.)", "(eds.)");
+    const who = harvardNames(s.authors) || (s.type === "book" && eds.length ? `${harvardNames(eds)} ${edLabel}` : "");
+    const year = s.year ?? "n.d.";
+    const title = plainTitle(s.title);
+    const quoted = `'${title}'`;
+    const italic = who ? `${who} (${year}) *${title}*.` : `*${title}* (${year}).`;
+    const place = s.publisher ? `${s.city ? `${s.city}: ` : ""}${s.publisher}` : "";
+    const avail = link(s) ? `Available at: ${link(s)}${s.accessed ? ` (Accessed: ${s.accessed})` : ""}` : undefined;
+    if (s.type === "journal") {
+      push(who ? `${who} (${year}) ${quoted},` : `${quoted} (${year})`);
+      const bits = [`*${s.container ?? ""}*`, s.volume ? `${s.volume}${s.issue ? `(${s.issue})` : ""}` : "", s.pages ? `pp. ${dash(s.pages)}` : ""].filter(Boolean);
+      push(end(bits.join(", ")));
+    } else if (s.type === "book") {
+      push(italic);
+      if (s.edition) push(`${s.edition} edn.`);
+      if (trs.length) push(`Translated by ${people(trs)}.`);
+      if (eds.length && s.authors.length) push(`Edited by ${people(eds)}.`);
+      push(place ? end(place) : undefined);
+    } else if (s.type === "chapter") {
+      push(who ? `${who} (${year}) ${quoted}, in` : `${quoted} (${year}) in`);
+      push(end(`${eds.length ? `${harvardNames(eds)} ${edLabel} ` : ""}*${s.container ?? ""}*`));
+      const bits = [place, s.pages ? `pp. ${dash(s.pages)}` : ""].filter(Boolean);
+      push(bits.length ? end(bits.join(", ")) : undefined);
+    } else if (s.type === "thesis") {
+      push(italic);
+      const bits = [degreeWords(s.degree, "harvard"), s.institution].filter(Boolean).join(". ");
+      push(end(bits));
+    } else if (s.type === "report") {
+      push(italic);
+      push(s.report_number ? `Report no. ${s.report_number}.` : undefined);
+      push(place ? end(place) : undefined);
+    } else if (s.type === "dataset") {
+      push(who ? `${who} (${year}) *${title}* [Dataset].` : `*${title}* [Dataset] (${year}).`);
+      push(place ? end(place) : undefined);
+    } else if (s.type === "preprint") {
+      push(who ? `${who} (${year}) ${quoted}.` : `${quoted} (${year}).`);
+      push("Preprint.");
+      push(s.repository ? end(s.repository) : undefined);
+    } else {
+      push(italic);
+      push(s.container ? end(s.container) : undefined);
+    }
+    push(avail);
+    return parts.join(" ").replace(/\s+/g, " ").trim();
+  }
   // Chicago author date
   const who = chicagoNames(s.authors);
   const year = s.year ?? "n.d.";
@@ -413,6 +475,7 @@ function whoFor(authors: Author[], style: Style, narrative: boolean): string {
   const names = authors.map((a) => a.family);
   if (names.length === 0) return "";
   if (names.length === 1) return names[0];
+  if (style === "harvard" && names.length === 3) return `${names[0]}, ${names[1]} and ${names[2]}`;
   if (names.length === 2) return `${names[0]}${style === "apa7" && !narrative ? " &" : " and"} ${names[1]}`;
   return `${names[0]} et al.`;
 }
@@ -421,7 +484,7 @@ export function inText(authors: Author[], year: string | undefined, styleInput: 
   const style = normalizeStyle(styleInput);
   const y = year ?? "n.d.";
   const who = whoFor(authors, style, false);
-  if (style === "apa7") return `(${[who, y, page ? `p. ${page}` : ""].filter(Boolean).join(", ")})`;
+  if (style === "apa7" || style === "harvard") return `(${[who, y, page ? `p. ${page}` : ""].filter(Boolean).join(", ")})`;
   if (style === "mla9") return `(${[who, page ?? ""].filter(Boolean).join(" ")})`;
   return `(${[who, y].filter(Boolean).join(" ")}${page ? `, ${page}` : ""})`;
 }
@@ -437,7 +500,7 @@ export function narrativeInText(authors: Author[], year: string | undefined, sty
   const who = whoFor(authors, style, true);
   if (!who) return inText(authors, year, style, page);
   const y = year ?? "n.d.";
-  if (style === "apa7") return `${who} (${[y, page ? `p. ${page}` : ""].filter(Boolean).join(", ")})`;
+  if (style === "apa7" || style === "harvard") return `${who} (${[y, page ? `p. ${page}` : ""].filter(Boolean).join(", ")})`;
   if (style === "mla9") return page ? `${who} (${page})` : who;
   return `${who} (${[y, page ?? ""].filter(Boolean).join(", ")})`;
 }
@@ -460,10 +523,13 @@ export function normalizeStyle(input: unknown): Style {
     "chicago-ad": "chicago-ad",
     "chicago author date": "chicago-ad",
     "chicago author-date": "chicago-ad",
+    "harvard": "harvard",
+    "harvard referencing": "harvard",
+    "harvard style": "harvard",
   };
   const result = aliases[key];
   if (!result) {
-    throw new Error(`"${raw}" is not a known citation style. Valid styles are apa7, mla9 and chicago ad (chicago-ad).`);
+    throw new Error(`"${raw}" is not a known citation style. Valid styles are apa7, mla9, chicago ad (chicago-ad) and harvard.`);
   }
   return result;
 }

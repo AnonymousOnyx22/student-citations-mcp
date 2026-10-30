@@ -106,7 +106,7 @@ describe("the cite_this prompt", () => {
   });
 
   it("names the styles it knows when it is given one it does not", async () => {
-    await expect(get("cite_this", { style: "harvard" })).rejects.toThrow(/not a known citation style/);
+    await expect(get("cite_this", { style: "vancouver" })).rejects.toThrow(/not a known citation style/);
   });
 
   it("shows the message the README shows", () => {
