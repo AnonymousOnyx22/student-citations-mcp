@@ -170,7 +170,7 @@ export function normalizeUrl(input: string): string {
     if (url.protocol !== "http:" && url.protocol !== "https:") throw new Error("not a web address");
     return url.toString();
   } catch {
-    throw new Error(`"${input}" does not look like a web address. Give a URL like https://example.edu/study.`);
+    throw new Error(`"${input}" does not look like a web address. Give a URL like https://example.edu/study, or use format_citation and type the details.`);
   }
 }
 

@@ -90,6 +90,15 @@ beforeAll(async () => {
       res.end("<!DOCTYPE html><html><head><title>Pipe Title | Pipe Site</title></head><body></body></html>");
       return;
     }
+    if (url.pathname === "/thin") {
+      res.writeHead(200, { "content-type": "text/html" });
+      res.end("<html><head><title>A thin page</title></head><body><p>Thin.</p></body></html>");
+      return;
+    }
+    if (url.pathname === "/reset") {
+      req.socket?.destroy();
+      return;
+    }
     if (url.pathname === "/api/books") {
       const key = url.searchParams.get("bibkeys");
       if (key === "ISBN:9780262033848") return json({ [key]: { title: "Introduction to Algorithms", authors: [{ name: "Thomas H. Cormen" }, { name: "Charles E. Leiserson" }], publishers: [{ name: "MIT Press" }], publish_places: [{ name: "Cambridge, MA" }], publish_date: "July 31, 2009" } });
@@ -713,6 +722,38 @@ describe("cite from a web page", () => {
     const r = await call("cite_from_url", { url: "not a web address" });
     expect(r.isError).toBe(true);
     expect(r.text).toContain("does not look like a web address");
+  });
+
+  it("points at format_citation when the address is not a web address", async () => {
+    const r = await call("cite_from_url", { url: "not a web address" });
+    expect(r.isError).toBe(true);
+    expect(r.text).toContain("use format_citation and type the details.");
+  });
+
+  it("points at format_citation when the date is not a date", async () => {
+    const r = await call("cite_from_url", { url: `${base}/page`, date: "last autumn" });
+    expect(r.isError).toBe(true);
+    expect(r.text).toContain("does not look like a date");
+    expect(r.text).toContain("use format_citation and type the details.");
+  });
+
+  it("points at format_citation when the page cannot be fetched", async () => {
+    const r = await call("cite_from_url", { url: `${base}/reset` });
+    expect(r.isError).toBe(true);
+    expect(r.text).toContain("use format_citation and type the details.");
+  });
+
+  it("warns when the page gives no date", async () => {
+    const r = await call("cite_from_url", { url: `${base}/thin`, style: "apa7" });
+    expect(r.isError).toBe(false);
+    expect(r.text).toContain(`*A thin page*. 127.0.0.1. ${base}/thin`);
+    expect(r.text).toContain("The page gives no date, so check the date in the source.");
+  });
+
+  it("does not warn when the page gives a date", async () => {
+    const r = await call("cite_from_url", { url: `${base}/page`, style: "apa7" });
+    expect(r.isError).toBe(false);
+    expect(r.text).not.toContain("so check");
   });
 });
 

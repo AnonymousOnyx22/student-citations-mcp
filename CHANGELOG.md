@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- cite_from_url now tells you to use format_citation when it cannot fetch or read the page, and warns when the page gives no date or site name, so you know to check the source.
+
 - Add a bibtex style to format_citation, format_bibliography, cite_from_doi, cite_from_isbn and cite_from_url, so a citation or a whole list can come back as .bib entries ready for a reference manager.
 
 ## 0.1.7

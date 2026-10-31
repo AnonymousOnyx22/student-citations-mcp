@@ -335,21 +335,29 @@ export const tools: ToolDef<Api>[] = [
           }
           throw new ApiError(`${err.message} Check the web address, or use format_citation and type the details.`, err.status, err.body);
         }
-        throw err;
+        throw new Error(`${err instanceof Error ? err.message : String(err)} Check the web address, or use format_citation and type the details.`);
       }
       const page = parsePage(html, url);
       if (a.title?.trim()) page.title = a.title.trim();
       if (a.site_name?.trim()) page.siteName = a.site_name.trim();
       if (a.date?.trim()) {
         const date = parsePageDate(a.date);
-        if (!date) throw new Error(`"${a.date}" does not look like a date. Give a date like 2026-10-14 or October 14, 2026.`);
+        if (!date) throw new Error(`"${a.date}" does not look like a date. Give a date like 2026-10-14 or October 14, 2026, or use format_citation and type the details.`);
         page.year = date.year;
         page.month = date.month;
         page.day = date.day;
       }
       if (!page.title) throw new Error("That page has no title, so there is nothing to cite. Use format_citation and type the details.");
       const st = normalizeStyleRequest(a.style ?? "apa7");
-      const note = "(From the page. Check it against your style guide.)";
+      const thin: string[] = [];
+      if (!page.year) thin.push("date");
+      if (!page.siteName) thin.push("site name");
+      const warning = thin.length
+        ? thin.length === 1
+          ? ` The page gives no ${thin[0]}, so check the ${thin[0]} in the source.`
+          : ` The page gives no ${thin[0]} or ${thin[1]}, so check those in the source.`
+        : "";
+      const note = `(From the page. Check it against your style guide.${warning})`;
       if (st === "all") {
         return `${allStyleLabels.map(({ style: s, label }) => `${label}\n${format(pageSource(page, url, s), s)}`).join("\n\n")}\n\n${note}`;
       }
