@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add a bibtex style to format_citation, format_bibliography, cite_from_doi, cite_from_isbn and cite_from_url, so a citation or a whole list can come back as .bib entries ready for a reference manager.
+
 ## 0.1.7
 
 - Add a find_doi tool. Give it a paper or book title, and an author's family name if you have one, and it searches Crossref and lists the best matches with their DOIs, ready to pass to cite_from_doi.

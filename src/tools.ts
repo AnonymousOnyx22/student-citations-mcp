@@ -12,7 +12,8 @@ export interface Api {
 }
 
 const style = z.string().default("apa7").describe("Citation style. Aliases such as APA, MLA 9 and Chicago are accepted. Valid styles: apa7, mla9, chicago-ad (Chicago author date), harvard and ieee.");
-const styleAll = z.string().default("apa7").describe("Citation style. Aliases such as APA, MLA 9 and Chicago are accepted. Valid styles: apa7, mla9, chicago-ad (Chicago author date), harvard and ieee, or all to get APA 7, MLA 9 and Chicago author date in one reply with a label above each one.");
+const styleBibtex = z.string().default("apa7").describe("Citation style. Aliases such as APA, MLA 9 and Chicago are accepted. Valid styles: apa7, mla9, chicago-ad (Chicago author date), harvard, ieee and bibtex.");
+const styleAll = z.string().default("apa7").describe("Citation style. Aliases such as APA, MLA 9 and Chicago are accepted. Valid styles: apa7, mla9, chicago-ad (Chicago author date), harvard, ieee and bibtex, or all to get APA 7, MLA 9 and Chicago author date in one reply with a label above each one.");
 const form = z.enum(["parenthetical", "narrative"]).default("parenthetical").describe("parenthetical is the usual brackets, like (Smith & Jones, 2020, p. 14). narrative puts the author in your sentence and keeps the rest in brackets, like Smith and Jones (2020, p. 14).");
 const author = z.object({ family: z.string().describe("Last name"), given: z.string().optional().describe("First and middle names") });
 
@@ -217,7 +218,7 @@ export const tools: ToolDef<Api>[] = [
   {
     name: "format_citation",
     title: "Format a citation",
-    description: "Format a journal article, book, website, book chapter, thesis, report, dataset or preprint as a citation in APA 7, MLA 9, Chicago author date, Harvard or IEEE, from details you provide. Inputs: type (journal, book, website, chapter, thesis, report, dataset or preprint), title, and optional authors (family plus given names), year, container, publisher, city, edition, editors, translators, volume, issue, pages, doi, url, date_text, accessed, institution, degree, repository, report_number and style (apa7, mla9, chicago-ad, harvard, ieee or all). Pass all to get all three styles in one reply, each one with its style name on the line above it. Editors and translators are for books and take the same shape as authors: a book with editors and no authors puts the editors where the author goes, and a book with authors too carries the other names after the title, in the spot each style uses. Example prompt: \"Cite this journal article in APA 7: Learning to learn by John Kenneth Smith and Alice Jones, 2020, Journal of Study Skills, volume 4, issue 2, pages 11-25.\"",
+    description: "Format a journal article, book, website, book chapter, thesis, report, dataset or preprint as a citation in APA 7, MLA 9, Chicago author date, Harvard, IEEE or BibTeX, from details you provide. Inputs: type (journal, book, website, chapter, thesis, report, dataset or preprint), title, and optional authors (family plus given names), year, container, publisher, city, edition, editors, translators, volume, issue, pages, doi, url, date_text, accessed, institution, degree, repository, report_number and style (apa7, mla9, chicago-ad, harvard, ieee, bibtex or all). Pass all to get all three styles in one reply, each one with its style name on the line above it. Pass bibtex to get one .bib entry for a reference manager. Editors and translators are for books and take the same shape as authors: a book with editors and no authors puts the editors where the author goes, and a book with authors too carries the other names after the title, in the spot each style uses. Example prompt: \"Cite this journal article in APA 7: Learning to learn by John Kenneth Smith and Alice Jones, 2020, Journal of Study Skills, volume 4, issue 2, pages 11-25.\"",
     inputSchema: { ...sourceShape, style: styleAll },
     run: async (a) => {
       const { style: st, ...src } = a;
@@ -227,13 +228,13 @@ export const tools: ToolDef<Api>[] = [
   {
     name: "format_bibliography",
     title: "Format a works cited list",
-    description: "Format several sources at once as one works cited list, alphabetised by the first author's family name in APA 7, MLA 9, Chicago author date or Harvard, or numbered in citation order in IEEE. A source with no author is alphabetised by its title. Inputs: sources (an array of objects, each with the same fields as format_citation: type, title and optional authors, year, container, publisher, city, edition, editors, translators, volume, issue, pages, doi, url, date_text, accessed, institution, degree, repository and report_number), dois (a list of DOIs to look up on Crossref), isbns (a list of ISBNs to look up on Open Library), urls (a list of web addresses to fetch and cite as websites) and style (apa7, mla9, chicago-ad, harvard or ieee). Give sources, dois, isbns, urls or any mix, up to 50 lookups in one call. If one lookup fails the reply is an error that names it. Example prompt: \"Put these three sources into an APA works cited list: a journal article by Smith and Jones from 2020, a book by Cormen from 2009 and a website from example.edu.\"",
+    description: "Format several sources at once as one works cited list, alphabetised by the first author's family name in APA 7, MLA 9, Chicago author date or Harvard, numbered in citation order in IEEE, or as one BibTeX block in the order you give the sources. A source with no author is alphabetised by its title. Inputs: sources (an array of objects, each with the same fields as format_citation: type, title and optional authors, year, container, publisher, city, edition, editors, translators, volume, issue, pages, doi, url, date_text, accessed, institution, degree, repository and report_number), dois (a list of DOIs to look up on Crossref), isbns (a list of ISBNs to look up on Open Library), urls (a list of web addresses to fetch and cite as websites) and style (apa7, mla9, chicago-ad, harvard, ieee or bibtex). Give sources, dois, isbns, urls or any mix, up to 50 lookups in one call. If one lookup fails the reply is an error that names it. Example prompt: \"Put these three sources into an APA works cited list: a journal article by Smith and Jones from 2020, a book by Cormen from 2009 and a website from example.edu.\"",
     inputSchema: {
       sources: z.array(z.object(sourceShape)).default([]).describe("The sources for the list. Each one takes the same fields as format_citation, so a journal article, a book, a website, a chapter, a thesis, a report, a dataset and a preprint can share one list. Optional when you give dois, isbns or urls."),
       dois: z.array(z.string()).default([]).describe("DOIs to look up on Crossref and add to the list, each one a DOI like 10.1038/nature14539 or a doi.org link."),
       isbns: z.array(z.string()).default([]).describe("ISBNs to look up on Open Library and add to the list as books. Dashes are fine."),
       urls: z.array(z.string()).default([]).describe("Web addresses to fetch and add to the list as websites. Each one a full URL like https://example.edu/study."),
-      style,
+      style: styleBibtex,
     },
     run: async (a, api) => {
       const st = normalizeStyle(a.style ?? "apa7");
@@ -269,7 +270,7 @@ export const tools: ToolDef<Api>[] = [
   {
     name: "cite_from_doi",
     title: "Cite from a DOI",
-    description: "Look up a DOI on Crossref and format the citation. The Crossref record decides the shape: a journal article, a book or an edited book, a book chapter or a conference paper, a thesis, a report, a dataset or a preprint. Inputs: doi (a DOI like 10.1038/nature14539 or a doi.org link) and style (apa7, mla9, chicago-ad, harvard, ieee or all). Pass all to get all three styles in one reply, each one with its style name on the line above it. Example prompt: \"Cite 10.1038/nature14539 in APA.\"",
+    description: "Look up a DOI on Crossref and format the citation. The Crossref record decides the shape: a journal article, a book or an edited book, a book chapter or a conference paper, a thesis, a report, a dataset or a preprint. Inputs: doi (a DOI like 10.1038/nature14539 or a doi.org link) and style (apa7, mla9, chicago-ad, harvard, ieee, bibtex or all). Pass all to get all three styles in one reply, each one with its style name on the line above it. Pass bibtex to get one .bib entry for a reference manager. Example prompt: \"Cite 10.1038/nature14539 in APA.\" For BibTeX, ask \"Give me BibTeX for this DOI: 10.1038/nature14539.\"",
     inputSchema: { doi: z.string().describe("A DOI like 10.1038/nature14539, or a doi.org link."), style: styleAll },
     run: async (a, api) => {
       const st = normalizeStyleRequest(a.style ?? "apa7");
@@ -314,7 +315,7 @@ export const tools: ToolDef<Api>[] = [
   {
     name: "cite_from_url",
     title: "Cite from a web page",
-    description: "Fetch a web page and format it as a website citation in APA 7, MLA 9, Chicago author date, Harvard or IEEE. It reads the page title, the site name and the date from the page. Inputs: url (a full web address), style (apa7, mla9, chicago-ad, harvard, ieee or all), and optional title, site_name and date to replace what the page gives. Pass all to get all three styles in one reply, each one with its style name on the line above it. Example prompt: \"Cite this page in APA: https://example.edu/study.\"",
+    description: "Fetch a web page and format it as a website citation in APA 7, MLA 9, Chicago author date, Harvard, IEEE or BibTeX. It reads the page title, the site name and the date from the page. Inputs: url (a full web address), style (apa7, mla9, chicago-ad, harvard, ieee, bibtex or all), and optional title, site_name and date to replace what the page gives. Pass all to get all three styles in one reply, each one with its style name on the line above it. Pass bibtex to get one .bib entry for a reference manager. Example prompt: \"Cite this page in APA: https://example.edu/study.\"",
     inputSchema: {
       url: z.string().describe("A full web address, like https://example.edu/study."),
       style: styleAll,
@@ -358,8 +359,8 @@ export const tools: ToolDef<Api>[] = [
   {
     name: "cite_from_isbn",
     title: "Cite from an ISBN",
-    description: "Look up an ISBN on Open Library and format the book citation in APA 7, MLA 9, Chicago author date, Harvard or IEEE. Inputs: isbn (a 10 or 13 digit ISBN, dashes are fine) and style (apa7, mla9, chicago-ad, harvard or ieee). Example prompt: \"Cite ISBN 978-0-262-03384-8 in MLA 9.\"",
-    inputSchema: { isbn: z.string().describe("A 10 or 13 digit ISBN. Dashes are fine."), style },
+    description: "Look up an ISBN on Open Library and format the book citation in APA 7, MLA 9, Chicago author date, Harvard, IEEE or BibTeX. Inputs: isbn (a 10 or 13 digit ISBN, dashes are fine) and style (apa7, mla9, chicago-ad, harvard, ieee or bibtex). Pass bibtex to get one .bib entry for a reference manager. Example prompt: \"Cite ISBN 978-0-262-03384-8 in MLA 9.\"",
+    inputSchema: { isbn: z.string().describe("A 10 or 13 digit ISBN. Dashes are fine."), style: styleBibtex },
     run: async (a, api) => {
       const st = normalizeStyle(a.style ?? "apa7");
       const src = await sourceFromIsbn(a.isbn, api);

@@ -9,11 +9,20 @@ const styleWords: Record<Style, { short: string; long: string }> = {
   "chicago-ad": { short: "Chicago", long: "Chicago author date" },
   harvard: { short: "Harvard", long: "Harvard" },
   ieee: { short: "IEEE", long: "IEEE" },
+  bibtex: { short: "BibTeX", long: "BibTeX" },
 };
 
 /** The example wording the citation tools carry, in the style that was asked for. */
 export function examplePrompts(style: Style): string[] {
   const { short, long } = styleWords[style];
+  if (style === "bibtex") {
+    return [
+      `Give me BibTeX for this journal article: Learning to learn by John Kenneth Smith and Alice Jones, 2020, Journal of Study Skills, volume 4, issue 2, pages 11-25.`,
+      `Give me BibTeX for this DOI: 10.1038/nature14539.`,
+      `Give me BibTeX for this ISBN: 978-0-262-03384-8.`,
+      `Give me BibTeX for this book: Introduction to algorithms by Thomas H. Cormen, 2009, MIT Press.`,
+    ];
+  }
   return [
     `Cite this journal article in ${long}: Learning to learn by John Kenneth Smith and Alice Jones, 2020, Journal of Study Skills, volume 4, issue 2, pages 11-25.`,
     `Cite 10.1038/nature14539 in ${short}.`,

@@ -4,7 +4,7 @@ import type { AddressInfo } from "node:net";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { createServer, makeApi } from "../src/server.js";
-import { format, formatAnyStyle, formatBibliography, inText, narrativeInText, normalizeDoi, normalizeIsbn, splitName } from "../src/format.js";
+import { format, formatAnyStyle, formatBibliography, formatBibtex, inText, narrativeInText, normalizeDoi, normalizeIsbn, splitName } from "../src/format.js";
 import { crossrefKind } from "../src/tools.js";
 
 const article = {
@@ -607,6 +607,26 @@ describe("MCP tools", () => {
     expect(entries[1]).toContain("Baker");
     expect(entries[2]).toMatch(/^\[3\]/);
     expect(entries[2]).toContain("Adams");
+  });
+  it("returns BibTeX from format_citation when asked", async () => {
+    const r = await call("format_citation", { ...article, style: "bibtex" });
+    expect(r.isError).toBe(false);
+    expect(r.text).toBe(formatBibtex(article));
+  });
+  it("returns a BibTeX block from format_bibliography when asked", async () => {
+    const book = { type: "book" as const, authors: [{ family: "Cormen", given: "Thomas H." }], year: "2009", title: "Introduction to algorithms", publisher: "MIT Press" };
+    const r = await call("format_bibliography", { sources: [article, book], style: "bibtex" });
+    expect(r.isError).toBe(false);
+    expect(r.text).toBe(`${formatBibtex(article)}\n\n${formatBibtex(book)}`);
+  });
+  it("returns BibTeX from cite_from_doi and cite_from_isbn when asked", async () => {
+    const doi = await call("cite_from_doi", { doi: "10.1000/jss.2020.42", style: "bibtex" });
+    expect(doi.isError).toBe(false);
+    expect(doi.text).toContain("@article{smith2020,");
+    expect(doi.text).toContain("(From Crossref. Check it against your style guide.)");
+    const isbn = await call("cite_from_isbn", { isbn: "978-0-262-03384-8", style: "bibtex" });
+    expect(isbn.isError).toBe(false);
+    expect(isbn.text).toContain("@book{cormen2009,");
   });
   it("asks for one identifier when both a DOI and an ISBN are given", async () => {
     const r = await call("in_text_citation", { doi: "10.1000/jss.2020.42", isbn: "978-0-262-03384-8" });

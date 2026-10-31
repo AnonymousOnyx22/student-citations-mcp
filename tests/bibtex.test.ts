@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { bibtexEntry, formatBibtex } from "../src/format.js";
+import { bibtexEntry, format, formatAnyStyle, formatBibliography, formatBibtex, inText, narrativeInText, normalizeStyle } from "../src/format.js";
 
 const article = {
   type: "journal" as const,
@@ -239,5 +239,31 @@ describe("BibTeX entries", () => {
   it("asks for the container a journal article or a chapter needs", () => {
     expect(() => formatBibtex({ type: "journal", authors: [], year: "2020", title: "Learning to learn" })).toThrow("needs a container");
     expect(() => formatBibtex({ type: "chapter", authors: [], year: "2020", title: "Learning to learn in groups" })).toThrow("needs a container");
+  });
+});
+
+describe("BibTeX as a style", () => {
+  const book = {
+    type: "book" as const,
+    authors: [{ family: "Cormen", given: "Thomas H." }],
+    year: "2009",
+    title: "Introduction to algorithms",
+    publisher: "MIT Press",
+  };
+
+  it("is a known style that formats one source", () => {
+    expect(normalizeStyle("bibtex")).toBe("bibtex");
+    expect(normalizeStyle("BibTeX")).toBe("bibtex");
+    expect(format(article, "bibtex")).toBe(formatBibtex(article));
+    expect(formatAnyStyle(article, "bibtex")).toBe(formatBibtex(article));
+  });
+
+  it("formats several sources as one block in the order given", () => {
+    expect(formatBibliography([article, book], "bibtex")).toBe(`${formatBibtex(article)}\n\n${formatBibtex(book)}`);
+  });
+
+  it("says there is no in text form", () => {
+    expect(() => inText(article.authors, "2020", "bibtex")).toThrow("no in text citation");
+    expect(() => narrativeInText(article.authors, "2020", "bibtex")).toThrow("no in text citation");
   });
 });

@@ -1,4 +1,4 @@
-export type Style = "apa7" | "mla9" | "chicago-ad" | "harvard" | "ieee";
+export type Style = "apa7" | "mla9" | "chicago-ad" | "harvard" | "ieee" | "bibtex";
 
 export interface Author {
   family: string;
@@ -151,6 +151,7 @@ function requireContainer(s: Source): void {
 
 export function format(s: Source, styleInput: Style | string): string {
   const style = normalizeStyle(styleInput);
+  if (style === "bibtex") return formatBibtex(s);
   requireContainer(s);
   if (style === "ieee") return ieeeFormat(s);
   const parts: string[] = [];
@@ -517,6 +518,7 @@ function compareForList(a: Source, b: Source, style: Style): number {
 export function formatBibliography(sources: Source[], styleInput: Style | string): string {
   const style = normalizeStyle(styleInput);
   if (!sources.length) throw new Error("Give at least one source for the works cited list.");
+  if (style === "bibtex") return sources.map((s) => formatBibtex(s)).join("\n\n");
   const ordered =
     style === "ieee"
       ? [...sources]
@@ -538,6 +540,7 @@ function whoFor(authors: Author[], style: Style, narrative: boolean): string {
 
 export function inText(authors: Author[], year: string | undefined, styleInput: Style | string, page?: string): string {
   const style = normalizeStyle(styleInput);
+  if (style === "bibtex") throw new Error("BibTeX is an entry format, so it has no in text citation. Use format_citation or format_bibliography with style bibtex.");
   const y = year ?? "n.d.";
   // IEEE numbers sources in the order they are first cited, which only the writer knows, so this is the first one
   if (style === "ieee") return page ? `[1, p. ${page}]` : "[1]";
@@ -555,6 +558,7 @@ export function inText(authors: Author[], year: string | undefined, styleInput: 
  */
 export function narrativeInText(authors: Author[], year: string | undefined, styleInput: Style | string, page?: string): string {
   const style = normalizeStyle(styleInput);
+  if (style === "bibtex") throw new Error("BibTeX is an entry format, so it has no in text citation. Use format_citation or format_bibliography with style bibtex.");
   if (style === "ieee") return inText(authors, year, style, page);
   const who = whoFor(authors, style, true);
   if (!who) return inText(authors, year, style, page);
@@ -586,10 +590,12 @@ export function normalizeStyle(input: unknown): Style {
     "harvard referencing": "harvard",
     "harvard style": "harvard",
     "ieee": "ieee",
+    "bibtex": "bibtex",
+    "bib tex": "bibtex",
   };
   const result = aliases[key];
   if (!result) {
-    throw new Error(`"${raw}" is not a known citation style. Valid styles are apa7, mla9, chicago ad (chicago-ad), harvard and ieee.`);
+    throw new Error(`"${raw}" is not a known citation style. Valid styles are apa7, mla9, chicago ad (chicago-ad), harvard, ieee and bibtex.`);
   }
   return result;
 }

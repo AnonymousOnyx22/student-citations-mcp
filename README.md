@@ -76,6 +76,25 @@ Narrative: LeCun et al. (2015, 436)
 
 If you are comparing styles, pass `style` as `all` to `format_citation` or `cite_from_doi`. You get one labelled citation for APA 7, MLA 9 and Chicago author date in one reply, instead of three calls. The label above each citation is the style name, so you can pick the one you want. `format_bibliography`, `cite_from_isbn` and `in_text_citation` still take one style at a time.
 
+## BibTeX
+
+Pass `style` as `bibtex` to `format_citation`, `format_bibliography`, `cite_from_doi`, `cite_from_isbn` or `cite_from_url` to get a `.bib` entry instead of a formatted citation. Each entry gets a cite key built from the first author's family name and the year, or from the title and the year when there is no author, and `format_bibliography` returns one entry after another in the order you give the sources, separated by blank lines. Paste the result into a `.bib` file or import it into a reference manager.
+
+```text
+@article{lecun2015,
+  author = {LeCun, Yann and Bengio, Yoshua and Hinton, Geoffrey},
+  title = {Deep learning},
+  journal = {Nature},
+  year = {2015},
+  volume = {521},
+  number = {7553},
+  pages = {436--444},
+  doi = {10.1038/nature14539}
+}
+```
+
+BibTeX is an entry format, so there is no in text form for it. Use APA 7, MLA 9, Chicago author date, Harvard or IEEE for the in text citation.
+
 ## Install
 
 ```bash
@@ -88,12 +107,12 @@ Nothing else to install. You need Node.js 20 or newer. The config block for your
 
 | Tool | What it does |
 | --- | --- |
-| `format_citation` | Format a journal article, book, website, book chapter, thesis, report, dataset or preprint from details you type, in APA 7, MLA 9, Chicago author date, Harvard or IEEE. For books you can name the editors and the translators too. Pass `style` as `all` to get all three styles in one reply |
-| `format_bibliography` | Format several sources as one works cited list, alphabetised by author in APA 7, MLA 9, Chicago author date or Harvard, or numbered in the order you give them in IEEE. Each source takes the same fields as `format_citation`, and `dois`, `isbns` and `urls` lists are looked up and added to the list |
-| `cite_from_doi` | Look up a DOI on Crossref and format the citation. The Crossref record decides the shape, so a book chapter comes back as a chapter and a dissertation comes back as a thesis. Pass `style` as `all` to get all three styles in one reply |
+| `format_citation` | Format a journal article, book, website, book chapter, thesis, report, dataset or preprint from details you type, in APA 7, MLA 9, Chicago author date, Harvard, IEEE or BibTeX. For books you can name the editors and the translators too. Pass `style` as `all` to get all three styles in one reply, or `bibtex` for a `.bib` entry |
+| `format_bibliography` | Format several sources as one works cited list, alphabetised by author in APA 7, MLA 9, Chicago author date or Harvard, numbered in the order you give them in IEEE, or as a BibTeX block in the order you give them. Each source takes the same fields as `format_citation`, and `dois`, `isbns` and `urls` lists are looked up and added to the list |
+| `cite_from_doi` | Look up a DOI on Crossref and format the citation. The Crossref record decides the shape, so a book chapter comes back as a chapter and a dissertation comes back as a thesis. Pass `style` as `all` to get all three styles in one reply, or `bibtex` for a `.bib` entry |
 | `find_doi` | Search Crossref by title, and optionally an author's family name, and list the best matches with their DOIs. Pass the one you want to `cite_from_doi` |
-| `cite_from_isbn` | Look up an ISBN on Open Library and format the citation |
-| `cite_from_url` | Fetch a web page and cite it as a website in APA 7, MLA 9, Chicago author date, Harvard or IEEE. It reads the page title, site name and date, and you can override any of them |
+| `cite_from_isbn` | Look up an ISBN on Open Library and format the citation in APA 7, MLA 9, Chicago author date, Harvard, IEEE or BibTeX |
+| `cite_from_url` | Fetch a web page and cite it as a website in APA 7, MLA 9, Chicago author date, Harvard, IEEE or BibTeX. It reads the page title, site name and date, and you can override any of them |
 | `in_text_citation` | The in text citation that matches a source, with an optional page number, in the parenthetical or the narrative form. It takes the authors and year you type, or a DOI or an ISBN and looks up the authors and year for you |
 
 All seven tools are read only.
@@ -129,6 +148,7 @@ It takes two arguments. `style` picks the style, which is APA 7 unless you say o
 - "Cite this web page in APA: https://example.edu/study."
 - "Cite the DOI of this book chapter in APA, with the editors of the book."
 - "Make an MLA citation for ISBN 9780262033848."
+- "Give me BibTeX for this DOI: 10.1038/nature14539."
 - "Format this as Chicago: Smith and Jones, 2020, Learning to Learn, Journal of Study Skills, volume 4, issue 2, pages 11 to 25."
 - "What's the in text citation for a quote on page 14 of that paper?"
 - "Give me the APA in text citation for DOI 10.1038/nature14539 on page 436."
@@ -201,7 +221,7 @@ With a DOI the server reads the Crossref record and follows the type it finds. A
 
 ## Works cited list
 
-`format_bibliography` takes several sources in one call and returns them as one list, alphabetised by the first author's family name. A source with no author is alphabetised by its title, and a leading "A", "An" or "The" is skipped. Each source takes the same fields as `format_citation`, so a journal article, a book and a website can sit in the same list. You can also pass `dois` and `isbns` lists, which are looked up on Crossref and Open Library and added to the list, up to 50 in one call. If one lookup fails, the reply is an error that names it. Here are those three sources in APA 7.
+`format_bibliography` takes several sources in one call and returns them as one list, alphabetised by the first author's family name. A source with no author is alphabetised by its title, and a leading "A", "An" or "The" is skipped. Each source takes the same fields as `format_citation`, so a journal article, a book and a website can sit in the same list. You can also pass `dois` and `isbns` lists, which are looked up on Crossref and Open Library and added to the list, up to 50 in one call. If one lookup fails, the reply is an error that names it. Pass `style` as `bibtex` to get the same sources as a block of `.bib` entries in the order you give them. Here are those three sources in APA 7.
 
 ```text
 Cormen, T. H. (2009). *Introduction to algorithms* (3rd ed.). MIT Press.
@@ -287,7 +307,7 @@ Partly. `format_citation` works offline, because it formats the details you type
 
 **Which styles can I ask for?**
 
-APA 7, MLA 9, Chicago author date, Harvard and IEEE. Ask for "APA", "MLA 9", "Chicago" or "Harvard" in the chat and the server works out the style name. In IEEE, `format_bibliography` numbers the list [1], [2] and so on in the order you give the sources, and `in_text_citation` gives [1], so change the number to the one the source has in your list. `format_citation`, `cite_from_doi` and `cite_from_url` also take `all`, which returns APA 7, MLA 9 and Chicago author date in one reply. A request for a style it does not have comes back with an error that names the styles it knows.
+APA 7, MLA 9, Chicago author date, Harvard and IEEE. Ask for "APA", "MLA 9", "Chicago" or "Harvard" in the chat and the server works out the style name. In IEEE, `format_bibliography` numbers the list [1], [2] and so on in the order you give the sources, and `in_text_citation` gives [1], so change the number to the one the source has in your list. `format_citation`, `cite_from_doi` and `cite_from_url` also take `all`, which returns APA 7, MLA 9 and Chicago author date in one reply. Pass `bibtex` to `format_citation`, `format_bibliography`, `cite_from_doi`, `cite_from_isbn` or `cite_from_url` to get a `.bib` entry for a reference manager instead of a formatted citation. BibTeX is an entry format, so `in_text_citation` has no BibTeX form. A request for a style it does not have comes back with an error that names the styles it knows.
 
 **What can I cite?**
 
