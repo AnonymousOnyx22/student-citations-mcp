@@ -128,6 +128,12 @@ describe("README", () => {
     expect(cells[2]).toBe("APA 7, MLA 9, Chicago author date, Harvard, IEEE");
   });
 
+  it("lists Harvard and IEEE support in the Zotero comparison", () => {
+    const row = zoteroSection().split("\n").find((line) => line.startsWith("| Harvard and IEEE |"));
+    expect(row).toBeTruthy();
+    expect(row!.split("|").map((cell) => cell.trim())[2]).toContain("Both");
+  });
+
   it("keeps the Zotero comparison free of em dashes and en dashes", () => {
     expect(zoteroSection()).not.toMatch(/[\u2014\u2013]/);
   });
