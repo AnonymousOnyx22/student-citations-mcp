@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.8
 
 - cite_from_url now tells you to use format_citation when it cannot fetch or read the page, and warns when the page gives no date or site name, so you know to check the source.
 
