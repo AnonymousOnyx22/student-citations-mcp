@@ -137,6 +137,9 @@ Example prompts:
 - "Cite 10.1038/nature14539 in APA."
 - "Cite ISBN 978-0-262-03384-8 in APA 7."
 - "Give the APA in text citation for Smith and Jones 2020 on page 14."
+- "Cite this journal article in Harvard: Learning to learn by John Kenneth Smith and Alice Jones, 2020, Journal of Study Skills, volume 4, issue 2, pages 11-25."
+- "Cite 10.1038/nature14539 in IEEE."
+- "Cite this web page in Harvard: https://example.edu/study."
 ```
 
 It takes two arguments. `style` picks the style, which is APA 7 unless you say otherwise, and `source` is the DOI, the ISBN or the details you want to cite. Give it a DOI and the message says so and points at `cite_from_doi`.
