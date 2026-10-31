@@ -649,3 +649,102 @@ export function splitName(full: string): Author {
   if (parts.length === 1) return { family: parts[0] };
   return { family: parts[parts.length - 1], given: parts.slice(0, -1).join(" ") };
 }
+
+/** The entry type BibTeX uses for each kind of source. */
+function bibtexType(s: Source): string {
+  if (s.type === "journal") return "article";
+  if (s.type === "book") return "book";
+  if (s.type === "chapter") return "incollection";
+  if (s.type === "report") return "techreport";
+  if (s.type === "thesis") {
+    const kind = degreeKind(s.degree);
+    if (kind === "doctorate") return "phdthesis";
+    if (kind === "masters") return "mastersthesis";
+    return "misc";
+  }
+  return "misc";
+}
+
+/** The year a BibTeX entry records, falling back to the date a website carries. */
+function bibtexYear(s: Source): string | undefined {
+  return s.year ?? (s.published ?? s.date_text ?? "").match(/\d{4}/)?.[0];
+}
+
+/** A cite key like smith2020, so the entry has a stable name to use in \cite. */
+function bibtexKey(s: Source): string {
+  const lead = s.authors[0] ?? (s.type === "book" ? s.editors?.[0] : undefined);
+  const word = sortText(lead?.family ?? s.title.replace(/^(a|an|the)\s+/i, "")).split(" ")[0] || "source";
+  const year = bibtexYear(s);
+  return `${word}${year ?? ""}`;
+}
+
+/** A name in the family, given order BibTeX reads, with the names joined by "and". */
+function bibtexNames(a: Author[]): string {
+  return a.map((x) => (x.given ? `${x.family}, ${x.given}` : x.family)).join(" and ");
+}
+
+/** Escape the characters BibTeX treats as markup, so a title or a name keeps its text. */
+function bibtexValue(value: string): string {
+  const escapes: Record<string, string> = {
+    "\\": "\\textbackslash{}",
+    "&": "\\&",
+    "%": "\\%",
+    "$": "\\$",
+    "#": "\\#",
+    "_": "\\_",
+    "{": "\\{",
+    "}": "\\}",
+    "~": "\\textasciitilde{}",
+    "^": "\\textasciicircum{}",
+  };
+  return value.replace(/[\\&%$#_{}~^]/g, (ch) => escapes[ch]);
+}
+
+/**
+ * One source as a BibTeX entry, ready to paste into a .bib file or import into
+ * Zotero. The entry type follows the kind of source: an article, a book, a chapter
+ * as incollection, a thesis as phdthesis or mastersthesis, a report as techreport,
+ * and a website, dataset or preprint as misc. Pass a key to name the entry yourself,
+ * or leave it out for one built from the first author and the year.
+ */
+export function formatBibtex(s: Source, key?: string): string {
+  requireContainer(s);
+  const type = bibtexType(s);
+  const year = bibtexYear(s);
+  const rows: Array<[string, string | undefined]> = [];
+  const add = (name: string, value?: string) => rows.push([name, value]);
+  const authors = s.authors ?? [];
+  const editors = s.editors ?? [];
+  if (authors.length) add("author", bibtexNames(authors));
+  if (editors.length) add("editor", bibtexNames(editors));
+  if (s.type === "book" && s.translators?.length) add("translator", bibtexNames(s.translators));
+  add("title", s.title);
+  if (s.type === "journal") add("journal", s.container);
+  if (s.type === "chapter") add("booktitle", s.container);
+  add("year", year);
+  add("volume", s.volume);
+  add("number", s.type === "report" ? s.report_number : s.issue);
+  add("pages", s.pages ? s.pages.split(/\s*-+\s*/).join("--") : undefined);
+  if (s.type === "book" || s.type === "chapter") add("edition", s.edition);
+  if (s.type === "book" || s.type === "chapter" || s.type === "dataset") add("publisher", s.publisher);
+  if (s.type === "thesis") add(type === "misc" ? "institution" : "school", s.institution ?? s.publisher);
+  if (s.type === "report") add("institution", s.institution ?? s.publisher);
+  if (s.type === "thesis") add("type", s.degree);
+  if (s.type === "preprint") add("howpublished", s.repository ? `Preprint, ${s.repository}` : "Preprint");
+  if (s.type === "website") {
+    add("howpublished", s.container);
+    if (s.accessed) add("note", `Accessed ${s.accessed}`);
+  }
+  if (s.type === "dataset") add("note", "Data set");
+  if (s.type === "book" || s.type === "chapter" || s.type === "report") add("address", s.city);
+  add("doi", s.doi?.trim().replace(/^https?:\/\/(dx\.)?doi\.org\//i, "").replace(/^doi:\s*/i, ""));
+  add("url", s.url);
+  const entryKey = key?.trim() || bibtexKey(s);
+  const body = rows
+    .filter(([, value]) => value?.trim())
+    .map(([name, value]) => `  ${name} = {${bibtexValue(value!.trim())}}`)
+    .join(",\n");
+  return `@${type}{${entryKey},\n${body}\n}`;
+}
+
+export const bibtexEntry = formatBibtex;
