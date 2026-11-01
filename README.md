@@ -5,7 +5,7 @@
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![ci](https://github.com/AnonymousOnyx22/student-citations-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/AnonymousOnyx22/student-citations-mcp/actions/workflows/ci.yml)
 
-Paste a DOI or an ISBN into your AI app and get a formatted citation back in APA 7, MLA 9, Chicago author date, Harvard or IEEE, ready to paste into your works cited list. It is a citation generator that runs inside the app you are already writing in, so there is no web page to fill in and no account to create. You can also type the details yourself, or give the DOI or the ISBN, and get the matching in text citation, either in brackets or in the narrative form for a sentence where you name the author. Give several sources in one call and you get them back as an alphabetised works cited list. The wording and punctuation come from tested code, so they are the same every time. Free and open source, no account, no key and nothing stored. It works with Claude, ChatGPT, Cursor, VS Code Copilot and any other app that supports MCP.
+Paste a DOI, an ISBN or an arXiv ID into your AI app and get a formatted citation back in APA 7, MLA 9, Chicago author date, Harvard or IEEE, ready to paste into your works cited list. It is a citation generator that runs inside the app you are already writing in, so there is no web page to fill in and no account to create. You can also type the details yourself, or give the DOI or the ISBN, and get the matching in text citation, either in brackets or in the narrative form for a sentence where you name the author. Give several sources in one call and you get them back as an alphabetised works cited list. The wording and punctuation come from tested code, so they are the same every time. Free and open source, no account, no key and nothing stored. It works with Claude, ChatGPT, Cursor, VS Code Copilot and any other app that supports MCP.
 
 ## Citations MCP compared with BibGuru and Citation Machine
 
@@ -74,11 +74,11 @@ Narrative: LeCun et al. (2015, 436)
 
 ## All three styles at once
 
-If you are comparing styles, pass `style` as `all` to `format_citation`, `cite_from_doi` or `cite_from_isbn`. You get one labelled citation for APA 7, MLA 9 and Chicago author date in one reply, instead of three calls. The label above each citation is the style name, so you can pick the one you want. `format_bibliography` and `in_text_citation` still take one style at a time.
+If you are comparing styles, pass `style` as `all` to `format_citation`, `cite_from_doi`, `cite_from_isbn` or `cite_from_arxiv`. You get one labelled citation for APA 7, MLA 9 and Chicago author date in one reply, instead of three calls. The label above each citation is the style name, so you can pick the one you want. `format_bibliography` and `in_text_citation` still take one style at a time.
 
 ## BibTeX
 
-Pass `style` as `bibtex` to `format_citation`, `format_bibliography`, `cite_from_doi`, `cite_from_isbn` or `cite_from_url` to get a `.bib` entry instead of a formatted citation. Each entry gets a cite key built from the first author's family name and the year, or from the title and the year when there is no author, and `format_bibliography` returns one entry after another in the order you give the sources, separated by blank lines. Paste the result into a `.bib` file or import it into a reference manager.
+Pass `style` as `bibtex` to `format_citation`, `format_bibliography`, `cite_from_doi`, `cite_from_isbn`, `cite_from_arxiv` or `cite_from_url` to get a `.bib` entry instead of a formatted citation. Each entry gets a cite key built from the first author's family name and the year, or from the title and the year when there is no author, and `format_bibliography` returns one entry after another in the order you give the sources, separated by blank lines. Paste the result into a `.bib` file or import it into a reference manager.
 
 ```text
 @article{lecun2015,
@@ -152,6 +152,8 @@ It takes two arguments. `style` picks the style, which is APA 7 unless you say o
 - "Cite this web page in APA: https://example.edu/study."
 - "Cite the DOI of this book chapter in APA, with the editors of the book."
 - "Make an MLA citation for ISBN 9780262033848."
+- "Cite arXiv 1706.03762 in APA."
+- "Give me a preprint citation in IEEE for https://arxiv.org/abs/1706.03762."
 - "Give me BibTeX for this DOI: 10.1038/nature14539."
 - "Format this as Chicago: Smith and Jones, 2020, Learning to Learn, Journal of Study Skills, volume 4, issue 2, pages 11 to 25."
 - "What's the in text citation for a quote on page 14 of that paper?"
@@ -287,7 +289,7 @@ Yes. It runs over MCP, so it works in Cursor, Claude Desktop, VS Code with Copil
 
 **Is it free?**
 
-Yes. It is MIT licensed and free to use. There is no account, no key, no paid plan and no trial that runs out. The DOI and ISBN lookups go to Crossref and Open Library, and the server sends no key, so there is nothing else to sign up for.
+Yes. It is MIT licensed and free to use. There is no account, no key, no paid plan and no trial that runs out. The DOI, ISBN and arXiv lookups go to Crossref, Open Library and arXiv, and the server sends no key, so there is nothing else to sign up for.
 
 **Do I need an account or an API key?**
 
@@ -307,15 +309,15 @@ Run `npx -y student-citations-mcp`. You need Node.js 20 or newer, and that is th
 
 **Does it work without internet?**
 
-Partly. `format_citation` works offline, because it formats the details you type. `in_text_citation` works offline too when you type the authors and the year. It also takes a DOI or an ISBN, and those lookups need a connection, as do `cite_from_doi`, `cite_from_isbn` and `cite_from_url`, which fetch the record or the page from Crossref, Open Library or the web address you give.
+Partly. `format_citation` works offline, because it formats the details you type. `in_text_citation` works offline too when you type the authors and the year. It also takes a DOI or an ISBN, and those lookups need a connection, as do `cite_from_doi`, `cite_from_isbn`, `cite_from_arxiv` and `cite_from_url`, which fetch the record or the page from Crossref, Open Library or the web address you give.
 
 **Which styles can I ask for?**
 
-APA 7, MLA 9, Chicago author date, Harvard and IEEE. Ask for "APA", "MLA 9", "Chicago" or "Harvard" in the chat and the server works out the style name. In IEEE, `format_bibliography` numbers the list [1], [2] and so on in the order you give the sources, and `in_text_citation` gives [1], so change the number to the one the source has in your list. `format_citation`, `cite_from_doi` and `cite_from_url` also take `all`, which returns APA 7, MLA 9 and Chicago author date in one reply. Pass `bibtex` to `format_citation`, `format_bibliography`, `cite_from_doi`, `cite_from_isbn` or `cite_from_url` to get a `.bib` entry for a reference manager instead of a formatted citation. BibTeX is an entry format, so `in_text_citation` has no BibTeX form. A request for a style it does not have comes back with an error that names the styles it knows.
+APA 7, MLA 9, Chicago author date, Harvard and IEEE. Ask for "APA", "MLA 9", "Chicago" or "Harvard" in the chat and the server works out the style name. In IEEE, `format_bibliography` numbers the list [1], [2] and so on in the order you give the sources, and `in_text_citation` gives [1], so change the number to the one the source has in your list. `format_citation`, `cite_from_doi`, `cite_from_isbn`, `cite_from_arxiv` and `cite_from_url` also take `all`, which returns APA 7, MLA 9 and Chicago author date in one reply. Pass `bibtex` to `format_citation`, `format_bibliography`, `cite_from_doi`, `cite_from_isbn`, `cite_from_arxiv` or `cite_from_url` to get a `.bib` entry for a reference manager instead of a formatted citation. BibTeX is an entry format, so `in_text_citation` has no BibTeX form. A request for a style it does not have comes back with an error that names the styles it knows.
 
 **What can I cite?**
 
-A journal article, a book, a book chapter, a thesis, a report, a dataset, a preprint or a website. With a DOI the server reads the Crossref record and follows the type it finds, so a journal article comes back as an article, an edited book comes back as a book with its editors, a book chapter or a conference paper comes back as a chapter, a dissertation comes back as a thesis, and a preprint comes back with the repository it was posted in. With an ISBN it reads the Open Library record for the book. If the lookup fails, or the source has no DOI, `format_citation` takes the details you type and formats them.
+A journal article, a book, a book chapter, a thesis, a report, a dataset, a preprint or a website. With a DOI the server reads the Crossref record and follows the type it finds, so a journal article comes back as an article, an edited book comes back as a book with its editors, a book chapter or a conference paper comes back as a chapter, a dissertation comes back as a thesis, and a preprint comes back with the repository it was posted in. With an ISBN it reads the Open Library record for the book. With an arXiv ID it reads the arXiv record and cites the paper as a preprint. If the lookup fails, or the source has no DOI, `format_citation` takes the details you type and formats them.
 
 **Can I cite a book with editors or translators?**
 

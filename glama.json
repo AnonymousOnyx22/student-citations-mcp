@@ -4,7 +4,7 @@
     "AnonymousOnyx22"
   ],
   "name": "io.github.AnonymousOnyx22/student-citations-mcp",
-  "description": "Citation generator MCP server. APA 7, MLA 9 and Chicago author date citations from a DOI, an ISBN or typed details, with in text citations. No account.",
+  "description": "Citation generator MCP server. APA 7, MLA 9 and Chicago author date citations from a DOI, an ISBN, an arXiv ID or typed details, with in text citations. No account.",
   "version": "0.1.8",
   "repository": {
     "url": "https://github.com/AnonymousOnyx22/student-citations-mcp",
@@ -18,6 +18,8 @@
       "chicago",
       "doi",
       "isbn",
+      "arxiv",
+      "preprint citation",
       "references",
       "bibliography",
       "works cited",
