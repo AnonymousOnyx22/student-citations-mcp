@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add a cite_from_arxiv tool. Give it an arXiv ID or an arxiv.org link and it looks up the paper on arXiv and returns a preprint citation in APA 7, MLA 9, Chicago author date, Harvard, IEEE or BibTeX.
+
 ## 0.1.8
 
 - cite_from_url now tells you to use format_citation when it cannot fetch or read the page, and warns when the page gives no date or site name, so you know to check the source.

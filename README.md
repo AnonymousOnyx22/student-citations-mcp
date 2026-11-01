@@ -111,11 +111,12 @@ Nothing else to install. You need Node.js 20 or newer. The config block for your
 | `format_bibliography` | Format several sources as one works cited list, alphabetised by author in APA 7, MLA 9, Chicago author date or Harvard, numbered in the order you give them in IEEE, or as a BibTeX block in the order you give them. Each source takes the same fields as `format_citation`, and `dois`, `isbns` and `urls` lists are looked up and added to the list |
 | `cite_from_doi` | Look up a DOI on Crossref and format the citation. The Crossref record decides the shape, so a book chapter comes back as a chapter and a dissertation comes back as a thesis. Pass `style` as `all` to get all three styles in one reply, or `bibtex` for a `.bib` entry |
 | `find_doi` | Search Crossref by title, and optionally an author's family name, and list the best matches with their DOIs. Pass the one you want to `cite_from_doi` |
+| `cite_from_arxiv` | Look up an arXiv ID, or an arxiv.org link, and cite the preprint in APA 7, MLA 9, Chicago author date, Harvard, IEEE or BibTeX. Pass `style` as `all` to get all three styles in one reply |
 | `cite_from_isbn` | Look up an ISBN on Open Library and format the citation in APA 7, MLA 9, Chicago author date, Harvard, IEEE or BibTeX |
 | `cite_from_url` | Fetch a web page and cite it as a website in APA 7, MLA 9, Chicago author date, Harvard, IEEE or BibTeX. It reads the page title, site name and date, and you can override any of them |
 | `in_text_citation` | The in text citation that matches a source, with an optional page number, in the parenthetical or the narrative form. It takes the authors and year you type, or a DOI or an ISBN and looks up the authors and year for you |
 
-All seven tools are read only.
+All eight tools are read only.
 
 ## Prompts
 

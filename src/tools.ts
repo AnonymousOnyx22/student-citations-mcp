@@ -3,6 +3,7 @@ import type { HttpClient } from "./core/http.js";
 import { ApiError } from "./core/http.js";
 import type { ToolDef } from "./core/tools.js";
 import { type Author, type Source, allStyleLabels, format, formatAnyStyle, formatBibliography, inText, narrativeInText, normalizeDoi, normalizeIsbn, normalizeStyle, normalizeStyleRequest, splitName } from "./format.js";
+import { arxivAbsUrl, normalizeArxivId, parseArxivAtom } from "./core/arxiv.js";
 import { normalizeUrl, pageSource, parsePage, parsePageDate } from "./page.js";
 
 export interface Api {
@@ -363,6 +364,39 @@ export const tools: ToolDef<Api>[] = [
         return `${allStyleLabels.map(({ style: s, label }) => `${label}\n${format(pageSource(page, url, s), s)}`).join("\n\n")}\n\n${note}`;
       }
       return `${format(pageSource(page, url, st), st)}\n\n${note}`;
+    },
+  },
+  {
+    name: "cite_from_arxiv",
+    title: "Cite from an arXiv ID",
+    description: "Look up an arXiv ID on arXiv and format the preprint citation in APA 7, MLA 9, Chicago author date, Harvard, IEEE or BibTeX. Inputs: arxiv_id (an ID like 2001.00001 or math/0603452, with an optional version such as v2, or an arxiv.org abs or pdf link) and style (apa7, mla9, chicago-ad, harvard, ieee, bibtex or all). Pass all to get all three styles in one reply, each one with its style name on the line above it. Pass bibtex to get one .bib entry for a reference manager. Example prompt: \"Cite arXiv 1706.03762 in APA.\"",
+    inputSchema: {
+      arxiv_id: z.string().describe("An arXiv ID like 2001.00001 or math/0603452, with an optional version such as v2, or an arxiv.org abs or pdf link."),
+      style: styleAll,
+    },
+    run: async (a, api) => {
+      const id = normalizeArxivId(a.arxiv_id);
+      const st = normalizeStyleRequest(a.style ?? "apa7");
+      let xml: string;
+      try {
+        xml = await api.arxiv.getText(`/api/query?id_list=${encodeURIComponent(id)}&max_results=1`);
+      } catch (err) {
+        if (err instanceof ApiError) throw new ApiError(`${err.message}. Check the arXiv ID, or use format_citation and type the details.`, err.status, err.body);
+        throw err;
+      }
+      const entry = parseArxivAtom(xml)[0];
+      if (!entry || !entry.title || entry.id.includes("/api/errors") || !entry.authors.length) {
+        throw new Error(`arXiv has no paper for ${id}. Check the ID, or use format_citation and type the details.`);
+      }
+      const src: Source = {
+        type: "preprint",
+        authors: entry.authors.map((x) => splitName(x.name)),
+        year: entry.published.match(/\d{4}/)?.[0],
+        title: entry.title,
+        repository: "arXiv",
+        url: arxivAbsUrl(entry.arxivId || id),
+      };
+      return `${formatAnyStyle(src, st)}\n\n(From arXiv. Check it against your style guide.)`;
     },
   },
   {

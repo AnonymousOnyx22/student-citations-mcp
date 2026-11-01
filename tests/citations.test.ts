@@ -99,6 +99,12 @@ beforeAll(async () => {
       req.socket?.destroy();
       return;
     }
+    if (url.pathname === "/api/query") {
+      const id = url.searchParams.get("id_list");
+      res.writeHead(200, { "content-type": "application/atom+xml" });
+      if (id === "2001.00001") return void res.end("<feed><entry><id>http://arxiv.org/abs/2001.00001v2</id><published>2020-01-01T10:00:00Z</published><title>Study groups\n  and memory</title><summary>x</summary><author><name>Alex Stone</name></author><author><name>Robin Cole</name></author></entry></feed>");
+      return void res.end("<feed></feed>");
+    }
     if (url.pathname === "/api/books") {
       const key = url.searchParams.get("bibkeys");
       if (key === "ISBN:9780262033848") return json({ [key]: { title: "Introduction to Algorithms", authors: [{ name: "Thomas H. Cormen" }, { name: "Charles E. Leiserson" }], publishers: [{ name: "MIT Press" }], publish_places: [{ name: "Cambridge, MA" }], publish_date: "July 31, 2009" } });
@@ -403,9 +409,9 @@ describe("missing container", () => {
 });
 
 describe("MCP tools", () => {
-  it("lists seven read only tools", async () => {
+  it("lists eight read only tools", async () => {
     const tools = (await client.listTools()).tools;
-    expect(tools.map((t) => t.name).sort()).toEqual(["cite_from_doi", "cite_from_isbn", "cite_from_url", "find_doi", "format_bibliography", "format_citation", "in_text_citation"]);
+    expect(tools.map((t) => t.name).sort()).toEqual(["cite_from_arxiv", "cite_from_doi", "cite_from_isbn", "cite_from_url", "find_doi", "format_bibliography", "format_citation", "in_text_citation"]);
     for (const t of tools) expect(t.annotations?.readOnlyHint).toBe(true);
   });
   it("gives every tool concrete inputs and an example prompt", async () => {
@@ -428,6 +434,23 @@ describe("MCP tools", () => {
   it("says so when no DOI matches the title", async () => {
     const r = await call("find_doi", { title: "nothing like this" });
     expect(r.text).toContain("found no match");
+  });
+  it("cites a preprint from an arXiv link", async () => {
+    const r = await call("cite_from_arxiv", { arxiv_id: "https://arxiv.org/abs/2001.00001v2", style: "apa7" });
+    expect(r.isError).toBe(false);
+    expect(r.text).toContain("Stone, A., & Cole, R. (2020). *Study groups and memory* [Preprint]. arXiv.");
+    expect(r.text).toContain("https://arxiv.org/abs/2001.00001");
+    expect(r.text).toContain("(From arXiv. Check it against your style guide.)");
+  });
+  it("says so when arXiv has no paper for the ID", async () => {
+    const r = await call("cite_from_arxiv", { arxiv_id: "2001.99999" });
+    expect(r.isError).toBe(true);
+    expect(r.text).toContain("format_citation");
+  });
+  it("rejects text that is not an arXiv ID", async () => {
+    const r = await call("cite_from_arxiv", { arxiv_id: "hello" });
+    expect(r.isError).toBe(true);
+    expect(r.text).toContain("does not look like an arXiv ID");
   });
   it("cites from a DOI through Crossref", async () => {
     const r = await call("cite_from_doi", { doi: "https://doi.org/10.1000/jss.2020.42", style: "apa7" });

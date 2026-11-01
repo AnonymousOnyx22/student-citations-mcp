@@ -303,6 +303,29 @@
       ]
     },
     {
+      "name": "cite_from_arxiv",
+      "description": "Look up an arXiv ID on arXiv and format the preprint citation in APA 7, MLA 9, Chicago author date, Harvard, IEEE or BibTeX. Inputs: arxiv_id (an ID like 2001.00001 or math/0603452, with an optional version such as v2, or an arxiv.org abs or pdf link) and style (apa7, mla9, chicago-ad, harvard, ieee, bibtex or all). Pass all to get all three styles in one reply, each one with its style name on the line above it. Pass bibtex to get one .bib entry for a reference manager. Example prompt: \"Cite arXiv 1706.03762 in APA.\"",
+      "inputSchema": {
+        "type": "object",
+        "required": ["arxiv_id"],
+        "properties": {
+          "arxiv_id": { "type": "string", "description": "An arXiv ID like 2001.00001 or math/0603452, with an optional version such as v2, or an arxiv.org abs or pdf link." },
+          "style": {
+            "type": "string",
+            "enum": ["apa7", "mla9", "chicago-ad", "harvard", "ieee", "bibtex", "all"],
+            "default": "apa7",
+            "description": "Citation style. apa7, mla9, chicago-ad (Chicago author date), harvard, ieee and bibtex, or all to get APA 7, MLA 9 and Chicago author date in one reply with a label above each one."
+          }
+        }
+      },
+      "examples": [
+        {
+          "input": { "arxiv_id": "2001.00001", "style": "apa7" },
+          "output": "(Example) Formatted APA 7 preprint citation from arXiv, followed by a blank line and (From arXiv. Check it against your style guide.)"
+        }
+      ]
+    },
+    {
       "name": "cite_from_isbn",
       "description": "Look up an ISBN on Open Library and format the book citation in APA 7, MLA 9, Chicago author date, Harvard, IEEE or BibTeX. Inputs: isbn (a 10 or 13 digit ISBN, dashes are fine) and style (apa7, mla9, chicago-ad, harvard, ieee or bibtex). Pass bibtex to get one .bib entry for a reference manager. Example prompt: \"Cite ISBN 978-0-262-03384-8 in MLA 9.\"",
       "inputSchema": {
