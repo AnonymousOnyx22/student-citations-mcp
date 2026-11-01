@@ -754,3 +754,57 @@ export function formatBibtex(s: Source, key?: string): string {
 }
 
 export const bibtexEntry = formatBibtex;
+
+/** The RIS type tag for each kind of source. */
+function risType(s: Source): string {
+  const types: Record<SourceType, string> = {
+    journal: "JOUR",
+    book: "BOOK",
+    chapter: "CHAP",
+    thesis: "THES",
+    report: "RPRT",
+    dataset: "DATA",
+    preprint: "UNPB",
+    website: "ELEC",
+  };
+  return types[s.type] ?? "GEN";
+}
+
+/**
+ * One source as a RIS record, the plain text format Zotero, EndNote and Mendeley
+ * import. Each line is a two letter tag, then "  - ", then the value, and the
+ * record ends with an ER line. Names are written as family, given.
+ */
+export function formatRis(s: Source): string {
+  requireContainer(s);
+  const lines: string[] = [];
+  const add = (tag: string, value?: string) => {
+    const text = value?.replace(/\s+/g, " ").trim();
+    if (text) lines.push(`${tag}  - ${text}`);
+  };
+  const name = (x: Author) => (x.given ? `${x.family}, ${x.given}` : x.family);
+  add("TY", risType(s));
+  for (const a of s.authors ?? []) add("AU", name(a));
+  for (const e of s.editors ?? []) add("A2", name(e));
+  if (s.type === "book") for (const t of s.translators ?? []) add("A4", name(t));
+  add("TI", s.title);
+  if (s.type === "journal" || s.type === "chapter" || s.type === "website") add("T2", s.container);
+  add("PY", bibtexYear(s));
+  add("VL", s.volume);
+  add("IS", s.type === "report" ? s.report_number : s.issue);
+  if (s.pages) {
+    const [start, end] = s.pages.split(/\s*[-–—]+\s*/);
+    add("SP", start);
+    add("EP", end);
+  }
+  if (s.type === "book" || s.type === "chapter") add("ET", s.edition);
+  add("PB", s.type === "thesis" || s.type === "report" ? s.institution ?? s.publisher : s.publisher);
+  add("CY", s.city);
+  if (s.type === "thesis") add("M3", s.degree);
+  if (s.type === "preprint") add("T2", s.repository);
+  if (s.accessed) add("Y2", s.accessed);
+  add("DO", s.doi?.trim().replace(/^https?:\/\/(dx\.)?doi\.org\//i, "").replace(/^doi:\s*/i, ""));
+  add("UR", s.url);
+  lines.push("ER  - ");
+  return lines.join("\n");
+}
