@@ -309,7 +309,7 @@ export const tools: ToolDef<Api>[] = [
         const src = crossrefSource(m, m.DOI);
         const names = src.authors.slice(0, 3).map((x) => x.family).join(", ") + (src.authors.length > 3 ? " and others" : "");
         const parts = [src.title, names, src.year, src.container].filter((x) => x && String(x).trim());
-        return `${i + 1}. ${parts.join(". ")}. DOI: ${m.DOI}`;
+        return `${i + 1}. ${parts.join(". ")}. DOI: ${m.DOI}\n   Cite it: cite_from_doi ${m.DOI}`;
       });
       return `${lines.join("\n")}\n\n(From Crossref. Check that the title and authors are the work you mean, then pass the DOI to cite_from_doi.)`;
     },

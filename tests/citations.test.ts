@@ -426,6 +426,7 @@ describe("MCP tools", () => {
   it("finds a DOI from a title and skips records without a title", async () => {
     const r = await call("find_doi", { title: "Learning to learn", author: "Smith", limit: 3 });
     expect(r.text).toContain("1. Learning to learn. Smith, Jones. 2020. Journal of Study Skills. DOI: 10.1000/jss.2020.42");
+    expect(r.text).toContain("Cite it: cite_from_doi 10.1000/jss.2020.42");
     expect(r.text).not.toContain("10.1000/notitle");
     expect(r.text).toContain("cite_from_doi");
     expect(lastSearch).toContain("rows=3");
