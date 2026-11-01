@@ -13,6 +13,12 @@ export function makeApi(urls = baseUrls(), fetchImpl?: typeof fetch): Api {
   return {
     crossref: createClient({ baseUrl: urls.crossref, headers: { "User-Agent": ua }, fetchImpl, retries: 2 }),
     openLibrary: createClient({ baseUrl: urls.openLibrary, headers: { "User-Agent": ua }, fetchImpl, retries: 2 }),
+    arxiv: createClient({
+      baseUrl: urls.arxiv,
+      headers: { "User-Agent": ua, Accept: "application/atom+xml" },
+      fetchImpl,
+      retries: 2,
+    }),
     web: createClient({
       baseUrl: "",
       headers: { "User-Agent": ua, Accept: "text/html,application/xhtml+xml" },

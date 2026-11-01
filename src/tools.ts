@@ -8,6 +8,7 @@ import { normalizeUrl, pageSource, parsePage, parsePageDate } from "./page.js";
 export interface Api {
   crossref: HttpClient;
   openLibrary: HttpClient;
+  arxiv: HttpClient;
   web: HttpClient;
 }
 

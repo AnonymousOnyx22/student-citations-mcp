@@ -121,7 +121,7 @@ beforeAll(async () => {
   await new Promise<void>((r) => srv.listen(0, "127.0.0.1", r));
   base = `http://127.0.0.1:${(srv.address() as AddressInfo).port}`;
   const [a, b] = InMemoryTransport.createLinkedPair();
-  await createServer(makeApi({ crossref: base, openLibrary: base, email: "me@example.com" })).connect(a);
+  await createServer(makeApi({ crossref: base, openLibrary: base, arxiv: base, email: "me@example.com" })).connect(a);
   client = new Client({ name: "test", version: "0" });
   await client.connect(b);
 });
