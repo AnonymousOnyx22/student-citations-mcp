@@ -327,7 +327,7 @@
     },
     {
       "name": "cite_from_isbn",
-      "description": "Look up an ISBN on Open Library and format the book citation in APA 7, MLA 9, Chicago author date, Harvard, IEEE or BibTeX. Inputs: isbn (a 10 or 13 digit ISBN, dashes are fine) and style (apa7, mla9, chicago-ad, harvard, ieee or bibtex). Pass bibtex to get one .bib entry for a reference manager. Example prompt: \"Cite ISBN 978-0-262-03384-8 in MLA 9.\"",
+      "description": "Look up an ISBN on Open Library and format the book citation in APA 7, MLA 9, Chicago author date, Harvard, IEEE or BibTeX. Inputs: isbn (a 10 or 13 digit ISBN, dashes are fine) and style (apa7, mla9, chicago-ad, harvard, ieee, bibtex or all). Pass all to get all three styles in one reply, each one with its style name on the line above it. Pass bibtex to get one .bib entry for a reference manager. Example prompt: \"Cite ISBN 978-0-262-03384-8 in MLA 9.\"",
       "inputSchema": {
         "type": "object",
         "required": ["isbn"],
@@ -335,9 +335,9 @@
           "isbn": { "type": "string", "description": "A 10 or 13 digit ISBN. Dashes are fine." },
           "style": {
             "type": "string",
-            "enum": ["apa7", "mla9", "chicago-ad", "harvard", "ieee", "bibtex"],
+            "enum": ["apa7", "mla9", "chicago-ad", "harvard", "ieee", "bibtex", "all"],
             "default": "apa7",
-            "description": "Citation style. apa7, mla9, chicago-ad (Chicago author date), harvard, ieee or bibtex."
+            "description": "Citation style. apa7, mla9, chicago-ad (Chicago author date), harvard, ieee and bibtex, or all to get APA 7, MLA 9 and Chicago author date in one reply with a label above each one."
           }
         }
       },

@@ -5,7 +5,7 @@
 ## Setup
 - Run with npx -y student-citations-mcp
 - No key or account. Optional CROSSREF_EMAIL.
-- Styles are apa7, mla9, chicago-ad, harvard, ieee and bibtex. format_citation, cite_from_doi, cite_from_arxiv and cite_from_url also take all to return APA 7, MLA 9 and Chicago author date in one reply. bibtex returns .bib entries for a reference manager. Italics are returned as asterisks.
+- Styles are apa7, mla9, chicago-ad, harvard, ieee and bibtex. format_citation, cite_from_doi, cite_from_isbn, cite_from_arxiv and cite_from_url also take all to return APA 7, MLA 9 and Chicago author date in one reply. bibtex returns .bib entries for a reference manager. Italics are returned as asterisks.
 - All eight tools are read only. Nothing is stored.
 - The cite_this prompt looks nothing up. It only writes out the request.
 
@@ -104,13 +104,15 @@ Parameters:
 Example: with arxiv_id "2001.00001" and style "apa7", returns the preprint's authors, year, title and arxiv.org link in APA 7, then a blank line and "(From arXiv. Check it against your style guide.)". If arXiv has no paper for the ID, the tool returns an error message instead.
 
 ### cite_from_isbn
-Look up an ISBN on Open Library and format the book citation in APA 7, MLA 9, Chicago author date, Harvard, IEEE or BibTeX. Inputs: isbn (a 10 or 13 digit ISBN, dashes are fine) and style (apa7, mla9, chicago-ad, harvard, ieee or bibtex). Pass bibtex to get one .bib entry for a reference manager. Example prompt: "Cite ISBN 978-0-262-03384-8 in MLA 9."
+Look up an ISBN on Open Library and format the book citation in APA 7, MLA 9, Chicago author date, Harvard, IEEE or BibTeX. Inputs: isbn (a 10 or 13 digit ISBN, dashes are fine) and style (apa7, mla9, chicago-ad, harvard, ieee, bibtex or all). Pass all to get all three styles in one reply, each one with its style name on the line above it. Pass bibtex to get one .bib entry for a reference manager. Example prompt: "Cite ISBN 978-0-262-03384-8 in MLA 9."
 
 Parameters:
 - isbn (required): A 10 or 13 digit ISBN. Dashes are fine.
-- style (optional, default apa7): Citation style. apa7, mla9, chicago-ad (Chicago author date), harvard, ieee or bibtex.
+- style (optional, default apa7): Citation style. apa7, mla9, chicago-ad (Chicago author date), harvard, ieee and bibtex, or all to get APA 7, MLA 9 and Chicago author date in one reply with a label above each one.
 
 Example: with isbn "978-0-262-03384-8" and style "mla9", returns that book's Open Library record formatted in MLA 9, then a blank line and "(From Open Library. Check it against your style guide.)". If Open Library has no book for the ISBN, the tool returns an error message instead.
+
+All three styles: with style "all", returns the APA 7, MLA 9 and Chicago author date citations in that order, each one with its style name on the line above it, then the same Open Library note.
 
 BibTeX: with isbn "978-0-262-03384-8" and style "bibtex", returns one .bib entry for the book, then the same Open Library note.
 

@@ -402,12 +402,12 @@ export const tools: ToolDef<Api>[] = [
   {
     name: "cite_from_isbn",
     title: "Cite from an ISBN",
-    description: "Look up an ISBN on Open Library and format the book citation in APA 7, MLA 9, Chicago author date, Harvard, IEEE or BibTeX. Inputs: isbn (a 10 or 13 digit ISBN, dashes are fine) and style (apa7, mla9, chicago-ad, harvard, ieee or bibtex). Pass bibtex to get one .bib entry for a reference manager. Example prompt: \"Cite ISBN 978-0-262-03384-8 in MLA 9.\"",
-    inputSchema: { isbn: z.string().describe("A 10 or 13 digit ISBN. Dashes are fine."), style: styleBibtex },
+    description: "Look up an ISBN on Open Library and format the book citation in APA 7, MLA 9, Chicago author date, Harvard, IEEE or BibTeX. Inputs: isbn (a 10 or 13 digit ISBN, dashes are fine) and style (apa7, mla9, chicago-ad, harvard, ieee, bibtex or all). Pass all to get all three styles in one reply, each one with its style name on the line above it. Pass bibtex to get one .bib entry for a reference manager. Example prompt: \"Cite ISBN 978-0-262-03384-8 in MLA 9.\"",
+    inputSchema: { isbn: z.string().describe("A 10 or 13 digit ISBN. Dashes are fine."), style: styleAll },
     run: async (a, api) => {
-      const st = normalizeStyle(a.style ?? "apa7");
+      const st = normalizeStyleRequest(a.style ?? "apa7");
       const src = await sourceFromIsbn(a.isbn, api);
-      return `${format(src, st)}\n\n(From Open Library. Check it against your style guide.)`;
+      return `${formatAnyStyle(src, st)}\n\n(From Open Library. Check it against your style guide.)`;
     },
   },
   {

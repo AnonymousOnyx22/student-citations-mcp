@@ -74,7 +74,7 @@ Narrative: LeCun et al. (2015, 436)
 
 ## All three styles at once
 
-If you are comparing styles, pass `style` as `all` to `format_citation` or `cite_from_doi`. You get one labelled citation for APA 7, MLA 9 and Chicago author date in one reply, instead of three calls. The label above each citation is the style name, so you can pick the one you want. `format_bibliography`, `cite_from_isbn` and `in_text_citation` still take one style at a time.
+If you are comparing styles, pass `style` as `all` to `format_citation`, `cite_from_doi` or `cite_from_isbn`. You get one labelled citation for APA 7, MLA 9 and Chicago author date in one reply, instead of three calls. The label above each citation is the style name, so you can pick the one you want. `format_bibliography` and `in_text_citation` still take one style at a time.
 
 ## BibTeX
 

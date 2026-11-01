@@ -660,6 +660,13 @@ describe("MCP tools", () => {
     expect(isbn.isError).toBe(false);
     expect(isbn.text).toContain("@book{cormen2009,");
   });
+  it("returns APA, MLA and Chicago from cite_from_isbn when style is all", async () => {
+    const r = await call("cite_from_isbn", { isbn: "978-0-262-03384-8", style: "all" });
+    expect(r.isError).toBe(false);
+    expect(r.text).toContain("Cormen");
+    expect(r.text).toContain("(From Open Library. Check it against your style guide.)");
+    expect(r.text.split("\n\n").length).toBeGreaterThanOrEqual(4);
+  });
   it("asks for one identifier when both a DOI and an ISBN are given", async () => {
     const r = await call("in_text_citation", { doi: "10.1000/jss.2020.42", isbn: "978-0-262-03384-8" });
     expect(r.isError).toBe(true);

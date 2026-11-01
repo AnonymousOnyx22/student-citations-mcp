@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Add a cite_from_arxiv tool. Give it an arXiv ID or an arxiv.org link and it looks up the paper on arXiv and returns a preprint citation in APA 7, MLA 9, Chicago author date, Harvard, IEEE or BibTeX.
+- cite_from_isbn now accepts style all, like cite_from_doi and cite_from_url, and returns APA 7, MLA 9 and Chicago author date in one reply.
 
 ## 0.1.8
 
