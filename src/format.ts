@@ -1,4 +1,4 @@
-export type Style = "apa7" | "mla9" | "chicago-ad" | "harvard" | "ieee" | "bibtex";
+export type Style = "apa7" | "mla9" | "chicago-ad" | "harvard" | "ieee" | "bibtex" | "ris";
 
 export interface Author {
   family: string;
@@ -152,6 +152,7 @@ function requireContainer(s: Source): void {
 export function format(s: Source, styleInput: Style | string): string {
   const style = normalizeStyle(styleInput);
   if (style === "bibtex") return formatBibtex(s);
+  if (style === "ris") return formatRis(s);
   requireContainer(s);
   if (style === "ieee") return ieeeFormat(s);
   const parts: string[] = [];
@@ -519,6 +520,7 @@ export function formatBibliography(sources: Source[], styleInput: Style | string
   const style = normalizeStyle(styleInput);
   if (!sources.length) throw new Error("Give at least one source for the works cited list.");
   if (style === "bibtex") return sources.map((s) => formatBibtex(s)).join("\n\n");
+  if (style === "ris") return sources.map((s) => formatRis(s)).join("\n\n");
   const ordered =
     style === "ieee"
       ? [...sources]
@@ -540,6 +542,7 @@ function whoFor(authors: Author[], style: Style, narrative: boolean): string {
 
 export function inText(authors: Author[], year: string | undefined, styleInput: Style | string, page?: string): string {
   const style = normalizeStyle(styleInput);
+  if (style === "ris") throw new Error("RIS is an entry format, so it has no in text citation. Use format_citation or format_bibliography with style ris.");
   if (style === "bibtex") throw new Error("BibTeX is an entry format, so it has no in text citation. Use format_citation or format_bibliography with style bibtex.");
   const y = year ?? "n.d.";
   // IEEE numbers sources in the order they are first cited, which only the writer knows, so this is the first one
@@ -558,6 +561,7 @@ export function inText(authors: Author[], year: string | undefined, styleInput: 
  */
 export function narrativeInText(authors: Author[], year: string | undefined, styleInput: Style | string, page?: string): string {
   const style = normalizeStyle(styleInput);
+  if (style === "ris") throw new Error("RIS is an entry format, so it has no in text citation. Use format_citation or format_bibliography with style ris.");
   if (style === "bibtex") throw new Error("BibTeX is an entry format, so it has no in text citation. Use format_citation or format_bibliography with style bibtex.");
   if (style === "ieee") return inText(authors, year, style, page);
   const who = whoFor(authors, style, true);
@@ -592,10 +596,11 @@ export function normalizeStyle(input: unknown): Style {
     "ieee": "ieee",
     "bibtex": "bibtex",
     "bib tex": "bibtex",
+    "ris": "ris",
   };
   const result = aliases[key];
   if (!result) {
-    throw new Error(`"${raw}" is not a known citation style. Valid styles are apa7, mla9, chicago ad (chicago-ad), harvard, ieee and bibtex.`);
+    throw new Error(`"${raw}" is not a known citation style. Valid styles are apa7, mla9, chicago ad (chicago-ad), harvard, ieee, bibtex and ris.`);
   }
   return result;
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { formatRis } from "../src/format.js";
+import { format, formatBibliography, formatRis, inText } from "../src/format.js";
 
 const article = {
   type: "journal" as const,
@@ -56,6 +56,16 @@ describe("RIS records", () => {
     expect(ris).not.toContain("AU  -");
     expect(ris).not.toContain("VL  -");
     expect(ris.endsWith("ER  - ")).toBe(true);
+  });
+
+  it("is a style for format and format_bibliography", () => {
+    expect(format(article, "ris")).toBe(formatRis(article));
+    const book = { type: "book" as const, authors: [{ family: "Lee", given: "Ann" }], year: "2018", title: "Study well", publisher: "Open Press" };
+    expect(formatBibliography([article, book], "RIS")).toBe(`${formatRis(article)}\n\n${formatRis(book)}`);
+  });
+
+  it("has no in text form", () => {
+    expect(() => inText([{ family: "Lee" }], "2018", "ris")).toThrow(/RIS is an entry format/);
   });
 
   it("keeps a single page and takes the year from a web date", () => {

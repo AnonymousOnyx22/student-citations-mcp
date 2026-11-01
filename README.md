@@ -95,6 +95,10 @@ Pass `style` as `bibtex` to `format_citation`, `format_bibliography`, `cite_from
 
 BibTeX is an entry format, so there is no in text form for it. Use APA 7, MLA 9, Chicago author date, Harvard or IEEE for the in text citation.
 
+## RIS
+
+Pass `style` as `ris` to `format_citation`, `format_bibliography`, `cite_from_doi`, `cite_from_isbn`, `cite_from_arxiv` or `cite_from_url` to get a RIS record instead of a formatted citation. Zotero, EndNote and Mendeley import RIS. `format_bibliography` returns one record after another in the order you give the sources, separated by blank lines. Like BibTeX, RIS has no in text form.
+
 ## Install
 
 ```bash
